@@ -135,7 +135,7 @@ gcloud compute instances create $INSTANCE_NAME \
 7. In the **JupyterLab**, open a terminal and clone this repository in the `home` folder.
 ```
 cd home
-git clone https://github.com/jarokaz/mlops-labs.git
+git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp.git
 ```
 
 
