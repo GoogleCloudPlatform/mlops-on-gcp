@@ -84,13 +84,13 @@ After the instance is created, you can connect to [JupyterLab](https://jupyter.o
 In the **JupyterLab**, open a terminal and clone this repository in the `home` folder.
 ```
 cd
-git clone https://github.com/jarokaz/mlops-labs.git
+git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp.git
 ```
 
 From the `mlops-labs/workshops/tfx-caip-tf21` folder execute the `install.sh` script to install **TFX** and **KFP** SDKs.
 
 ```
-cd mlops-labs/workshops/tfx-caip-tf21
+cd mlops-on-gcp/workshops/tfx-caip-tf21
 ./install.sh
 ```
 
