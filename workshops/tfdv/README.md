@@ -1,23 +1,10 @@
-# Continuous training with TFX and Cloud AI Platform
+# Analyzing and validating data in production ML
 
-This series of hands on labs guides you through the process of implementing a TensorFlow Extended (TFX) continuous training pipeline that automates training and deployment of a TensorFlow 2.1 model.
+This series of hands on labs demonstrates techniques and best practices for analyzing and validating data in production ML settings. The labs cover the following topics:
+- Developing data schemas
+- Validating data in continuous training pipelines
+- Validating data during model serving
 
-The below diagram represents the workflow orchestrated by the pipeline.
-
-![TFX_CAIP](/images/tfx-caip.png).
-
-1. Training data in the CSV format is ingested from a GCS location using *CsvExampleGen*. The URI to the data root is passed as a runtime parameter. The *CsvExampleGen* component splits the source data into training and evaluation splits and converts the data into the TFRecords format.
-2. The *StatisticsGen* component generates statistics for both splits.
-3. The *SchemaGen* component autogenerates a schema . This is done for tracking. The pipeline uses a curated schema imported by the *ImportedNode* component.
-4. The *ImporterNode* component is used to bring the curated schema file into the pipeline. The location of the schema file is passed as a runtime parameter. 
-5. The *ExampleValidator* component validates the generated examples against the imported schema
-6. The *Transform* component preprocess the data to the format required by the *Trainer* compoment. It also saves the preprocessing TensorFlow graph. 
-7. The *Trainer* starts an AI Platform Training job. The AI Platform Training job is configured for training in a custom container. 
-8. The *ResolverNode* component retrieves the best performing model from the previous runs and passed it to the *Evaluator* to be used as a baseline during model validation.
-8. The *Evaluator* component evaluates the trained model against the eval split and validates against the baseline model from the *ResolverNode*. If the new model exceeds validation thresholds it is marked as "blessed".
-9. If the new model is blessed by the *Evaluator*, the *Pusher* deploys the model to AI Platform Prediction.
-
-The ML model utilized in the labs  is a multi-class classifier that predicts the type of  forest cover from cartographic data. The model is trained on the [Covertype Data Set](/datasets/covertype/README.md) dataset.
 
 ## Preparing the lab environment
 You will use the lab environment configured as on the below diagram:
@@ -59,15 +46,7 @@ ml.googleapis.com \
 dataflow.googleapis.com 
 ```
 
-The **Cloud Build** service account needs the Editor permissions in your GCP project to upload the pipeline package to an **AI Platform Pipelines** instance.
 
-```
-PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
-CLOUD_BUILD_SERVICE_ACCOUNT="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member serviceAccount:$CLOUD_BUILD_SERVICE_ACCOUNT \
-  --role roles/editor
-```
 
 ### Creating an instance of AI Platform Pipelines
 The core component of the lab environment is **AI Platform Pipelines**. To create an instance of **AI Platform Pipelines** follow the [Setting up AI Platform Pipelines](https://cloud.google.com/ai-platform/pipelines/docs/setting-up) how-to guide. Make sure to enable the access to *https://www.googleapis.com/auth/cloud-platform* when creating a GKE cluster.
@@ -75,7 +54,7 @@ The core component of the lab environment is **AI Platform Pipelines**. To creat
 
 ### Creating an instance of AI Platform Notebooks
 
-An instance of **AI Platform Notebooks** is used as a primary experimentation/development workbench.
+An instance of **AI Platform Notebooks** is used as a primary experimentation/development workbench. Different labs may use different configurations. Refer to the lab README files for the detailed instructions on setting up the lab instance.
 
 To provision the instance follow the [Create an new notebook instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) setup guide. Use the *TensorFlow Enterprise 2.1* no-GPU image. Leave all other settings at their default values.
 
@@ -96,12 +75,8 @@ cd mlops-on-gcp/workshops/tfx-caip-tf21
 
 ## Summary of lab exercises
 
-### Lab-01 - TFX Components walk-through
-In this lab, you will step through the configuration and execution of core TFX components using TFX interactive context. The primary goal of the lab is to get a high level understanding of a function and usage of each of the components. 
+### Lab-01-x - Exploratory data analysis and schema development using TensorFlow Data Validation.
+In this lab, you will use the TensorFlow Data Validation (TFDV) library to analyze data and develop a data schema. There are multiple versions of this lab using different datasets. 
 
-### Lab-02 - Orchestrating model training and deployment with TFX and Cloud AI Platform
-In this lab you will develop, deploy and run a TFX pipeline that uses  Cloud Dataflow and Cloud AI Platform as execution runtimes.
 
-### Lab-03 - CI/CD for a TFX pipeline
-In this lab you will author a **Cloud Build** CI/CD workflow that automatically builds and deploys a TFX pipeline. You will also integrate your workflow with **GitHub**.
 
