@@ -56,22 +56,7 @@ The core component of the lab environment is **AI Platform Pipelines**. To creat
 
 An instance of **AI Platform Notebooks** is used as a primary experimentation/development workbench. Different labs may use different configurations. Refer to the lab README files for the detailed instructions on setting up the lab instance.
 
-To provision the instance follow the [Create an new notebook instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) setup guide. Use the *TensorFlow Enterprise 2.1* no-GPU image. Leave all other settings at their default values.
 
-After the instance is created, you can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the *OPEN JUPYTERLAB* link in the [AI Platform Notebooks Console](https://console.cloud.google.com/ai-platform/notebooks/instances).
-
-In the **JupyterLab**, open a terminal and clone this repository in the `home` folder.
-```
-cd
-git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp.git
-```
-
-From the `mlops-labs/workshops/tfx-caip-tf21` folder execute the `install.sh` script to install **TFX** and **KFP** SDKs.
-
-```
-cd mlops-on-gcp/workshops/tfx-caip-tf21
-./install.sh
-```
 
 ## Summary of lab exercises
 
