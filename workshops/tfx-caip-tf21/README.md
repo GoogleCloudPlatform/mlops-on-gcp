@@ -105,3 +105,5 @@ In this lab you will develop, deploy and run a TFX pipeline that uses  Cloud Dat
 ### Lab-03 - CI/CD for a TFX pipeline
 In this lab you will author a **Cloud Build** CI/CD workflow that automatically builds and deploys a TFX pipeline. You will also integrate your workflow with **GitHub**.
 
+### Lab-04 - ML Metadata
+In this lab, you will explore ML metadata and ML artifacts created by TFX pipeline runs.
