@@ -1,6 +1,6 @@
 # Creating an AI Platform Notebooks instance
 
-This lab walks you through provisiong of  an AI Platfom Notebooks instance using on a custom container image.
+This lab walks you through the provisioning of an AI Platfom Notebooks instance using a custom container image.
 
 The accompanying lab - `provisioning-kfp` - describe the steps to provision other services in the MLOps environment, including a standalone deployment of Kubeflow Pipelines.
 
