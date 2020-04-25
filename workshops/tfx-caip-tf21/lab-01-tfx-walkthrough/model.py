@@ -34,27 +34,6 @@ def _gzip_reader_fn(filenames):
   return tf.data.TFRecordDataset(filenames, compression_type='GZIP')
 
 
-#def _get_serve_tf_examples_fn(model, tf_transform_output):
-#  """Returns a function that parses a serialized tf.Example and applies TFT."""
-
-#  model.tft_layer = tf_transform_output.transform_features_layer()
-
- # @tf.function
- # def serve_tf_examples_fn(serialized_tf_examples):
- #   """Returns the output to be used in the serving signature."""
- #   feature_spec = tf_transform_output.raw_feature_spec()
- #   feature_spec.pop(features.LABEL_KEY)
- #   parsed_features = tf.io.parse_example(serialized_tf_examples, feature_spec)
-
- #   transformed_features = model.tft_layer(parsed_features)
- #   transformed_features.pop(features.transformed_name(features.LABEL_KEY))
-
- #   outputs = model(transformed_features)
- #   return {'outputs': outputs}
-
- # return serve_tf_examples_fn
-
-
 def _get_serve_tf_examples_fn(model, tf_transform_output):
   """Returns a function that parses a serialized tf.Example and applies TFT."""
 

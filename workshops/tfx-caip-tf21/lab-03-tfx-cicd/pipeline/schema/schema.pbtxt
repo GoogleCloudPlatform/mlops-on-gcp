@@ -45,8 +45,8 @@ feature {
   type: INT
   int_domain {
     name: "Cover_Type"
-    min: 1
-    max: 7
+    min: 0
+    max: 6
     is_categorical: true
   }
   presence {
@@ -183,6 +183,7 @@ string_domain {
   value: "C4744"
   value: "C4758"
   value: "C5101"
+  value: "C5151"
   value: "C6101"
   value: "C6102"
   value: "C6731"
