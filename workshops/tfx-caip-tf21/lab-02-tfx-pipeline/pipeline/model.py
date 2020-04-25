@@ -158,7 +158,7 @@ def run_fn(fn_args):
   Args:
     fn_args: Holds args used to train the model as name/value pairs.
   """
-
+  
   tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
     
   train_dataset = _input_fn(fn_args.train_files, tf_transform_output, TRAIN_BATCH_SIZE)
@@ -170,7 +170,8 @@ def run_fn(fn_args):
       learning_rate=LEARNING_RATE
   )
 
-  log_dir = os.path.join(os.path.dirname(fn_args.serving_model_dir), 'logs')
+  #log_dir = os.path.join(os.path.dirname(fn_args.serving_model_dir), 'logs')
+  log_dir = '/tmp/logs'
   tensorboard_callback = tf.keras.callbacks.TensorBoard(
       log_dir=log_dir, update_freq='batch')
   callbacks = [ 
@@ -182,6 +183,7 @@ def run_fn(fn_args):
       steps_per_epoch=fn_args.train_steps,
       validation_data=eval_dataset,
       validation_steps=fn_args.eval_steps,
+      verbose=2,
       callbacks=callbacks)
     
   signatures = {
