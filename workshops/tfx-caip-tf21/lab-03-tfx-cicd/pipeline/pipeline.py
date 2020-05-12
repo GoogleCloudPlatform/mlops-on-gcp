@@ -24,6 +24,7 @@ from tfx.components import Evaluator
 from tfx.components import CsvExampleGen
 from tfx.components import ExampleValidator
 from tfx.components import ImporterNode
+from tfx.components import InfraValidator
 from tfx.components import Pusher
 from tfx.components import ResolverNode
 from tfx.components import SchemaGen
@@ -40,12 +41,14 @@ from tfx.orchestration.kubeflow import kubeflow_dag_runner
 from tfx.orchestration.kubeflow.proto import kubeflow_pb2
 from tfx.proto import example_gen_pb2
 from tfx.proto import evaluator_pb2
+from tfx.proto import infra_validator_pb2
 from tfx.proto import pusher_pb2
 from tfx.proto import trainer_pb2
 from tfx.utils.dsl_utils import external_input
 from tfx.types import Channel
 from tfx.types.standard_artifacts import Model
 from tfx.types.standard_artifacts import ModelBlessing
+from tfx.types.standard_artifacts import InfraBlessing
 from tfx.types.standard_artifacts import Schema
 
 import features
@@ -156,12 +159,39 @@ def create_pipeline(pipeline_name: Text,
       baseline_model=resolve.outputs.model,
       eval_config=eval_config
   )
+
+  # Validate model can be loaded and queried in sand-boxed environment 
+  # mirroring production.
+  serving_config = infra_validator_pb2.ServingSpec(
+      tensorflow_serving=infra_validator_pb2.TensorFlowServing(
+          tags=['latest']),
+      local_docker=infra_validator_pb2.LocalDockerConfig(),
+  )
+  
+  validation_config = infra_validator_pb2.ValidationSpec(
+      max_loading_time_seconds=60,
+      num_tries=3,
+  )
+  
+  request_config = infra_validator_pb2.RequestSpec(
+      tensorflow_serving=infra_validator_pb2.TensorFlowServingRequestSpec(),
+      num_examples=3,
+  )
+    
+  infra_validate = InfraValidator(
+      model=train.outputs['model'],
+      examples=generate_examples.outputs['examples'],
+      serving_spec=serving_config,
+      validation_spec=validation_config,
+      request_spec=request_config,
+  )
   
   # Checks whether the model passed the validation steps and pushes the model
   # to a file destination if check passed.
   deploy = Pusher(
       model=train.outputs['model'],
       model_blessing=analyze.outputs['blessing'],
+      infra_blessing=infra_validate.outputs['blessing'],      
       push_destination=pusher_pb2.PushDestination(
           filesystem=pusher_pb2.PushDestination.Filesystem(
               base_directory=os.path.join(
@@ -180,7 +210,7 @@ def create_pipeline(pipeline_name: Text,
       pipeline_root=pipeline_root,
       components=[
           generate_examples, generate_statistics, import_schema, infer_schema, validate_stats, transform,
-          train, resolve, analyze , deploy
+          train, resolve, analyze, infra_validate, deploy
       ],
       enable_cache=enable_cache,
       beam_pipeline_args=beam_pipeline_args
