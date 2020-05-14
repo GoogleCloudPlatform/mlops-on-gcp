@@ -22,7 +22,7 @@ This notebook shows how to:
      baseline schema and statistics
     * Run the Drift Analyzer template to analyze the logged request-response serving data in BigQuery
 
-4. [04_covertype_analyze_skews_with tfdv.ipynb](04_covertype_analyze_skews_with tfdv.ipynb) - This notebook
+4. [04_covertype_analyze_skews_with tfdv.ipynb](04_covertype_analyze_skews_with_tfdv.ipynb) - This notebook
 shows how to:
     * Visualize the computed statistics of the serving data, and compare it against a baseline statistics from 
     the training data
