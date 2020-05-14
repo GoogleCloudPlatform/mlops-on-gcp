@@ -25,5 +25,5 @@ This notebook shows how to:
 4. [04_covertype_analyze_skews_with tfdv.ipynb](04_covertype_analyze_skews_with_tfdv.ipynb) - This notebook
 shows how to:
     * Visualize the computed statistics of the serving data, and compare it against a baseline statistics from 
-    the training data
+    the training data, using TFDV visualization tools
     * List the anomalies - if any - detected by the skew detector
