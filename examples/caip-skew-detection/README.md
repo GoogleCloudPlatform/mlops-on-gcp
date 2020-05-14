@@ -27,5 +27,3 @@ shows how to:
     * Visualize the computed statistics of the serving data, and compare it against a baseline statistics from 
     the training data.
     * List the anomalies - if any - detected by the skew detector.
-
-
