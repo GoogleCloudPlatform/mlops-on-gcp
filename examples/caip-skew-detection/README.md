@@ -13,7 +13,7 @@ models to AI Platform Prediction.
     
 2. [02_covertype_skewed_data_generation.ipynb](02_covertype_skewed_data_generation.ipynb) - This notebooks 
 provides sample code to generate skewed data as serving workload to the deployed model to AI Platform Prediction
-The logged serving data to BigQuery can then be analyzed and visualized
+The logged serving data to BigQuery can then be analyzed and visualized.
 
 3. [03_covertype_deploy_run_skew_detector_template.ipynb](03_covertype_deploy_run_skew_detector_template.ipynb) -
 This notebook shows how to:
