@@ -14,35 +14,34 @@ The dataset is preprocessed, split, and uploaded to the `gs://workshop-datasets/
 
 ## Notebooks
 
-1. [01_covertype_training_serving.ipynb](01_covertype_training_serving.ipynb) - This notebook shows how to:
-    * Train and export a Keras model using TensorFlow 2.x
-    * Deploy the exported SavedModel to AI Platform Prediction
-    * Enable request-response logging to BigQuery
+[01_covertype_training_serving.ipynb](01_covertype_training_serving.ipynb) - This notebook shows how to:
+ * Train and export a Keras model using TensorFlow 2.x
+ * Deploy the exported SavedModel to AI Platform Prediction
+ * Enable request-response logging to BigQuery
     
-2. [02_covertype_logs_parsing.ipynb](02_covertype_logs_parsing.ipynb) - This notebook shows how to:
-    * Create a view using your dataset metadata to parse the raw request instances and response prediction 
+[02_covertype_logs_parsing.ipynb](02_covertype_logs_parsing.ipynb) - This notebook shows how to:
+  * Create a view using your dataset metadata to parse the raw request instances and response prediction 
     logged in BigQuery
-    * Query the view to retrieved structured logs.
+  * Query the view to retrieved structured logs.
 
-3. [03_covertype_drift_detection_tfdv.ipynb](03_covertype_drift_detection_tfdv.ipynb) - This notebook shows how to:
-    * Create and fix a *schema* from the training data
-    * Implement an Apache Beam pipeline to: 
-        * Read logs data from BigQuery
-        * Parse the logs data
-        * Use TFDV to generate *statistics* from the serving logs data 
-        * Use TFDV to validate the statistics against the schema
-        * Save anomalies and statistics
+[03_covertype_drift_detection_tfdv.ipynb](03_covertype_drift_detection_tfdv.ipynb) - This notebook shows how to:
+  * Create and fix a *schema* from the training data
+  * Read logs data from BigQuery
+  * Parse the logs data
+  * Use TFDV to generate *statistics* from the serving logs data 
+  * Use TFDV to validate the statistics against the schema
+  * Save anomalies and statistics
         
-4. [04_covertype_drift_analysis_tfdv.ipynb](04_covertype_drift_analysis_tfdv.ipynb) - This notebook shows how to:
-   * Load anomalies and statistics to your notebooks
-   * Use TFDV to visualize and analyze the statistics and anomalies
+[04_covertype_drift_analysis_tfdv.ipynb](04_covertype_drift_analysis_tfdv.ipynb) - This notebook shows how to:
+  * Load anomalies and statistics to your notebooks
+  * Use TFDV to visualize and analyze the statistics and anomalies
 
-5. [05_covertype_deploy_run_drift_detector_template.ipynb](04_covertype_deploy_run_drift_detector_template.ipynb) -
+[05_covertype_deploy_run_drift_detector_template.ipynb](04_covertype_deploy_run_drift_detector_template.ipynb) -
 This notebook shows how to:
-    * Deploy the [drift detector](drift_monitor/drift_detector) Dataflow pipeline as a Dataflow Flex Template to GCP.
+  * Deploy the [drift detector](drift_monitor/drift_detector) Dataflow pipeline as a Dataflow Flex Template to GCP.
      The drift detector use TensorFlow Data Validation (TFDV) to validate the serving data against 
      baseline schema and statistics
-    * Run the drift_analyzer template to analyze the logged request-response serving data in BigQuery
+  * Run the drift_analyzer template to analyze the logged request-response serving data in BigQuery
 
 
 ## Drift Monitor
