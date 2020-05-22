@@ -1,4 +1,4 @@
-# ML Model Monitoring: Serving Data Skew detection with AI Platform
+# ML Model Monitoring: Data Skew detection with AI Platform
 
 This directory includes code example of how you can implement a serving data skew detection system for deployed ML
 models to AI Platform Prediction.
@@ -20,7 +20,7 @@ The dataset is preprocessed, split, and uploaded to the `gs://workshop-datasets/
  * Enable request-response logging to BigQuery
     
 [02_covertype_logs_parsing.ipynb](02_covertype_logs_parsing.ipynb) - This notebook shows how to:
-  * Create a view using your dataset metadata to parse the raw request instances and response prediction 
+  * Create a view using your metadata to parse the raw request instances and response prediction 
     logged in BigQuery
   * Query the view to retrieved structured logs.
 
