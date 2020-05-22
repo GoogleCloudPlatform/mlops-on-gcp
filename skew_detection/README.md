@@ -24,16 +24,20 @@ The dataset is preprocessed, split, and uploaded to the `gs://workshop-datasets/
     logged in BigQuery
     * Query the view to retrieved structured logs.
 
-2. [03_covertype_drift_detection_tfdv.ipynb](03_covertype_drift_detection_tfdv.ipynb) - This notebook shows how to:
+3. [03_covertype_drift_detection_tfdv.ipynb](03_covertype_drift_detection_tfdv.ipynb) - This notebook shows how to:
     * Create and fix a *schema* from the training data
     * Implement an Apache Beam pipeline to: 
         * Read logs data from BigQuery
         * Parse the logs data
         * Use TFDV to generate *statistics* from the serving logs data 
         * Use TFDV to validate the statistics against the schema
-        * Visualize the statistics and anomalies
+        * Save anomalies and statistics
+        
+4. [04_covertype_drift_analysis_tfdv.ipynb](04_covertype_drift_analysis_tfdv.ipynb) - This notebook shows how to:
+   * Load anomalies and statistics to your notebooks
+   * Use TFDV to visualize and analyze the statistics and anomalies
 
-3. [04_covertype_deploy_run_drift_detector_template.ipynb](04_covertype_deploy_run_drift_detector_template.ipynb) -
+5. [05_covertype_deploy_run_drift_detector_template.ipynb](04_covertype_deploy_run_drift_detector_template.ipynb) -
 This notebook shows how to:
     * Deploy the [drift detector](drift_monitor/drift_detector) Dataflow pipeline as a Dataflow Flex Template to GCP.
      The drift detector use TensorFlow Data Validation (TFDV) to validate the serving data against 
