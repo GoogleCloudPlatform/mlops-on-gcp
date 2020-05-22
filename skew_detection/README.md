@@ -1,4 +1,4 @@
-# ML Model Monitoring: Data Skew detection with AI Platform
+# ML Model Monitoring: Data Skew Detection with AI Platform
 
 This directory includes code example of how you can implement a serving data skew detection system for deployed ML
 models to [Cloud AI Platform Prediction](https://cloud.google.com/ai-platform/prediction/docs/overview).
