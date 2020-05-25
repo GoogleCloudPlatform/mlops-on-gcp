@@ -1,7 +1,7 @@
 # ML Model Monitoring: Serving Data Skew detection with AI Platform
 
 This directory includes code example of how you can implement a serving data skew detection system for deployed ML
-models to AI Platform Prediction.
+models to [Cloud AI Platform Prediction](https://cloud.google.com/ai-platform/prediction/docs).
 
 ## Dataset
 
@@ -25,12 +25,10 @@ The dataset is preprocessed, split, and uploaded to the `gs://workshop-datasets/
   * Query the view to retrieved structured logs.
 
 [03_covertype_drift_detection_tfdv.ipynb](03_covertype_drift_detection_tfdv.ipynb) - This notebook shows how to:
-  * Create and fix a *schema* from the training data
-  * Implement an Apache Beam pipeline to: 
-   * Read logs data from BigQuery
-   * Parse the logs data
-   * Use TFDV to generate *statistics* from the serving logs data 
-   * Use TFDV to validate the statistics against the schema
+  * Create and fix a *reference schema* from the training data
+  * Read and logs data from BigQuery
+  * Use TFDV to generate *statistics* from the serving logs data 
+  * Use TFDV to validate the statistics against the *reference schema*
   * Visualize and display the statistics and anomalies
   * Analyze how statistics change over time
 
