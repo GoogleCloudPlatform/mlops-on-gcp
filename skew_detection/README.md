@@ -32,33 +32,21 @@ The dataset is preprocessed, split, and uploaded to the `gs://workshop-datasets/
   * Visualize and display the statistics and anomalies
   * Analyze how statistics change over time
 
-[04_covertype_deploy_run_drift_detector_template.ipynb](04_covertype_deploy_run_drift_detector_template.ipynb) -
-This notebook shows how to:
- * Deploy the [drift detector](drift_monitor/drift_detector) Dataflow pipeline as a Dataflow Flex Template to GCP.
- The drift detector use TensorFlow Data Validation (TFDV) to validate the serving data against 
- baseline schema and statistics
- * Run the drift_analyzer template to analyze the logged request-response serving data in BigQuery
-
-
 ## Drift Monitor
 
 ## Workload Simulator
 
-We provide an [online prediction workload simulator](workload_simulator) to call model version deployed in AI Platform
-Prediction and generate request-response logs to BigQuery. The workload simulator includes:
+In order to simulate prediction serving workload for the covertype classification model deployed to AI Platform, 
+and generate request-response logs to BigQuery, you can use one of the following methods:
     
- 1. [covertype_skewed_data_generation.ipynb](workload_simulator/covertype_skewed_data_generation.ipynb) - This notebook 
- generates two sets of data: 1) normal dataset containing sampled points from the validation split, and 2) skewed dataset
- by applying some modification to the feature values.
- 
- 2. [online_prediction_simulator.py](workload_simulator/online_prediction_simulator.py) - This script takes data files 
- (e.g. files in [serving_data](workload_simulator/serving_data)) and calls the model version deployed to
-  AI Platform Prediction. The simulation is executed with respect to a specified duration.
+ 1. You can use the [covertype_skewed_data_generation.ipynb](workload_simulator/covertype_skewed_data_generation.ipynb)
+ notebook to generate both normal and skewed data points. The notebook then uses the generated data points to calls the 
+ deployed model version to AI Platform for predictions. This generates request-response logs to BigQuery 
   
- 3. [bq_prediction_logs.csv](workload_simulator/bq_prediction_logs.csv) - This CSV file includes logs 
- generated from running the *online_prediction_simulator.py* for 3 days using, using normal dataset in the first two days
- and the skewed dataset in the third day. You can load them directly to your BigQuery request-response logs table. See
- [loading data to BigQuery from a local data source](https://cloud.google.com/bigquery/docs/loading-data-local)
+ 2. Alternatively, you can load the [bq_prediction_logs.csv](workload_simulator/bq_prediction_logs.csv) 
+ data file to your BigQuery request-response logs table. 
+ The CSV file includes sample request-response logs with 2000 normal and 1000 skewed data points. 
+ See [loading data to BigQuery from a local data source](https://cloud.google.com/bigquery/docs/loading-data-local)
  
  
 
