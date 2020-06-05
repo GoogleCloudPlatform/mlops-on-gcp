@@ -39,7 +39,11 @@ time_window | String | Noe | A time window for slice calculations. You must use 
 
 
 
-The Log Analyzer 
+### Calculating descriptive statistics
+
+The template will use `tensorflow_data_validation.GenerateStatistics` *PTransform* to calculate statistics for a full time series of records from `start_time` to `end_time` where `start_time` and `end_time` are the values for the `time` field in the AI Platform Prediction request-response log table.
+
+
 ## Deploying the Log Analyzer Dataflow Flext template
 
 Use the `deploy_log_analyzer.sh` script to build and deploy the template.
