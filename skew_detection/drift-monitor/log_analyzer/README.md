@@ -11,6 +11,8 @@ The Log Analyzer template encapsulates an Apache Beam pipeline that analyzes dat
 
 The pipeline implements the following workflow:
 
+![Workflow](/images/template-workflow.png)
+
 1. Extract a time series of records from the request-response log table in BigQuery.
 2. Convert the records to the `tensorflow_data_validation.type.BeamExample` format required by the Tensorflow Data Validation statistics generation API.
 3. Use the [`tensorflow_data_validation.GenerateStatistics`](https://www.tensorflow.org/tfx/data_validation/api_docs/python/tfdv/GenerateStatistics) *PTransform* to calculate descriptive statistics for the time series of records. If configured, the pipeline can also calculate statistics over a series of time slices with the time series.
