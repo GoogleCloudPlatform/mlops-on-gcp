@@ -2,7 +2,7 @@
 
 This folder contains a sample Dataflow Flex Template - **Log Analyzer** - designed to analyze data from [the AI Platform Prediction request-response log](https://cloud.google.com/ai-platform/prediction/docs/online-predict).
 
-The template utilizes TensorFlow Data Validation to calculate descriptive statistics and detect data anomalies in a time series of records from the log. 
+The template utilizes [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) to calculate descriptive statistics and detect data anomalies in a time series of records from the log. 
 
 Use the `deploy_log_analyzer.sh` script to build and deploy the template.
 
