@@ -30,8 +30,8 @@ Name | Type | Optional |  Description
 request_response_log_table | String | No | A full name of the request-response log table in BigQuery
 model | String | No | A name of the AI Platform Prediction model
 version | String | No | A version of the AI Platform Prediction model
-start_time | String | The beginning of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
-end_time | String | The end of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
+start_time | String | No | The beginning of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
+end_time | String | No | The end of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
 
 
 The Log Analyzer 
