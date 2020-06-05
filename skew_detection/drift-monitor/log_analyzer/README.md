@@ -7,6 +7,8 @@ This folder contains a sample [Dataflow Flex Template](https://cloud.google.com/
 
 The Log Analyzer template encapsulates an Apache Beam pipeline that analyzes data from the AI Platform Prediction request-response log. The template utilizes [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) to calculate descriptive statistics and detect data anomalies in a time series of records extracted from the log. 
 
+### Data analysis workflow
+
 The pipeline implements the following workflow:
 
 1. Extract a time series of records from the request-response log table in BigQuery.
