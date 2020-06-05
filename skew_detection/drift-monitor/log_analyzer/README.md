@@ -20,7 +20,11 @@ The pipeline implements the following workflow:
 5. Log a warning in the Dataflow job log if any anomalies are detected.
 6. Store the calculated statistics and anomalies protocol buffers to Google Cloud Storage location.
 
+### Log Analyzer interface
 
+
+
+The Log Analyzer 
 ## Deploying the Log Analyzer Dataflow Flext template
 
 Use the `deploy_log_analyzer.sh` script to build and deploy the template.
