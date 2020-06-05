@@ -34,8 +34,8 @@ start_time | String | No | The beginning of a time series of records in the log 
 end_time | String | No | The end of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
 output_put | String | No | A GCS location for the ouput stats and anomalies.
 schema_file | String | No | A GCS path to the schema file describing the the model's input interface
-baseline_stats_file | String | No | A GCS path to a baseline statistics file
-time_window | String | Noe | A time window for slice calculations. You must use the `m` or `h` suffixt to designate minutes or hours. For example, `60m` defines a 60 minute time window.
+baseline_stats_file | String | Yes | A GCS path to a baseline statistics file
+time_window | String | Yes | A time window for slice calculations. You must use the `m` or `h` suffixt to designate minutes or hours. For example, `60m` defines a 60 minute time window.
 
 
 
