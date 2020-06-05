@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Deploy drift detector flex template
+# Deploy the log analyzer flex template
 
 # Set up a global error handler
 err_handler() {
