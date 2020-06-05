@@ -3,7 +3,7 @@
 This folder contains a sample [Dataflow Flex Template](https://cloud.google.com/dataflow/docs/guides/templates/overview) - **Log Analyzer** - designed to analyze data from [the AI Platform Prediction request-response log](https://cloud.google.com/ai-platform/prediction/docs/online-predict).
 
 
-## Log Analyzer Design
+## Understanding Log Analyzer Design
 
 The Log Analyzer template encapsulates an Apache Beam pipeline that analyzes data from the AI Platform Prediction request-response log. The template utilizes [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) to calculate descriptive statistics and detect data anomalies in a time series of records extracted from the log. 
 
@@ -22,6 +22,14 @@ The pipeline implements the following workflow:
 
 ### Log Analyzer interface
 
+The Log Analyzer Dataflow Template accepts the following runtime arguments
+
+
+Name | Type | Optional | Default | Description
+-----|------|----------|---------|------------
+project_id | GCProjectID | No | | The project to execute processing 
+source_gcs_path | GCSPath | No | |A GCS path to the historical sales transaction data. Must be set to an empty string if source_bq_table is not empty.
+staging_gcs_path | GCSPath | No | |A GCS path to where the output of the BigQuery component is stored. Must be set to a valid GCS path or the built-in BigQuery component fails
 
 
 The Log Analyzer 
