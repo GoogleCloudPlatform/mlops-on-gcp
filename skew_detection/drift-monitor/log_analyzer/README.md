@@ -32,6 +32,9 @@ model | String | No | A name of the AI Platform Prediction model
 version | String | No | A version of the AI Platform Prediction model
 start_time | String | No | The beginning of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
 end_time | String | No | The end of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
+output_put | String | No | A GCS location for the ouput stats and anomalies.
+schema_file | String | No | A GCS path to the schema file describing the the model's input interface
+
 
 
 The Log Analyzer 
