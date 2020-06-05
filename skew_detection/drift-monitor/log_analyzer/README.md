@@ -43,6 +43,8 @@ time_window | String | Yes | A time window for slice calculations. You must use 
 
 The template uses `tensorflow_data_validation.GenerateStatistics` *PTransform* to calculate statistics for a full time series of records from `start_time` to `end_time` where `start_time` and `end_time` are the values for the `time` field in the AI Platform Prediction request-response log table. For more information on what type of statistics are calculated refer to eh [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) documentation.
 
+If the optional `time_window` parameter is provided the template will dived the time series of records into a set of time slices of the `time_window` width.
+
 
 
 
