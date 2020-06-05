@@ -1,6 +1,6 @@
 # AI Platform Prediction request-response log analyzer
 
-This folder contains the sample Dataflow Flex Template designed to analyze data from the AI Platform Prediction request-response log.
+This folder contains a sample Dataflow Flex Template designed to analyze data from the AI Platform Prediction request-response log.
 
 The template utilizes TensorFlow Data Validation to calculate descriptive statistics and detect data anomalies in a time series of records from the log. 
 
