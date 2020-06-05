@@ -26,7 +26,7 @@ The Log Analyzer Dataflow Template accepts the following runtime arguments
 
 
 Name | Type | Optional |  Description
------|------|----------|_------------
+-----|------|----------|------------
 request_response_log_table | String | No | A full name of the request-response log table in BigQuery
 model | String | No | A name of the AI Platform Prediction model
 version | String | No | A version of the AI Platform Prediction model
