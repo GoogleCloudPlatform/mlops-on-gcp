@@ -1,0 +1,80 @@
+{
+  "name": "Data drift detector Python flex template",
+  "description": "Data drift detector Python flex template.",
+  "parameters": [
+    {
+      "name": "request_response_log_table",
+      "label": "Request response log table.",
+      "helpText": "A full name of the BQ request-response log table",
+      "regexes": [
+        "[-_.a-zA-Z0-9]+"
+      ]
+    },
+    {
+      "name": "model",
+      "label": "Model name.",
+      "helpText": "A name of the AI Platform Prediction model.",
+      "regexes": [
+        "[-_a-zA-Z0-9]+"
+      ]
+    },
+    {
+      "name": "version",
+      "label": "Model version.",
+      "helpText": "A version of the AI Platform Prediction model.",
+      "regexes": [
+        "[-_a-zA-Z0-9]+"
+      ]
+    },
+    {
+      "name": "start_time",
+      "label": "Start time.",
+      "helpText": "A time window start time in YYYY-MM-DDTHH:MM:SS format.",
+      "regexes": [
+        "[-:T0-9]+"
+      ]
+    },
+    {
+      "name": "end_time",
+      "label": "End time.",
+      "helpText": "A time window end time in YYYY-MM-DDTHH:MM:SS format.",
+      "regexes": [
+        "[-:T0-9]+"
+      ]
+    },
+    {
+      "name": "output_path",
+      "label": "Output path.",
+      "helpText": "The output path for stats and anomalies protobufs.",
+      "regexes": [
+        "gs://[-:_./a-zA-Z0-9]+"
+      ]
+    },
+    {
+        "name": "schema_file",
+        "label": "Schema file.",
+        "helpText": "A GCS path to schema file.",
+        "regexes": [
+          "gs://[-_./a-zA-Z0-9]+"
+        ]
+    },
+    {
+      "name": "baseline_stats_file",
+      "label": "Baseline stats file.",
+      "helpText": "A GCS path to a baseline statistics file.",
+      "is_optional": true,
+      "regexes": [
+        "gs://[-_./a-zA-Z0-9]+"
+      ]
+    },
+    {
+        "name": "time_window",
+        "label": "Time window.",
+        "helpText": "A time window to use for time slice calculations. You must use the m or h suffix to designate minutes or hours.",
+        "is_optional": true,
+        "regexes": [
+          "[0-9]+[hm]"
+        ]
+    }
+  ]
+}
