@@ -39,7 +39,7 @@ time_window | String | Yes | A time window for slice calculations. You must use 
 
 Currently, the log analyzer supports two types of AI Platform Prediction inputs, as captured in the request-response log's `raw_data` field:
 
-1. Simple JSON examples
+1. Simple JSON instances:
 ```
 { 
     "instances": [
@@ -67,7 +67,7 @@ For example:
 }
 ```
 
-2. Simple list examples
+2. Simple list instances:
 
 ```
 { 
