@@ -108,7 +108,7 @@ If the reference schema, passed as the `schema_file` template argument, includes
 If any anomalies are detected, the pipeline logs a warning message in the corresponding Dataflow job's execution log. In future, additional alerting mechanisms may be added.
 
 
-## Deploying the Log Analyzer Dataflow Flext template
+## Deploying the Log Analyzer Dataflow Flex template
 
 The Log Analyzer Dataflow Flex template is deployed using the process described in the [Flex Templates](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates) documentation. The process has been automated the `deploy_log_analyzer.sh` bash script.
 
