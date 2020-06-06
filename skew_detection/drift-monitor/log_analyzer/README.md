@@ -170,7 +170,9 @@ schema_file=$SCHEMA_PATH,\
 baseline_stats_file=$BASELINE_STATS_FILE,\
 time_window=60m
 
-!gcloud beta dataflow flex-template run $JOB_NAME \
+gcloud beta dataflow flex-template run $JOB_NAME \
 --template-file-gcs-location $TEMPLATE_PATH \
 --parameters $PARAMETERS
 ```
+
+You can monitor the execution of the template in [Google Cloud Console](https://console.cloud.google.com/dataflow)
