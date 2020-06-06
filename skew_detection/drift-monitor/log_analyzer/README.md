@@ -110,7 +110,7 @@ If any anomalies are detected, the pipeline logs a warning message in the corres
 
 ## Deploying the Log Analyzer Dataflow Flex template
 
-The Log Analyzer Dataflow Flex template is deployed using the process described in the [Flex Templates](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates) documentation. The process has been automated the `deploy_log_analyzer.sh` bash script.
+The Log Analyzer Dataflow Flex template is deployed using the process described in the [Flex Templates](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates) documentation. The process has been automated using the `deploy_log_analyzer.sh` bash script.
 
 To build and deploy the template execute the script providing your GCP project ID and the GCS location for the template as the script's parameters:
 ```
