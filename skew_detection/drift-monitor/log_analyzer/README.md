@@ -128,4 +128,15 @@ To run a quick test using the `gcloud beta dataflow flex-template run` command f
 
 In the `../example_request_response_log` folder you can find a file that contains records of 6000 simulated AI Platform Prediction requests spread over 6 hours. To load the records to a BigQuery table:
 ```
+PROJECT_ID=[YOUR PROJECT ID]
+DATASET_LOCATION=US
+DATASET_ID=log_analyzer_test
+TABLE_ID=request_response_log
+DATA_SOURCE=sample_request_response_log/data.jsontxt
+SCHEMA=model:STRING,\
+model_version:STRING,\
+time:TIMESTAMP,\
+raw_data:STRING,\
+raw_prediction:STRING,\
+groundtruth:STRING
 ```
