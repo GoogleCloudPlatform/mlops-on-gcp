@@ -99,7 +99,7 @@ If the optional `time_window` parameter is provided, the time series of records 
 
 ### Detecting data anomalies
 
-The pipeline uses the [`tensorflow_data_validation.validate_statistics`[(https://www.tensorflow.org/tfx/data_validation/api_docs/python/tfdv/validate_statistics) function to detect data anomalies. Refer to the [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) documentation for more information about the types of anomalies detected by the pipeline.
+The pipeline uses the [`tensorflow_data_validation.validate_statistics`](https://www.tensorflow.org/tfx/data_validation/api_docs/python/tfdv/validate_statistics) function to detect data anomalies. Refer to the [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) documentation for more information about the types of anomalies detected by the pipeline.
 
 If the opional `baseline_stats_file` template argument is provided it will be passed as the `previous_statistics` argument to `validate_statistics`.
 
