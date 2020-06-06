@@ -37,7 +37,7 @@ schema_file | String | No | A GCS path to the schema file describing the the mod
 baseline_stats_file | String | Yes | A GCS path to a baseline statistics file
 time_window | String | Yes | A time window for slice calculations. You must use the `m` or `h` suffixt to designate minutes or hours. For example, `60m` defines a 60 minute time window.
 
-
+Currently, the log analyzer supports 
 
 ### Calculating descriptive statistics
 
