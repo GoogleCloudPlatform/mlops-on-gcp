@@ -142,4 +142,14 @@ time:TIMESTAMP,\
 raw_data:STRING,\
 raw_prediction:STRING,\
 groundtruth:STRING
+
+bq --location=$DATASET_LOCATION --project_id=$PROJECT_ID mk --dataset $DATASET_ID
+
+bq --project_id=$PROJECT_ID --dataset_id=$DATASET_ID load \
+--source_format=NEWLINE_DELIMITED_JSON \
+--replace \
+$TABLE_ID \
+$DATA_SOURCE \
+$SCHEMA
+
 ```
