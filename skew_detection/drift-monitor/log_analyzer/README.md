@@ -120,13 +120,16 @@ To build and deploy the template execute the script providing your GCP project I
 
 ## Triggering Log Analyzer runs
 
-After the template has been deployed you can trigger the Log Analyzer's runs using the `gcloud beta dataflow flex-template run` command or the helper utility - `dms` - from the `job_scheduler` folder.  Refer to the README file in the `job_scheduler` folder for more information about the `dms` CLI.
+After the template has been deployed, you can trigger the Log Analyzer's runs using the `gcloud beta dataflow flex-template run` command or the helper utility - `dms` - from the `job_scheduler` folder.  Refer to the README file in the `job_scheduler` folder for more information about the `dms` CLI.
 
 To run a quick test using the `gcloud beta dataflow flex-template run` command follow the below steps.
 
 ### Populate the request-response log
 
-In the `./drift-monitor/example_request_response_log` folder you can find a file that contains records of 6000 simulated AI Platform Prediction requests spread over 6 hours. To load the records to a BigQuery table:
+If you don't have a populated AI Platform Prediction request-response log you can use 
+the provided sample file that contains records of 6000 simulated AI Platform Prediction requests spread over 6 hours. You can find the file in the `/drift-monitor/sample_request_response_log` folder.
+ 
+To load the simulated records to a BigQuery table execute the following commands. Make sure to use settings representing your envirnment.
 ```
 PROJECT_ID=[YOUR PROJECT ID]
 DATASET_LOCATION=US
