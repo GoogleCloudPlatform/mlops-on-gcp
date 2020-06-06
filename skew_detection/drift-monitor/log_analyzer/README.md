@@ -122,7 +122,7 @@ To build and deploy the template execute the script providing your GCP project I
 
 After the template has been deployed, you can trigger the Log Analyzer's runs using the `gcloud beta dataflow flex-template run` command or the helper utility - `dms` - from the `job_scheduler` folder.  Refer to the README file in the `job_scheduler` folder for more information about the `dms` CLI.
 
-To run a quick test using the `gcloud beta dataflow flex-template run` you can use the provided sample request-response log, schema and baseline statistics files. 
+To run a quick test using the `gcloud beta dataflow flex-template run` you can use the provided sample request-response log, reference schema and baseline statistics files. 
 
 ### Populate the sample request-response log
 
