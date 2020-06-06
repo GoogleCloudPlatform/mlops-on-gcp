@@ -137,7 +137,7 @@ To load the simulated records to a BigQuery table execute the following commands
 DATASET_LOCATION=US
 DATASET_ID=log_analyzer_test
 TABLE_ID=request_response_log
-DATA_SOURCE=sample_file/request_response_log/data.jsontxt
+DATA_SOURCE=sample_files/request_response_log/data.jsontxt
 SCHEMA=model:STRING,\
 model_version:STRING,\
 time:TIMESTAMP,\
