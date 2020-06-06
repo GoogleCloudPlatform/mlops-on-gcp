@@ -153,3 +153,24 @@ $DATA_SOURCE \
 $SCHEMA
 
 ```
+
+### Trigger a run
+
+```
+TEMPLATE_PATH=[YOUR_TEMPLATE_PATH]
+JOB_NAME=log_analyzer_$(date +%Y-%m-%d-%H-%M-%S)
+PARAMETERS=\
+request_response_log_table=log_analyzer_test.request_response_log,\
+model=covertype_tf,\
+version=v3,\
+start_time=2020-06-03T17:00:00,\
+end_time=2020-06-03T21:00:00,\
+output_path=$OUTPUT_PATH,\
+schema_file=$SCHEMA_PATH,\
+baseline_stats_file=$BASELINE_STATS_FILE,\
+time_window=60m
+
+!gcloud beta dataflow flex-template run $JOB_NAME \
+--template-file-gcs-location $TEMPLATE_PATH \
+--parameters $PARAMETERS
+```
