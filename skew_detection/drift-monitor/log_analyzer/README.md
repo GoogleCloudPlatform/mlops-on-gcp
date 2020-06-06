@@ -156,7 +156,7 @@ $SCHEMA
 
 ```
 
-### Upload a reference schema and baseline statistics to GCS
+### Upload the reference schema and baseline statistics to GCS
 
 ```
 SCHEMA_FILE=[YOUR_GCS_LOCATION_FOR_SCHEMA]
