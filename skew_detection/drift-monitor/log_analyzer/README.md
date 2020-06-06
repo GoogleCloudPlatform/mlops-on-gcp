@@ -33,7 +33,7 @@ version | String | No | A version of the AI Platform Prediction model
 start_time | String | No | The beginning of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
 end_time | String | No | The end of a time series of records in the log in the ISO date-time format - YYYY-MM-DDTHH:MM:SS
 output_put | String | No | A GCS location for the ouput stats and anomalies.
-schema_file | String | No | A GCS path to the schema file describing the the model's input interface
+schema_file | String | No | A GCS path to the reference schema file describing the the model's input interface
 baseline_stats_file | String | Yes | A GCS path to a baseline statistics file
 time_window | String | Yes | A time window for slice calculations. You must use the `m` or `h` suffixt to designate minutes or hours. For example, `60m` defines a 60 minute time window.
 
@@ -91,13 +91,19 @@ For example
 
 ### Calculating descriptive statistics
 
-The template uses `tensorflow_data_validation.GenerateStatistics` *PTransform* to calculate statistics for a full time series of records from `start_time` to `end_time` where `start_time` and `end_time` are the values for the `time` field in the AI Platform Prediction request-response log table. For more information on what type of statistics are calculated refer to eh [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) documentation.
+The template uses `tensorflow_data_validation.GenerateStatistics` *PTransform* to calculate statistics for a full time series of records from `start_time` to `end_time` where `start_time` and `end_time` are the values for the `time` field in the AI Platform Prediction request-response log table. For more information on what type of statistics are calculated refer to the [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) documentation.
 
-If the optional `time_window` parameter is provided the time series of records is diveded into a set of time slices of the `time_window` width and statistics are calculated for each time slice.
+If the optional `time_window` parameter is provided, the time series of records is divided into a set of time slices of the `time_window` width and statistics are calculated for each time slice.
 
 ![time slicing](/images/time_slicing.png)
 
+### Detecting data anomalies
 
+The pipeline uses the `tensorflow_data_validation.validate_statistics` function to detect anomalies. Refer to the [TensorFlow Data Validation] documentation for more information about the types of anomalies detected by the pipeline.
+
+If the opional `baseline_stats_file` template argument is provided it will be passed as the `previous_statistics` argument to `validate_statistics`.
+
+If the reference schema, passed as the `schema_file` template argument, includes skew comparator threshold directives the distribution skew metrics will be calculated.
 
 
 ## Deploying the Log Analyzer Dataflow Flext template
