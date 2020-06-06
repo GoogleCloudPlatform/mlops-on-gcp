@@ -113,8 +113,11 @@ If any anomalies are detected, the pipeline logs a warning message in the corres
 The Log Analyzer Dataflow Flex template is deployed using the process described in the [Flex Templates](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates) documentation. The process has been automated using the `deploy_log_analyzer.sh` bash script.
 
 To build and deploy the template execute the script providing your GCP project ID and the GCS location for the template as the script's parameters:
+
 ```
-./deploy_log_analyzer.sh [YOUR PROJECT ID] [YOUR GCS LOCATION]
+TEMPLATE_PATH=[YOUR GCS LOCATION]
+PROJECT_ID=[YOUR PROJECT ID]
+./deploy_log_analyzer.sh $PROJECT_ID $TEMPLATE_PATH
 ```
 
 
@@ -131,7 +134,6 @@ the provided sample file that contains records of 6000 simulated AI Platform Pre
  
 To load the simulated records to a BigQuery table execute the following commands. Make sure to use the settings representing your envirnment.
 ```
-PROJECT_ID=[YOUR PROJECT ID]
 DATASET_LOCATION=US
 DATASET_ID=log_analyzer_test
 TABLE_ID=request_response_log
@@ -168,7 +170,6 @@ gstuil cp sample_files/baseline_stats/stats.pbtxt $BASELINE_STATS_PATH
 ### Trigger a run
 
 ```
-TEMPLATE_PATH=[YOUR_TEMPLATE_PATH]
 JOB_NAME=log_analyzer_$(date +%Y-%m-%d-%H-%M-%S)
 PARAMETERS=\
 request_response_log_table=log_analyzer_test.request_response_log,\
