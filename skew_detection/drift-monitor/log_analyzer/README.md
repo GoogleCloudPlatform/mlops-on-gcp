@@ -99,11 +99,13 @@ If the optional `time_window` parameter is provided, the time series of records 
 
 ### Detecting data anomalies
 
-The pipeline uses the `tensorflow_data_validation.validate_statistics` function to detect data anomalies. Refer to the [TensorFlow Data Validation] documentation for more information about the types of anomalies detected by the pipeline.
+The pipeline uses the `tensorflow_data_validation.validate_statistics` function to detect data anomalies. Refer to the [TensorFlow Data Validation](https://www.tensorflow.org/tfx/guide/tfdv) documentation for more information about the types of anomalies detected by the pipeline.
 
 If the opional `baseline_stats_file` template argument is provided it will be passed as the `previous_statistics` argument to `validate_statistics`.
 
-If the reference schema, passed as the `schema_file` template argument, includes skew comparator threshold directives the distribution skew metrics will be calculated.
+If the reference schema, passed as the `schema_file` template argument, includes skew comparator threshold directives the distribution skew metrics will be calculated for the annotated categorical variables.
+
+If any anomalies are detected, the pipeline logs a warning message in the corresponding Dataflow job's execution log. In future, additional alerting mechanisms may be added.
 
 
 ## Deploying the Log Analyzer Dataflow Flext template
