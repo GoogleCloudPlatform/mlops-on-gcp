@@ -170,6 +170,7 @@ gstuil cp sample_files/baseline_stats/stats.pbtxt $BASELINE_STATS_PATH
 ### Trigger a run
 
 ```
+OUTPUT_PATH=[YOUR GCS LOCATION FOR OUTPUT FILES]
 JOB_NAME=log_analyzer_$(date +%Y-%m-%d-%H-%M-%S)
 PARAMETERS=\
 request_response_log_table=log_analyzer_test.request_response_log,\
