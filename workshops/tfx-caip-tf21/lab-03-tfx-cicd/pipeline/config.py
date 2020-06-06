@@ -23,7 +23,7 @@ class Config:
     MODEL_NAME=os.getenv("MODEL_NAME", "covertype_classifier")
     PROJECT_ID=os.getenv("PROJECT_ID", "mlops-workshop")
     GCP_REGION=os.getenv("GCP_REGION", "us-central1")
-    TFX_IMAGE=os.getenv("KUBEFLOW_TFX_IMAGE", "tensorflow/tfx:0.21.2")
+    TFX_IMAGE=os.getenv("KUBEFLOW_TFX_IMAGE", "tensorflow/tfx:0.21.4")
     DATA_ROOT_URI=os.getenv("DATA_ROOT_URI", "gs://workshop-datasets/covertype/small")
     ARTIFACT_STORE_URI=os.getenv("ARTIFACT_STORE_URI", "gs://mlops-workshop-artifact-store")
     RUNTIME_VERSION=os.getenv("RUNTIME_VERSION", "2.1")
