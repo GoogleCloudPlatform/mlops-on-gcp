@@ -159,8 +159,8 @@ $SCHEMA
 ### Upload a reference schema and baseline statistics to GCS
 
 ```
-SCHEMA_PATH=[YOUR_GCS_LOCATION_FOR_SCHEMA]
-BASELINE_STATS_PATH=[YOUR_GCS_LOCATION_FOR_BASELINE_STATS]
+SCHEMA_FILE=[YOUR_GCS_LOCATION_FOR_SCHEMA]
+BASELINE_STATS_FILE=[YOUR_GCS_LOCATION_FOR_BASELINE_STATS]
 
 gsutil cp sample_files/schema/schema/schema.pbtxt $SCHEMA_PATH
 gstuil cp sample_files/baseline_stats/stats.pbtxt $BASELINE_STATS_PATH
@@ -179,7 +179,7 @@ version=v3,\
 start_time=2020-06-03T17:00:00,\
 end_time=2020-06-03T21:00:00,\
 output_path=$OUTPUT_PATH,\
-schema_file=$SCHEMA_PATH,\
+schema_file=$SCHEMA_FILE,\
 baseline_stats_file=$BASELINE_STATS_FILE,\
 time_window=60m
 
