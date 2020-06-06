@@ -129,7 +129,7 @@ To run a quick test using the `gcloud beta dataflow flex-template run` you can u
 If you don't have a populated AI Platform Prediction request-response log you can use 
 the provided sample file that contains records of 6000 simulated AI Platform Prediction requests spread over 6 hours. You can find the file in the `/drift-monitor/sample_files/request_response_log` folder.
  
-To load the simulated records to a BigQuery table execute the following commands. Make sure to use settings representing your envirnment.
+To load the simulated records to a BigQuery table execute the following commands. Make sure to use the settings representing your envirnment.
 ```
 PROJECT_ID=[YOUR PROJECT ID]
 DATASET_LOCATION=US
