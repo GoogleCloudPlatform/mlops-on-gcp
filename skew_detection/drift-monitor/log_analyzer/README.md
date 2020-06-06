@@ -126,7 +126,7 @@ To run a quick test using the `gcloud beta dataflow flex-template run` command f
 
 ### Populate the request-response log
 
-In the `../example_request_response_log` folder you can find a file that contains records of 6000 simulated AI Platform Prediction requests spread over 6 hours. To load the records to a BigQuery table:
+In the `./drift-monitor/example_request_response_log` folder you can find a file that contains records of 6000 simulated AI Platform Prediction requests spread over 6 hours. To load the records to a BigQuery table:
 ```
 PROJECT_ID=[YOUR PROJECT ID]
 DATASET_LOCATION=US
