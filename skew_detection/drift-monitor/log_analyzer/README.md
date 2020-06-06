@@ -185,6 +185,7 @@ baseline_stats_file=$BASELINE_STATS_FILE,\
 time_window=60m
 
 gcloud beta dataflow flex-template run $JOB_NAME \
+--region $REGION \
 --template-file-gcs-location $TEMPLATE_PATH/log_analyzer.json \
 --parameters $PARAMETERS
 ```
