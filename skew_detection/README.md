@@ -14,23 +14,35 @@ The dataset is preprocessed, split, and uploaded to the `gs://workshop-datasets/
 
 ## Notebooks
 
-[01_covertype_training_serving.ipynb](01_covertype_training_serving.ipynb) - This notebook shows how to:
- * Train and export a Keras model using TensorFlow 2.x
- * Deploy the exported SavedModel to AI Platform Prediction
- * Enable request-response logging to BigQuery
+[01_covertype_training_serving.ipynb](01_covertype_training_serving.ipynb) - This notebook shows how to use
+request-response logging to BigQuery in AI Platform Prediction. The notebook covers:
+ * Training and exporting a Keras model using TensorFlow 2.x
+ * Deploying the exported SavedModel to AI Platform Prediction
+ * Enabling request-response logging to BigQuery
     
-[02_covertype_logs_parsing.ipynb](02_covertype_logs_parsing.ipynb) - This notebook shows how to:
-  * Create a view using your dataset metadata to parse the raw request instances and response prediction 
+[02_covertype_logs_parsing.ipynb](02_covertype_logs_parsing.ipynb) - This notebook shows how to parse and
+analyze raw request-response logs in BigQuery. The notebook covers:
+  * Creating a view using your dataset metadata to parse the raw request instances and response prediction 
     logged in BigQuery
-  * Query the view to retrieved structured logs.
+  * Querying the view to retrieved structured logs.
 
-[03_covertype_drift_detection_tfdv.ipynb](03_covertype_drift_detection_tfdv.ipynb) - This notebook shows how to:
-  * Create and fix a *reference schema* from the training data
-  * Read and logs data from BigQuery
-  * Use TFDV to generate *statistics* from the serving logs data 
-  * Use TFDV to validate the statistics against the *reference schema*
-  * Visualize and display the statistics and anomalies
-  * Analyze how statistics change over time
+[03_covertype_drift_detection_tfdv.ipynb](03_covertype_drift_detection_tfdv.ipynb) - This notebook shows how to
+Use TensorFlow Data Validation (TFDV) to detect skews in request-response serving data. The notebook covers:
+  * Creating a *reference schema* from the training data
+  * Reading logs data from BigQuery
+  * Using TFDV to generate *statistics* from the serving logs data 
+  * Using TFDV to validate the statistics against the *reference schema*
+  * Visualizing and display the statistics and anomalies
+  * Analyzing how statistics change over time
+  
+[04_covertype_drift_detection_novelty_modeling.ipynb](04_covertype_drift_detection_novelty_modeling) - This notebook 
+shows how to use the Elliptic Envlope novelty detection model to detect skews between data split (e.g. training and serving). 
+Novelty detection models can identify whether an instance belongs to a population, or is considered as an outlier.
+  * Generate mutated data with random feature value combinations 
+  * Train Elliptic Envelope using the training data
+  * Validate the normal and mutated data against the model
+  * Implement Apache Beam pipeline that analyses request-response data from BigQuery
+  * Display drift detection output
 
 ## Drift Monitor
 
