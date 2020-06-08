@@ -46,6 +46,15 @@ Novelty detection models can identify whether an instance belongs to a populatio
 
 ## Drift Monitor
 
+[drift_monitor](drift_monitor) describes the architecture and implementation of an automated system for detecting 
+training-serving data skew in machine learning (ML). The system introduces:
+
+1. A [Dataflow Template](drift_monitor/log_analyzer) that utilizes TensorFlow Data Validation (TFDV) to identify skews 
+and anomalies in the serving request-response data logged in BigQuery. 
+
+2. A [scheduling mechanism](drift_monitor/job_scheduler) for executing the skew detection Dataflow Template using 
+Cloud Tasks, with an easy-to-use Command Line Interface (CLI)
+
 ## Workload Simulator
 
 In order to simulate prediction serving workload for the covertype classification model deployed to AI Platform, 
