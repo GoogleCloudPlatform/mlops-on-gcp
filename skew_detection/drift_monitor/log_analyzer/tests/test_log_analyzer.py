@@ -37,14 +37,14 @@ def test_analyze_log_records():
     version = 'v3'
 
     baseline_stats = None
-    output_path = 'gs://mlops-dev-workspace/drift-monitor/output/covertype_tf/test'
+    output_path = 'gs://mlops-dev-workspace/drift_monitor/output/covertype_tf/test'
     start_time = datetime.datetime.fromisoformat('2020-05-25T16:01:10')
     end_time = datetime.datetime.fromisoformat('2020-05-25T22:50:30')
 
     time_window = None
     time_window = datetime.timedelta(hours=1)
 
-    schema_path = 'gs://mlops-dev-workspace/drift-monitor/schema/schema.pbtxt'
+    schema_path = 'gs://mlops-dev-workspace/drift_monitor/schema/schema.pbtxt'
     schema = load_schema_text(schema_path)
 
     pipeline_options = PipelineOptions() 
