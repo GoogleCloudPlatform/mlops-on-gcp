@@ -22,7 +22,7 @@ The `dms schedule` command allows you to schedule a Log Analyzer job to be execu
 
 ### Creating a Cloud Tasks queue
 
-You can used [Google Cloud Console](https://console.cloud.google.com) or the `gcloud tasks queues create` command to create a queue for dispatching Log Analyzer jobs.
+You can used [Google Cloud Console](https://console.cloud.google.com/cloudtasks) or the `gcloud tasks queues create` command to create a queue for dispatching Log Analyzer jobs.
 
 
 ### Creating a Cloud Tasks service account
