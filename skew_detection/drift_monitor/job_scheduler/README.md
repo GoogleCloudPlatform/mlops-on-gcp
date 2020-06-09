@@ -58,10 +58,12 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
   
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member serviceAccount:$SERVICE_ACCOUNT_EMAIL \
-  --role roles/roles/dataflow.developer
+  --role roles/dataflow.developer
   
 ```
 
-
-
 ### Scheduling a Log Analyzer job
+
+After configuring the queue and the service account, you can use the `dms schedule` command to schedule the Log Analyzer jobs.
+
+Use `dms schedule --help` for the detailed list of runtime parameters.
