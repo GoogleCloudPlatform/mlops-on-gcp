@@ -38,8 +38,7 @@ You also need to set up a service account that will be used to call the Dataflow
 ```
 SERVICE_ACCOUNT_NAME=[YOUR_SA_NAME]
 PROJECT_ID=[YOUR_PROJECT_ID]
-PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
-SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_NAME}@${PROJECT_NUMBER}.iam.gserviceaccount.com"
+SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 
 gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME \
     --description="[SA_DESCRIPTION]" \
@@ -47,10 +46,22 @@ gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME \
     
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member serviceAccount:$SERVICE_ACCOUNT_EMAIL \
-  --role roles/editor
+  --role roles/cloudtasks.enqueuer 
   
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member serviceAccount:$SERVICE_ACCOUNT_EMAIL \
+  --role roles/iam.serviceAccountUser 
+  
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member serviceAccount:$SERVICE_ACCOUNT_EMAIL \
+  --role roles/iam.serviceAccountTokenCreator
+  
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member serviceAccount:$SERVICE_ACCOUNT_EMAIL \
+  --role roles/roles/dataflow.developer
   
 ```
+
 
 
 ### Scheduling a Log Analyzer job
