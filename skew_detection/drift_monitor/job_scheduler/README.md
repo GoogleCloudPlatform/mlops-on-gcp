@@ -31,7 +31,15 @@ gcloud tasks queues create [YOUR_QUEUE_NAME]
 ```
 
 
-
-
 ### Creating a Cloud Tasks service account
+
+You also need to set up a service account that will be used to call the Dataflow Flex Template service. This account needs to have permissions to enqueue tasks and to access the service. You will refer to this account when scheduling the Log Analyzer jobs.
+
+```
+gcloud iam service-accounts create [SA_NAME] \
+    --description="[SA_DESCRIPTION]. \
+    --display-name="[SA_DISPLAY_NAME]"
+```
+
+
 ### Scheduling a Log Analyzer job
