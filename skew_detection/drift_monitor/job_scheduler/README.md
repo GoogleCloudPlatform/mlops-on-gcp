@@ -4,7 +4,9 @@ This folder contains a simple CLI - `dms` - designed to facilitate triggering an
 
 The `dms` utility supports two commands: 
 - `run` - The `run` command triggers an immediate run of the Log Analyzer template
-- `schedule` - The `schedule` command schedules a future run of the Log Analyzer template. The `schedule` command relies on **Cloud Tasks** for managing the scheduling and execution of future runs. Before the `schedule` command can be used, a **Cloud Tasks** queue and an associated service account must be set up - the setup instructions to follow.
+- `schedule` - The `schedule` command allows you to schedule a run of the Log Analyzer template in future. 
+
+## Installing the `dms` utility
 
 To install the utility, execute `pip install --editable .` from this folder. After the installation is completed, type `dms --help` for more information.
 
