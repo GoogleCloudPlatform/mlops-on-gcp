@@ -37,6 +37,7 @@ You also need to set up a service account that will be used to call the Dataflow
 
 ```
 SERVICE_ACCOUNT_NAME=[YOUR_SA_NAME]
+PROJECT_ID=[YOUR_PROJECT_ID]
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
 SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_NAME}@#{PROJECT_NUMBER}.iam.gserviceaccount.com"
 
