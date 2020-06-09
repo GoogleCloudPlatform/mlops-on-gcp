@@ -19,3 +19,7 @@ Use `dms run --help` for the detailed list of runtime parameters.
 ## Scheduling Log Analyzer jobs
 
 The `dms schedule` command allows you to schedule a Log Analyzer job to be executed in the future. [**Cloud Tasks**](https://cloud.google.com/tasks) is used to manage scheduling and execution of the job. Before using the `dms schedule` command you need to set up a **Cloud Tasks** queue and a service account to be used to invoke the Dataflow Flex Templates service.
+
+### Creating a Cloud Tasks queue
+### Creating a Cloud Tasks service account
+### Scheduling a Log Analyzer job
