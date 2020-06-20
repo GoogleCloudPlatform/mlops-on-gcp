@@ -7,8 +7,8 @@ This repository mantains hands-on labs and code samples that demonstrate best pr
 
 ## Navigating this repository
 This repository is organized into two sections:
-- [Mini workshops](./workshops/README.md)
-- [Code samples](./examples/README.md)
+- [Mini workshops](./workshops/)
+- [Code samples](./examples/)
 
 
 ### Mini workshops
