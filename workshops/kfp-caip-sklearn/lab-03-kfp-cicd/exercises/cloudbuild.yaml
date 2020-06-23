@@ -1,23 +1,3 @@
-# Copyright 2019 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#            http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# Submits a Cloud Build job that builds and deploys
-# the pipelines and pipelines components 
-#
-# Build and deploy a TFX pipeline. This is an interim solution till tfx CLI fully 
-# supports automated building and deploying.
-# 
 
 steps:
 # Build the trainer image
@@ -25,34 +5,38 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_TRAINER_IMAGE_NAME:$TAG_NAME', '.']
   dir: $_PIPELINE_FOLDER/trainer_image
   
-# Build the base image for lightweight components
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_BASE_IMAGE_NAME:$TAG_NAME', '.']
-  dir: $_PIPELINE_FOLDER/base_image
+# TODO: Build the base image for lightweight components
+- name: # TODO
+  args: # TODO
+  dir: # TODO
 
 # Compile the pipeline
+# TODO: Set the environment variables below for the $_PIPELINE_DSL script
+# HINT: https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
 - name: 'gcr.io/$PROJECT_ID/kfp-cli'
   args:
   - '-c'
   - |
     dsl-compile --py $_PIPELINE_DSL --output $_PIPELINE_PACKAGE
   env:
-  - 'BASE_IMAGE=gcr.io/$PROJECT_ID/$_BASE_IMAGE_NAME:$TAG_NAME'
-  - 'TRAINER_IMAGE=gcr.io/$PROJECT_ID/$_TRAINER_IMAGE_NAME:$TAG_NAME'
-  - 'RUNTIME_VERSION=$_RUNTIME_VERSION'
-  - 'PYTHON_VERSION=$_PYTHON_VERSION'
-  - 'COMPONENT_URL_SEARCH_PREFIX=$_COMPONENT_URL_SEARCH_PREFIX'
+  - 'BASE_IMAGE= # TODO
+  - 'TRAINER_IMAGE= # TODO
+  - 'RUNTIME_VERSION= # TODO
+  - 'PYTHON_VERSION= # TODO
+  - 'COMPONENT_URL_SEARCH_PREFIX= # TODO
   - 'USE_KFP_SA=$_USE_KFP_SA'
   dir: $_PIPELINE_FOLDER/pipeline
   
- # Upload the pipeline
-- name: 'gcr.io/$PROJECT_ID/kfp-cli'
+# Upload the pipeline
+# TODO: Use the kfp-cli Cloud Builder and write the command to upload the ktf pipeline 
+- name: # TODO
   args:
   - '-c'
   - |
-    kfp --endpoint $_ENDPOINT pipeline upload -p ${_PIPELINE_NAME}_$TAG_NAME $_PIPELINE_PACKAGE
+    # TODO
   dir: $_PIPELINE_FOLDER/pipeline
 
 
-# Push the images to Container Registry 
-images: ['gcr.io/$PROJECT_ID/$_TRAINER_IMAGE_NAME:$TAG_NAME', 'gcr.io/$PROJECT_ID/$_BASE_IMAGE_NAME:$TAG_NAME']
+# Push the images to Container Registry
+# TODO: List the images to be pushed to the project Docker registry
+images: # TODO
