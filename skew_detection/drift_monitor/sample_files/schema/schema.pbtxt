@@ -1,0 +1,202 @@
+feature {
+  name: "Elevation"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Aspect"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Slope"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Horizontal_Distance_To_Hydrology"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Vertical_Distance_To_Hydrology"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Horizontal_Distance_To_Roadways"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Hillshade_9am"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Hillshade_Noon"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Hillshade_3pm"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Horizontal_Distance_To_Fire_Points"
+  type: FLOAT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Soil_Type"
+  type: BYTES
+  string_domain {
+    name: "Soil_Type"
+    value: "7745"
+    value: "7202"
+    value: "7757"
+    value: "7756"
+    value: "7201"
+    value: "4744"
+    value: "4703"
+    value: "7746"
+    value: "7755"
+    value: "7700"
+    value: "8771"
+    value: "4704"
+    value: "4758"
+    value: "8772"
+    value: "2703"
+    value: "2705"
+    value: "7102"
+    value: "8776"
+    value: "2717"
+    value: "6102"
+    value: "2704"
+    value: "8703"
+    value: "7790"
+    value: "7101"
+    value: "2702"
+    value: "6101"
+    value: "7702"
+    value: "7103"
+    value: "6731"
+    value: "8707"
+    value: "7709"
+    value: "7701"
+    value: "5101"
+    value: "4201"
+    value: "2706"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Wilderness_Area"
+  type: BYTES
+  domain: "Wilderness_Area"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+string_domain {
+  name: "Wilderness_Area"
+  value: "Cache"
+  value: "Commanche"
+  value: "Neota"
+  value: "Rawah"
+}
