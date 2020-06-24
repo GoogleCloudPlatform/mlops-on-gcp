@@ -109,4 +109,4 @@ venv.bak/
 .DS_Store
 
 *.tar.gz
-
+.idea
