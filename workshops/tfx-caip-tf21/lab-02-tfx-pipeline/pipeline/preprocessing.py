@@ -51,7 +51,7 @@ def preprocessing_fn(inputs):
     outputs[features.transformed_name(key)] = tft.compute_and_apply_vocabulary(
         x=_fill_in_missing(inputs[key]), num_oov_buckets=1, vocab_filename=key)
 
-  # Convert Cover_Type from 1-7 to 0-6
+  # Convert Cover_Type to dense tensor
   outputs[features.transformed_name(features.LABEL_KEY)] = _fill_in_missing(
       inputs[features.LABEL_KEY])
 

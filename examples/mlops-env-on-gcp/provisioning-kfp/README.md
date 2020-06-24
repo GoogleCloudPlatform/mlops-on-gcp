@@ -1,6 +1,6 @@
 # Provisioning MLOps services
 
-In this lab, you will enable managed services used in MLOps evironment and provision a [standalone deployment of Kubeflow Pipelines](https://www.kubeflow.org/docs/pipelines/installation/standalone-deployment/).
+In this lab, you will enable managed services used in MLOps environment and provision a [standalone deployment of Kubeflow Pipelines](https://www.kubeflow.org/docs/pipelines/installation/standalone-deployment/).
 
 Provisioning of the environment has been automated with the `./install.sh` script. 
 
@@ -37,13 +37,13 @@ To start the provisioning script:
 2. Clone this repo under your `home` folder.
 ```
 cd
-git clone https://github.com/jarokaz/mlops-labs.git
-cd mlops-labs/examples/mlops-env-on-gcp/provisioning-kfp
+git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp.git
+cd mlops-on-gcp/examples/mlops-env-on-gcp/provisioning-kfp
 ```
 
 3. Start installation
 ```
-./install.sh [PROJECT_ID] [SQL_PASSWORD] [PREFIX] [REGION] [ZONE] [NAMESPACE]
+./install.sh [PROJECT_ID] [SQL_PASSWORD] [NAME_PREFIX] [REGION] [ZONE] [NAMESPACE]
 ```
 
 Where:
@@ -52,7 +52,7 @@ Where:
 |-------------|---------|-------------------------------|
 |[PROJECT_ID]| Required|The project id of your project.|
 |[SQL_PASSWORD]| Required|The password for the Cloud SQL root user|
-|[PREFIX]|Optional|A name prefix tha will be added to the names of the provisioned resources. If not provided [PROJECT_ID] will be used as the prefix|
+|[NAME_PREFIX]|Optional|A name prefix tha will be added to the names of the provisioned resources. If not provided [PROJECT_ID] will be used as the prefix|
 |[REGION]|Optional|The region for the Cloud SQL instance.  If not provided the `us-central1` region will be used|
 |[ZONE]|Optional|The zone for the GKE cluster. If not provided the `us-central1-a` will be used.|
 |[NAMESPACE]|Optional|The namespace to deploy KFP to. If not provided the `kubeflow` namespace will be used|
@@ -69,4 +69,12 @@ After the installation completes, you can access the KFP UI from the following U
 gcloud container clusters get-credentials $PREFIX-cluster --zone $ZONE
 echo "https://"$(kubectl describe configmap inverse-proxy-config -n kubeflow | \
 grep "googleusercontent.com")
+```
+
+## Cleaning up
+
+Run the `./destroy.sh` script to turn down the MLOps services you provisioned.
+
+```
+./destroy.sh PROJECT_ID [NAME_PREFIX=PROJECT_ID] [REGION=us-central1] [ZONE=us-central1-a]
 ```

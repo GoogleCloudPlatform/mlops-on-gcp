@@ -25,34 +25,15 @@ import features
 
 HIDDEN_UNITS = [16, 8]
 LEARNING_RATE = 0.001
-TRAIN_BATCH_SIZE=64
-EVAL_BATCH_SIZE=64
+TRAIN_BATCH_SIZE = 64
+EVAL_BATCH_SIZE = 64
+
+LOCAL_LOG_DIR = '/tmp/logs'
 
 
 def _gzip_reader_fn(filenames):
   """Small utility returning a record reader that can read gzip'ed files."""
   return tf.data.TFRecordDataset(filenames, compression_type='GZIP')
-
-
-#def _get_serve_tf_examples_fn(model, tf_transform_output):
-#  """Returns a function that parses a serialized tf.Example and applies TFT."""
-
-#  model.tft_layer = tf_transform_output.transform_features_layer()
-
- # @tf.function
- # def serve_tf_examples_fn(serialized_tf_examples):
- #   """Returns the output to be used in the serving signature."""
- #   feature_spec = tf_transform_output.raw_feature_spec()
- #   feature_spec.pop(features.LABEL_KEY)
- #   parsed_features = tf.io.parse_example(serialized_tf_examples, feature_spec)
-
- #   transformed_features = model.tft_layer(parsed_features)
- #   transformed_features.pop(features.transformed_name(features.LABEL_KEY))
-
- #   outputs = model(transformed_features)
- #   return {'outputs': outputs}
-
- # return serve_tf_examples_fn
 
 
 def _get_serve_tf_examples_fn(model, tf_transform_output):
@@ -136,7 +117,7 @@ def _build_keras_model(tf_transform_output, hidden_units, learning_rate):
 
 
 def _wide_and_deep_classifier(wide_columns, deep_columns, dnn_hidden_units, learning_rate):
-  """Build a simple keras wide and deep model.
+  """Builds a simple keras wide and deep model.
   Args:
     wide_columns: Feature columns wrapped in indicator_column for wide (linear)
       part of the model.
@@ -172,14 +153,21 @@ def _wide_and_deep_classifier(wide_columns, deep_columns, dnn_hidden_units, lear
   model.summary(print_fn=absl.logging.info)
   return model
 
+def _copy_tensorboard_logs(local_path, gcs_path):
+    """Copies Tensorboard logs from a local dir to a GCS location."""
+    pattern = '{}/*/events.out.tfevents.*'.format(local_path)
+    local_files = tf.io.gfile.glob(pattern)
+    gcs_log_files = [local_file.replace(local_path, gcs_path) for local_file in local_files]
+    for local_file, gcs_file in zip(local_files, gcs_log_files):
+        tf.io.gfile.copy(local_file, gcs_file)
 
 # TFX Trainer will call this function.
 def run_fn(fn_args):
-  """Train the model based on given args.
+  """Trains a model based on given args.
   Args:
     fn_args: Holds args used to train the model as name/value pairs.
   """
-
+  
   tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
     
   train_dataset = _input_fn(fn_args.train_files, tf_transform_output, TRAIN_BATCH_SIZE)
@@ -191,9 +179,8 @@ def run_fn(fn_args):
       learning_rate=LEARNING_RATE
   )
 
-  log_dir = os.path.join(os.path.dirname(fn_args.serving_model_dir), 'logs')
   tensorboard_callback = tf.keras.callbacks.TensorBoard(
-      log_dir=log_dir, update_freq='batch')
+      log_dir=LOCAL_LOG_DIR, update_freq='batch')
   callbacks = [ 
       tensorboard_callback
   ]
@@ -203,6 +190,7 @@ def run_fn(fn_args):
       steps_per_epoch=fn_args.train_steps,
       validation_data=eval_dataset,
       validation_steps=fn_args.eval_steps,
+      verbose=2,
       callbacks=callbacks)
     
   signatures = {
@@ -216,6 +204,7 @@ def run_fn(fn_args):
   }
   
   model.save(fn_args.serving_model_dir, save_format='tf', signatures=signatures)
+  _copy_tensorboard_logs(LOCAL_LOG_DIR, fn_args.serving_model_dir + '/logs')
     
 
   
