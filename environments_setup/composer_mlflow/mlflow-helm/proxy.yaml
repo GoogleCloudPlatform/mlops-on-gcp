@@ -1,0 +1,81 @@
+{{- $fullName := include "mlflow.fullname" . -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mlflow-proxy-agent-runner
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app: mlflow-proxy-agent-runner
+    app.kubernetes.io/name: {{ .Release.Name }}
+  name: mlflow-proxy-agent-runner
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+    app: mlflow-proxy-agent-runner
+  name: mlflow-proxy-agent-runner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mlflow-proxy-agent-runner
+subjects:
+  - kind: ServiceAccount
+    name: mlflow-proxy-agent-runner
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mlflow-proxy-agent
+    app.kubernetes.io/name: {{ .Release.Name }}
+  name: mlflow-proxy-agent
+spec:
+  selector:
+    matchLabels:
+      app: mlflow-proxy-agent
+      app.kubernetes.io/name: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: mlflow-proxy-agent
+        app.kubernetes.io/name: {{ .Release.Name }}
+    spec:
+      containers:
+        - image: {{ .Values.images.proxyagent }}
+          imagePullPolicy: IfNotPresent
+          name: mlflow-proxy-agent
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "512m"
+          env:
+          - name: ML_PIPELINE_UI_SERVICE_HOST
+            value: "{{ print $fullName "." .Release.Namespace ".svc.cluster.local" }}"
+          - name: ML_PIPELINE_UI_SERVICE_PORT
+            value: "{{ .Values.service.port }}"
+      serviceAccountName: mlflow-proxy-agent-runner
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inverse-proxy-config
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}

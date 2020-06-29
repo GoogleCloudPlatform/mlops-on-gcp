@@ -1,0 +1,79 @@
+cloudSqlInstance:
+  name:
+
+# backendStore -- Either a filepath, a database or the default value.
+backendStore:
+  # backendStore.filepath -- A local or remote filesystem path (e.g. /mnt/persistent-disk)
+  filepath:
+
+  # backendStore.mysql -- A map with the values for (username, password, host, port and database).
+  mysql:
+    username: root
+  #   password: 
+  #   host:
+  #   port:
+  #   database:
+
+# defaultArtifactRoot -- A local or remote filepath (e.g. s3://my-bucket). It is mandatory when specifying a database backend store
+defaultArtifactRoot:
+
+# MLflow UI port.
+mlFlowUiPort: 80
+
+# extraArgs -- A map of arguments and values to pass to the `mlflow server` command
+extraArgs: {}
+  # workers: 2
+  # expose-prometheus: yes
+
+replicaCount: 1
+
+image:
+  # The fully qualified name of the docker image to use
+  repository: 
+
+  # The tag for the repository (e.g. 'latest')
+  tag: latest
+images:
+  proxyagent: gcr.io/edgeml-demo/inverse-proxy-agent:latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 5000
+
+ingress:
+  enabled: true
+  annotations: {}
+
+resources:
+  requests:
+    memory: "1000Mi"
+    cpu: "768m"
+  limits:
+    memory: "1500Mi"
+    cpu: "1000m"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
