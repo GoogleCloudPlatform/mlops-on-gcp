@@ -22,7 +22,7 @@ So, the first step to clone repository files and execute script:
 
     ```bash
     git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
-    cd mlops-on-gcp/environments_setup/composer_mlflow
+    cd mlops-on-gcp/environments_setup/mlops-composer-mlflow
 
     ./install.sh \ 
     PROJECT_ID \
@@ -288,7 +288,7 @@ Since AI Platform Notebook is just a VM you can define a ready-to-use notebook w
 
 3. Open 'environment-test.ipynb' from the cloned repository 'test' folder.
 
-    environments_setup/composer_mlflow/test/environment-test.ipynb
+    environments_setup/mlops-composer-mlflow/test/environment-test.ipynb
 
 Select 'Run'->'Run All Cells' which should execute a simple logistic regression while sending logs to MLflow.
 
@@ -299,10 +299,3 @@ Select 'Run'->'Run All Cells' which should execute a simple logistic regression 
     ```
 
 ![MLflow logs](../../images/mlflow-env-test.png)
-
-TODO:
-
-- [ ] Execute a “Hello World” Airflow pipeline that logs information to MLflow
-- [x] Notebook to a very simple sklearn script + MLflow
-- [x] Read MLflow entries from Cloud SQL
-- [X] Screenshot of MLflow UI
