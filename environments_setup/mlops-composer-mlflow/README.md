@@ -298,7 +298,7 @@ Select 'Run'->'Run All Cells' which should execute a simple logistic regression 
     echo "https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
     ```
 
-![MLflow logs](images/mlflow-env-test.png)
+![MLflow logs](../../images/mlflow-env-test.png)
 
 TODO:
 

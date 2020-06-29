@@ -2,7 +2,7 @@
 
 This folder contains instructions that guide you through the process of setting up a GCP based MLOps environment as depicted on the below diagram.
 
-![Reference topolgy](/images/mlops-env.png)
+![Reference topolgy](../../images/mlops-env.png)
 
 The core services in the environment are:
 - ML experimentation and development - AI Platform Notebooks 
@@ -22,7 +22,7 @@ An instance of **AI Platform Notebooks** is used as a primary experimentation/de
 The environment uses a [standalone deployment of Kubeflow Pipelines on GKE](https://www.kubeflow.org/docs/pipelines/installation/standalone-deployment/), as depicted on the below diagram:
 
 
-![KFP Deployment](/images/kfp.png)
+![KFP Deployment](../../images/kfp.png)
 
 The KFP services are deployed to a GKE cluster and configured to use a Cloud SQL  instance for ML Metadata and Google Cloud Storage for artifact storage. The KFP services access the Cloud SQL through [Cloud SQL Proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy). External clients use [Inverting Proxy](https://github.com/google/inverting-proxy) to interact with the KFP services.
 
