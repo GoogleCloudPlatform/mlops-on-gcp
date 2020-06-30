@@ -66,11 +66,11 @@ date
 tput setaf 7
 
 # Set project
-echo Setting the project to: $PROJECT_ID
+echo "Setting the project to: $PROJECT_ID"
 gcloud config set project $PROJECT_ID
 
-# Enable services
-echo Enabling all required services
+# 1. Enable services
+echo "Enabling all required services..."
 
 gcloud services enable \
 cloudbuild.googleapis.com \
@@ -83,30 +83,33 @@ dataflow.googleapis.com \
 sqladmin.googleapis.com \
 notebooks.googleapis.com
 
-echo Required services enabled
+echo "Required services enabled."
 echo 
 
-#echo Create GCS bucket
+#2. Creating GCS bucket
 
+echo "Creating GCS bucket for artifacts..."
 if ! gsutil list "$GCS_BUCKET_NAME"; then
 gsutil mb -p $PROJECT_ID -l $REGION $GCS_BUCKET_NAME
 fi
+echo "GCS bucket available: $GCS_BUCKET_NAME"
+echo
 
-# Cloud SQL
+# 3. Creating Cloud SQL
 
 if [[ $(gcloud sql instances list --filter="$CLOUD_SQL" --format='value(name)') != "$CLOUD_SQL" ]]; then
-    echo Provisioning Cloud SQL with name '$CLOUD_SQL'
+    echo "Provisioning Cloud SQL..."
     gcloud sql instances create $CLOUD_SQL --tier=db-g1-small --region=$REGION
     gcloud sql databases create mlflow --instance=$CLOUD_SQL
     gcloud sql users set-password $SQL_USERNAME --host=% --instance=$CLOUD_SQL --password=$SQL_PASSWORD
 fi
 CLOUD_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
-echo Cloud SQL provisioned
+echo "Cloud SQL is available: $CLOUD_SQL_CONNECTION_NAME"
 
-# Cloud Composer
+# 4. Creating Cloud Composer
 
 if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSER_NAME" --format='value(name)') != "$COMPOSER_NAME" ]]; then
-    echo Provisioing Cloud Composer
+    echo "Provisioing Cloud Composer..."
     gcloud composer environments create $COMPOSER_NAME \
     --location=$REGION \
     --zone=$ZONE \
@@ -117,47 +120,65 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
     --node-count=3 \
     --python-version=3 \
     --enable-ip-alias
-
-    # Install Python packages
-    echo Install Python packages to Cloud Composer
-    gcloud composer environments update $COMPOSER_NAME \
-    --update-pypi-packages-from-file=requirements.txt \
-    --location=$REGION
-
 fi
-echo Cloud Composer provisioned and Python packages installed
+echo "Cloud Composer is available: $COMPOSER_NAME"
 echo
 
-echo Provisioning MLflow Tracking server
+# Installing Python packages
+
+echo "Install Python packages to Cloud Composer..."
+gcloud composer environments update $COMPOSER_NAME \
+  --update-pypi-packages-from-file=requirements.txt \
+  --location=$REGION
+echo "Python packages installed."
+echo
+
+# 5. Installing MLflow
+
+echo "Provisioning MLflow Tracking server..."
 
 # Set local Kubernetes configuration to connect to Composer GKE cluster
 
+echo "Setting configuration to connect to Composer GKE cluster..."
 GKE_CLUSTER=$(gcloud container clusters list --limit=1 --zone=$ZONE --filter="name~$COMPOSER_NAME" --format="value(name)")
 gcloud container clusters get-credentials $GKE_CLUSTER --zone $ZONE  --project $PROJECT_ID
 
+# Create service account
+
 SA_EMAIL=sql-proxy-access@$PROJECT_ID.iam.gserviceaccount.com
 if [[ $(gcloud iam service-accounts list --filter="$SA_EMAIL" --format='value(email)') != "$SA_EMAIL" ]]; then
-    echo Create new service account: '$SA_EMAIL'
+    echo "Create new service account: $SA_EMAIL"
     gcloud iam service-accounts create sql-proxy-access --format='value(email)' --display-name="Cloud SQL access for sql proxy"
 fi
 
+# Download service account key
+
 if [[ -e mlflow-helm/sql-access.json ]]; then
-    echo Service account key already exists: mlflow-helm/sql-access.json
+    echo "Service account key already exists: mlflow-helm/sql-access.json"
 else
     gcloud iam service-accounts keys create mlflow-helm/sql-access.json --iam-account=$SA_EMAIL
 fi
 
+# Set role to the service account
+
+echo "Set cloudsql.client role to the service account..."
 gcloud projects add-iam-policy-binding $PROJECT_ID \
 --member serviceAccount:$SA_EMAIL \
 --role roles/cloudsql.client
+echo "IAM policy binding is added."
 
 # Build MLflow docker image
 
+echo "Build MLflow Docker container image..."
 gcloud builds submit mlflow-helm/docker --timeout 15m --tag ${MLFLOW_IMAGE_URI}:latest
+echo "MLflow Docker container image is built: ${MLFLOW_IMAGE_URI}:latest"
 
 # Using fix K8s namespace: 'mlflow' for MLflow
-kubectl create namespace mlflow || echo mlflow namespace exists
 
+echo "Create mlfow namespace to the GKE cluster..."
+kubectl create namespace mlflow || echo "mlflow namespace exists"
+
+echo "Deploying mlflow helm configuration..."
 helm install mlflow --namespace mlflow \
 --set image.repository=$MLFLOW_IMAGE_URI \
 --set defaultArtifactRoot=$GCS_BUCKET_NAME \
@@ -173,4 +194,7 @@ mlflow-helm
 #echo Template command
 #echo helm template mlflow --namespace mlflow --set image.repository=$MLFLOW_IMAGE_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlInstance.name=$CLOUD_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
 
-echo MLflow Tracking server provisioned
+echo "MLflow Tracking server provisioned."
+echo
+
+echo "Enviornment is provisioned successfully."
