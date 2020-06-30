@@ -135,7 +135,6 @@ To start the provisioning script:
    
     helm repo add stable https://kubernetes-charts.storage.googleapis.com/
     helm repo update
-    helm init
    
     kubectl create serviceaccount --namespace kube-system tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
@@ -201,27 +200,16 @@ You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN
 
 ## Verifying the Infrastructure
 
-1. Open notebook
+1. Open the JupyterLab in the AI Notebook instance
 
-    VM instance will be created and a few minutes (2-5 min) later a new notebook will be available in the [AI Platform Notebooks list](https://console.google.com/ai-platform/notebooks/instances). You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the OPEN JUPYTERLAB link
-
-2. Clone GitHub repo to Notebook to test environment
-    There are two GitHub repositories we are using this solution example:
-    - your ML-ops CD/CD pipeline workspace. This intermediate read-write repository will be the storage of your experiments in Notebook.
-    - One that contains this example codes for the current solution. To test environement you need to clone this repository:
-
+2. Clone Github repository
     ```bash
     cd /home
     git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
     ```
 
-    Select 'Git'->'Clone' menu and copy this repository URL and 'Clone' it.
-
-3. Open 'environment-test.ipynb' from the cloned repository 'test' folder.
-
-    environments_setup/mlops-composer-mlflow/test/environment-test.ipynb
-
-Select 'Run'->'Run All Cells' which should execute a simple logistic regression while sending logs to MLflow.
+3. Open 'environment-test.ipynb' Notebook under `mlops-on-gcp/environments_setup/mlops-composer-mlflow` directory. 
+Select 'Run'->'Run All Cells'. The Notebook trains a simple logistic regression while sending logs to MLflow.
 
 4. Open MLflow UI ($MLFLOW_URL) and check new logs of environment-test execution should be appeared.
 
