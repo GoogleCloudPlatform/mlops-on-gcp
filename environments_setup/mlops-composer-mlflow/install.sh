@@ -49,17 +49,15 @@ export ZONE=${5:-us-central1-a}
 export SQL_USERNAME="root"
 export CLOUD_SQL="$DEPLOYMENT_NAME-sql"
 export COMPOSER_NAME="$DEPLOYMENT_NAME-af"
-export NOTEBOOK_NAME="$DEPLOYMENT_NAME-nb"
-export GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-mlflow"
+export GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifact-store"
 export MLFLOW_IMAGE_URI="gcr.io/${PROJECT_ID}/$DEPLOYMENT_NAME"
-export NB_IMAGE_URI="gcr.io/${PROJECT_ID}/${NOTEBOOK_NAME}-image:latest"
+
 
 tput setaf 3; echo Creating environment
 echo Project: $PROJECT_ID
 echo Deployment name: $DEPLOYMENT_NAME
 echo Region: $REGION, zone: $ZONE
 echo Cloud SQL name: $CLOUD_SQL
-echo Notebook name: $NOTEBOOK_NAME
 echo MLflow artifacts: $GCS_BUCKET_NAME
 echo Composer name: $COMPOSER_NAME
 echo Setup started at:
@@ -119,9 +117,17 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
     --node-count=3 \
     --python-version=3 \
     --enable-ip-alias
+
+    # Install Python packages
+    echo Install Python packages to Cloud Composer
+    gcloud composer environments update $COMPOSER_NAME \
+    --update-pypi-packages-from-file=requirements.txt \
+    --location=$REGION
+
 fi
-echo Cloud Composer provisioned
-echo 
+echo Cloud Composer provisioned and Python packages installed
+echo
+
 echo Provisioning MLflow Tracking server
 
 # Set local Kubernetes configuration to connect to Composer GKE cluster
@@ -144,12 +150,6 @@ fi
 gcloud projects add-iam-policy-binding $PROJECT_ID \
 --member serviceAccount:$SA_EMAIL \
 --role roles/cloudsql.client
-
-# Install Helm to Cloud Shell
-
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
 
 # Build MLflow docker image
 
@@ -174,28 +174,3 @@ mlflow-helm
 #echo helm template mlflow --namespace mlflow --set image.repository=$MLFLOW_IMAGE_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlInstance.name=$CLOUD_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
 
 echo MLflow Tracking server provisioned
-echo 
-echo Build customized AI Platform Notebook
-
-# Inject sql password to notebook environment.
-sed -e "s/PASSWORD/$SQL_PASSWORD/g; s/SQLINSTANCE/$CLOUD_SQL_CONNECTION_NAME/g" "custom-notebook/entrypoint.sh.tmpl" > "custom-notebook/entrypoint.sh"
-
-gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
-
-# Create Notebook instance
-gcloud compute instances create $NOTEBOOK_NAME \
---zone=$ZONE \
---image-family=common-container \
---machine-type=n1-standard-2 \
---image-project=deeplearning-platform-release \
---maintenance-policy=TERMINATE \
---boot-disk-device-name=${NOTEBOOK_NAME}-disk \
---boot-disk-size=50GB \
---boot-disk-type=pd-ssd \
---scopes=cloud-platform,userinfo-email \
---metadata="proxy-mode=service_account,container=$NB_IMAGE_URI"
-
-tput setaf 3;
-echo MLflow UI can be accessed externally at the below URI:
-echo "https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
-tput setaf 7;
