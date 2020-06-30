@@ -167,7 +167,7 @@ setup and libraries.
 To create the AI Notebooks instance with the custom container, first you need to set `PROJECT_ID`, `NOTEBOOK_NAME` 
 and `$ZONE` environment variables, and perform the following steps:
 
-1. Build container
+1. Build the custom container image
 
     ```bash
     NB_IMAGE_URI="gcr.io/${PROJECT_ID}/${NOTEBOOK_NAME}-image:latest"
