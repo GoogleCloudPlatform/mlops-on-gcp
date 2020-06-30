@@ -10,6 +10,10 @@ We assume that you already have a [GCP Project](https://cloud.google.com/cloud-r
 
 ## Environment overview
 
+The diagram shows the overall MLOps environment
+
+![architecture](../../images/mlops-composer-mlflow.png)
+
 The proposed MLOps environment consists of the following components:
 
 | Component         | Description |
@@ -123,11 +127,19 @@ To start the provisioning script:
     git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
     cd mlops-on-gcp/environments_setup/mlops-composer-mlflow
    ```
-3. Install [Helm](https://helm.sh/) to Cloud Shell
+3. Install and initialize [Helm](https://helm.sh/) to Cloud Shell
     ```
     curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
     chmod 700 get_helm.sh
     ./get_helm.sh
+   
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+    helm repo update
+    helm init
+   
+    kubectl create serviceaccount --namespace kube-system tiller
+    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+    kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
     ```
 4. Start installation
     ```
@@ -172,7 +184,7 @@ and `$ZONE` environment variables, and perform the following steps:
     gcloud compute instances create $NOTEBOOK_NAME \
     --zone=$ZONE \
     --image-family=common-container \
-    --machine-type=n1-standard-4 \
+    --machine-type=n1-standard-2 \
     --image-project=deeplearning-platform-release \
     --maintenance-policy=TERMINATE \
     --boot-disk-device-name=${NOTEBOOK_NAME}-disk \
