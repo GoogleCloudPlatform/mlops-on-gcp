@@ -34,7 +34,7 @@ image:
   # The tag for the repository (e.g. 'latest')
   tag: latest
 images:
-  proxyagent: gcr.io/edgeml-demo/inverse-proxy-agent:latest
+  proxyagent: gcr.io/inverse-proxy/agent:latest
 
 imagePullSecrets: []
 nameOverride: ""
