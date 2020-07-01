@@ -63,14 +63,26 @@ EOF
 
 
 3. TODO: Create a Dockerfile defining your custom container image within the `lab-workspace` directory. Your Dockerfile should execute the following steps:
- <p>- use FROM to define the base image `gcr.io/deeplearning-platform-release/base-cpu:m42`. This will be used to start the build process.</p> 
+ - use FROM to define the base image `gcr.io/deeplearning-platform-release/base-cpu:m42`. This will be used to start the build process. 
  - use RUN to execute the following directives
      - update `apt-get` and use apt-get to install `kubectl`
-     - use `curl` to download `skaffold` using `curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64`
-     - change permissions on `skaffold` with `chmod +x skaffold`
-     - move `skaffold` to the `/usr/local/bin` directory with `mv skaffold /usr/local/bin`
- <p>- use COPY to copy the `requirements.txt` file you wrote above 
- - use RUN to install the requirements using `python -m pip install -U -r requirements.txt --ignore-installed PyYAML==5.3.1`</p>
+     - use `curl` to download `skaffold` using 
+     ```bash 
+        curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+      ````
+     - change permissions on `skaffold` with 
+     ```bash
+     chmod +x skaffold
+     ```
+     - move `skaffold` to the `/usr/local/bin` directory with 
+     ```bash
+     mv skaffold /usr/local/bin
+     ```
+ - use COPY to copy the `requirements.txt` file you wrote above 
+ - use RUN to install the requirements using 
+ ```bash 
+ python -m pip install -U -r requirements.txt --ignore-installed PyYAML==5.3.1
+ ```
 
 4. TODO: Build the image and push it to your project's **Container Registry**. 
 
@@ -78,7 +90,7 @@ Use `gcloud builds submit` to submit a build using Google Cloud Build. Use the `
 
 ### Provisioning an AI Platform notebook instance
 
-You can provision an instance of **AI Platform Notebooks** using  [GCP Console](https://cloud.google.com/ai-platform/notebooks/docs/custom-container) or using the `gcloud` command. To provision the instance using `gcloud` modify the command below to fill in the missing TODOs and run the command in your Cloud Shell.
+5. TODO: Provision an instance of **AI Platform Notebooks** using the `gcloud compute instances create` command. Modify the missing components in command below  and run the command in your Cloud Shell. The necessary flags have been provided for you:
 
 ```
 ZONE=[YOUR_ZONE]
@@ -89,7 +101,7 @@ IMAGE_PROJECT="deeplearning-platform-release"
 INSTANCE_TYPE="n1-standard-4"
 METADATA="proxy-mode=service_account,container=$IMAGE_URI"
 
-gcloud compute instances create $INSTANCE_NAME \
+# TODO: Your code goes here
     --zone=$ZONE \
     --image-family=$IMAGE_FAMILY \
     --machine-type=$INSTANCE_TYPE \
