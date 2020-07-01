@@ -63,16 +63,18 @@ EOF
 
 
 3. TODO: Create a Dockerfile defining your custom container image within the `lab-workspace` directory. Your Dockerfile should execute the following steps:
- - use FROM to define the base image `gcr.io/deeplearning-platform-release/base-cpu:m42`. This will be used to start the build process. 
+ <p>- use FROM to define the base image `gcr.io/deeplearning-platform-release/base-cpu:m42`. This will be used to start the build process.</p> 
  - use RUN to execute the following directives
      - update `apt-get` and use apt-get to install `kubectl`
      - use `curl` to download `skaffold` using `curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64`
      - change permissions on `skaffold` with `chmod +x skaffold`
      - move `skaffold` to the `/usr/local/bin` directory with `mv skaffold /usr/local/bin`
- - use COPY to copy the `requirements.txt` file you wrote above 
- - use RUN to install the requirements using `python -m pip install -U -r requirements.txt --ignore-installed PyYAML==5.3.1`
+ <p>- use COPY to copy the `requirements.txt` file you wrote above 
+ - use RUN to install the requirements using `python -m pip install -U -r requirements.txt --ignore-installed PyYAML==5.3.1`</p>
 
-4. TODO: Build the image and push it to your project's **Container Registry**. Use `gcloud builds submit` to submit a build using Google Cloud Build. Use the `--tag` flag for Cloud Build to build using the Dockerfile you created above. The tag should have the format `gcr.io/<YOUR_PROJECT_ID>/mlops-dev:latest`
+4. TODO: Build the image and push it to your project's **Container Registry**. 
+
+Use `gcloud builds submit` to submit a build using Google Cloud Build. Use the `--tag` flag for Cloud Build to build using the Dockerfile you created above. The tag should have the format `gcr.io/<YOUR_PROJECT_ID>/mlops-dev:latest`
 
 ### Provisioning an AI Platform notebook instance
 
