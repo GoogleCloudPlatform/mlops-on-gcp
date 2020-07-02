@@ -90,30 +90,18 @@ Use `gcloud builds submit` to submit a build using Google Cloud Build. Use the `
 
 ### Provisioning an AI Platform notebook instance
 
-5. TODO: Provision an instance of **AI Platform Notebooks** using the `gcloud compute instances create` command. Modify the missing components in command below  and run the command in your Cloud Shell. The necessary flags have been provided for you:
-
-```
-ZONE=[YOUR_ZONE]
-INSTANCE_NAME=[YOUR_INSTANCE_NAME]
-
-IMAGE_FAMILY="common-container"
-IMAGE_PROJECT="deeplearning-platform-release"
-INSTANCE_TYPE="n1-standard-4"
-METADATA="proxy-mode=service_account,container=$IMAGE_URI"
-
-# TODO: Your code goes here
-    --zone=$ZONE \
-    --image-family=$IMAGE_FAMILY \
-    --machine-type=$INSTANCE_TYPE \
-    --image-project=$IMAGE_PROJECT \
-    --maintenance-policy=TERMINATE \
-    --boot-disk-device-name=${INSTANCE_NAME}-disk \
-    --boot-disk-size=100GB \
-    --boot-disk-type=pd-ssd \
-    --scopes=cloud-platform,userinfo-email \
-    --metadata=$METADATA
-```
-
+5. TODO: Provision an instance of **AI Platform Notebooks** using the `gcloud compute instances create` command with the following specifications:
+    - the `zone` should be your compute zone
+    - the `image-family` should be "common-container"
+    - the `machine-type` should be an n1 standard-4 machine. See all machine types [here](https://cloud.google.com/compute/docs/machine-types).
+    - the `maintenance-policy` should be set to TERMINATE
+    - the `boot-disk-device-name` should have the format `<YOUR_INSTANCE_NAME>-disk`
+    - the `boot-disk-size` should be 100GB
+    - the `boot-disk-type` should be set to a SSD persistent disk
+    - the `scopes` should be `cloud-platform` and `userinfo-email`
+    - the `metatdata` should have the follow key value pairs:
+        - proxy-mode=service_account
+        - container="gcr.io/<YOUR_PROJECT_ID>/mlops-dev:latest"
 
 ### Accessing JupyterLab IDE
 
