@@ -88,11 +88,17 @@ The Cloud Composer cluster name will be set to **<DEPLOYMENT_NAME>-af**
 By default, the `--machine-type` is set to `n1-standard-2`, `--node-count` is set to 3, and `--python-version` is set to 3.
 
 After the Cloud Composer is provisioned, Python packages in the [requirements.txt](requirements.txt) file are installed
-to the Composer runtime. The file includes MLflow, SciPy, and Scikit-learn. You can add other libraries (e.g. TensorFlow or PyTorch)
-if your ML pipelines uses them.
+to the Composer runtime. The file includes MLflow, SciPy, and Scikit-learn. For more information, 
+see [Creating environments](https://cloud.google.com/composer/docs/how-to/managing/creating) in the Cloud Composer documentation.
 
-For more information, see [Creating environments](https://cloud.google.com/composer/docs/how-to/managing/creating)
-in the Cloud Composer documentation.
+> Note that the ML steps like data pre-processing and model training and evaluation, where large compute
+> resources are required advised to 
+> to execute in their appropriate GCP manages services(e.g. Dataflow and AI Platform), 
+> rather than in the Composer runtime. However, some small steps might be executed with the Composer runtime,
+> like comparing evaluation metrics and logging information to MLflow tracking. Thus, some libraries needs
+> to be installed in the Composer runtime. 
+---
+
 
 
 ### 5. Deploying MLflow server to Composer GKE cluster
