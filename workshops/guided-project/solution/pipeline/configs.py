@@ -43,7 +43,7 @@ GCS_BUCKET_NAME = GOOGLE_CLOUD_PROJECT + '-kubeflowpipelines-default'
 
 # TODO(step 8,step 9): (Optional) Set your region to use GCP services including
 #                      BigQuery, Dataflow and Cloud AI Platform.
-# GOOGLE_CLOUD_REGION = ''  # ex) 'us-central1'
+GOOGLE_CLOUD_REGION = 'us-central1'
 
 PREPROCESSING_FN = 'models.preprocessing.preprocessing_fn'
 RUN_FN = 'models.keras.model.run_fn'
@@ -59,10 +59,10 @@ EVAL_ACCURACY_THRESHOLD = 0.6
 # Beam args to use BigQueryExampleGen with Beam DirectRunner.
 # TODO(step 7): (Optional) Uncomment here to provide GCP related configs for
 #               BigQuery.
-# BIG_QUERY_WITH_DIRECT_RUNNER_BEAM_PIPELINE_ARGS = [
-#    '--project=' + GOOGLE_CLOUD_PROJECT,
-#    '--temp_location=' + os.path.join('gs://', GCS_BUCKET_NAME, 'tmp'),
-#    ]
+BIG_QUERY_WITH_DIRECT_RUNNER_BEAM_PIPELINE_ARGS = [
+    '--project=' + GOOGLE_CLOUD_PROJECT,
+    '--temp_location=' + os.path.join('gs://', GCS_BUCKET_NAME, 'tmp'),
+]
 
 # The rate at which to sample rows from the Chicago Taxi dataset using BigQuery.
 # The full taxi dataset is > 120M record.  In the interest of resource
@@ -74,80 +74,80 @@ _query_sample_rate = 0.0001  # Generate a 0.01% random sample.
 # used for this example is a public dataset available on Google AI Platform.
 # https://console.cloud.google.com/marketplace/details/city-of-chicago-public-data/chicago-taxi-trips
 # TODO(step 7): (Optional) Uncomment here to use BigQuery.
-# BIG_QUERY_QUERY = """
-#         SELECT
-#           pickup_community_area,
-#           fare,
-#           EXTRACT(MONTH FROM trip_start_timestamp) AS trip_start_month,
-#           EXTRACT(HOUR FROM trip_start_timestamp) AS trip_start_hour,
-#           EXTRACT(DAYOFWEEK FROM trip_start_timestamp) AS trip_start_day,
-#           UNIX_SECONDS(trip_start_timestamp) AS trip_start_timestamp,
-#           pickup_latitude,
-#           pickup_longitude,
-#           dropoff_latitude,
-#           dropoff_longitude,
-#           trip_miles,
-#           pickup_census_tract,
-#           dropoff_census_tract,
-#           payment_type,
-#           company,
-#           trip_seconds,
-#           dropoff_community_area,
-#           tips,
-#           IF(tips > fare * 0.2, 1, 0) AS big_tipper
-#         FROM `bigquery-public-data.chicago_taxi_trips.taxi_trips`
-#         WHERE (ABS(FARM_FINGERPRINT(unique_key)) / 0x7FFFFFFFFFFFFFFF)
-#           < {query_sample_rate}""".format(
-#    query_sample_rate=_query_sample_rate)
+BIG_QUERY_QUERY = """
+         SELECT
+           pickup_community_area,
+           fare,
+           EXTRACT(MONTH FROM trip_start_timestamp) AS trip_start_month,
+           EXTRACT(HOUR FROM trip_start_timestamp) AS trip_start_hour,
+           EXTRACT(DAYOFWEEK FROM trip_start_timestamp) AS trip_start_day,
+           UNIX_SECONDS(trip_start_timestamp) AS trip_start_timestamp,
+           pickup_latitude,
+           pickup_longitude,
+           dropoff_latitude,
+           dropoff_longitude,
+           trip_miles,
+           pickup_census_tract,
+           dropoff_census_tract,
+           payment_type,
+           company,
+           trip_seconds,
+           dropoff_community_area,
+           tips,
+           IF(tips > fare * 0.2, 1, 0) AS big_tipper
+         FROM `bigquery-public-data.chicago_taxi_trips.taxi_trips`
+         WHERE (ABS(FARM_FINGERPRINT(unique_key)) / 0x7FFFFFFFFFFFFFFF)
+           < {query_sample_rate}""".format(
+    query_sample_rate=_query_sample_rate)
 
 # Beam args to run data processing on DataflowRunner.
 # TODO(step 8): (Optional) Uncomment below to use Dataflow.
-# DATAFLOW_BEAM_PIPELINE_ARGS = [
-#    '--project=' + GOOGLE_CLOUD_PROJECT,
-#    '--runner=DataflowRunner',
-#    '--temp_location=' + os.path.join('gs://', GCS_BUCKET_NAME, 'tmp'),
-#    '--region=' + GOOGLE_CLOUD_REGION,
-#    # TODO(tensorflow/tfx#1461) Remove `shuffle_mode` after default is changed.  # pylint: disable=g-bad-todo
-#    '--experiments=shuffle_mode=auto',
-#    # TODO(tensorflow/tfx#1459) Remove `disk_size_gb` after default is
-#    #                           increased.  # pylint: disable=g-bad-todo
-#    '--disk_size_gb=50',
-#    # If you are blocked by IP Address quota, using a bigger machine_type will
-#    # reduce the number of needed IPs.
-#    # '--machine_type=n1-standard-8',
-#    ]
+DATAFLOW_BEAM_PIPELINE_ARGS = [
+   '--project=' + GOOGLE_CLOUD_PROJECT,
+   '--runner=DataflowRunner',
+   '--temp_location=' + os.path.join('gs://', GCS_BUCKET_NAME, 'tmp'),
+   '--region=' + GOOGLE_CLOUD_REGION,
+   # TODO(tensorflow/tfx#1461) Remove `shuffle_mode` after default is changed.  # pylint: disable=g-bad-todo
+   '--experiments=shuffle_mode=auto',
+   # TODO(tensorflow/tfx#1459) Remove `disk_size_gb` after default is
+   #                           increased.  # pylint: disable=g-bad-todo
+   '--disk_size_gb=50',
+   # If you are blocked by IP Address quota, using a bigger machine_type will
+   # reduce the number of needed IPs.
+   # '--machine_type=n1-standard-8',
+   ]
 
 # A dict which contains the training job parameters to be passed to Google
 # Cloud AI Platform. For the full set of parameters supported by Google Cloud AI
 # Platform, refer to
 # https://cloud.google.com/ml-engine/reference/rest/v1/projects.jobs#Job
 # TODO(step 9): (Optional) Uncomment below to use AI Platform training.
-# GCP_AI_PLATFORM_TRAINING_ARGS = {
-#     'project': GOOGLE_CLOUD_PROJECT,
-#     'region': GOOGLE_CLOUD_REGION,
-#     # Starting from TFX 0.14, training on AI Platform uses custom containers:
-#     # https://cloud.google.com/ml-engine/docs/containers-overview
-#     # You can specify a custom container here. If not specified, TFX will use
-#     # a public container image matching the installed version of TFX.
-#     # TODO(step 9): (Optional) Set your container name below.
-#     'masterConfig': {
-#       'imageUri': 'gcr.io/' + GOOGLE_CLOUD_PROJECT + '/tfx-pipeline'
-#     },
-#     # Note that if you do specify a custom container, ensure the entrypoint
-#     # calls into TFX's run_executor script (tfx/scripts/run_executor.py)
-# }
+GCP_AI_PLATFORM_TRAINING_ARGS = {
+    'project': GOOGLE_CLOUD_PROJECT,
+    'region': GOOGLE_CLOUD_REGION,
+    # Starting from TFX 0.14, training on AI Platform uses custom containers:
+    # https://cloud.google.com/ml-engine/docs/containers-overview
+    # You can specify a custom container here. If not specified, TFX will use
+    # a public container image matching the installed version of TFX.
+    # TODO(step 9): (Optional) Set your container name below.
+    'masterConfig': {
+      'imageUri': 'gcr.io/' + GOOGLE_CLOUD_PROJECT + '/tfx-pipeline'
+    },
+    # Note that if you do specify a custom container, ensure the entrypoint
+    # calls into TFX's run_executor script (tfx/scripts/run_executor.py)
+}
 
 # A dict which contains the serving job parameters to be passed to Google
 # Cloud AI Platform. For the full set of parameters supported by Google Cloud AI
 # Platform, refer to
 # https://cloud.google.com/ml-engine/reference/rest/v1/projects.models
 # TODO(step 9): (Optional) Uncomment below to use AI Platform serving.
-# GCP_AI_PLATFORM_SERVING_ARGS = {
-#     'model_name': PIPELINE_NAME,
-#     'project_id': GOOGLE_CLOUD_PROJECT,
-#     # The region to use when serving the model. See available regions here:
-#     # https://cloud.google.com/ml-engine/docs/regions
-#     # Note that serving currently only supports a single region:
-#     # https://cloud.google.com/ml-engine/reference/rest/v1/projects.models#Model  # pylint: disable=line-too-long
-#     'regions': [GOOGLE_CLOUD_REGION],
-# }
+GCP_AI_PLATFORM_SERVING_ARGS = {
+    'model_name': PIPELINE_NAME,
+    'project_id': GOOGLE_CLOUD_PROJECT,
+    # The region to use when serving the model. See available regions here:
+    # https://cloud.google.com/ml-engine/docs/regions
+    # Note that serving currently only supports a single region:
+    # https://cloud.google.com/ml-engine/reference/rest/v1/projects.models#Model  # pylint: disable=line-too-long
+    'regions': [GOOGLE_CLOUD_REGION],
+}

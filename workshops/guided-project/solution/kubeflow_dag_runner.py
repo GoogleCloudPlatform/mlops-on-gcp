@@ -78,7 +78,7 @@ def run():
           pipeline_root=PIPELINE_ROOT,
           data_path=DATA_PATH,
           # TODO(step 7): (Optional) Uncomment below to use BigQueryExampleGen.
-          # query=configs.BIG_QUERY_QUERY,
+          query=configs.BIG_QUERY_QUERY,
           preprocessing_fn=configs.PREPROCESSING_FN,
           run_fn=configs.RUN_FN,
           train_args=trainer_pb2.TrainArgs(num_steps=configs.TRAIN_NUM_STEPS),
@@ -87,14 +87,13 @@ def run():
           serving_model_dir=SERVING_MODEL_DIR,
           # TODO(step 7): (Optional) Uncomment below to use provide GCP related
           #               config for BigQuery with Beam DirectRunner.
-          # beam_pipeline_args=configs
-          # .BIG_QUERY_WITH_DIRECT_RUNNER_BEAM_PIPELINE_ARGS,
+          # beam_pipeline_args=configs.BIG_QUERY_WITH_DIRECT_RUNNER_BEAM_PIPELINE_ARGS,
           # TODO(step 8): (Optional) Uncomment below to use Dataflow.
-          # beam_pipeline_args=configs.DATAFLOW_BEAM_PIPELINE_ARGS,
+          beam_pipeline_args=configs.DATAFLOW_BEAM_PIPELINE_ARGS,
           # TODO(step 9): (Optional) Uncomment below to use Cloud AI Platform.
-          # ai_platform_training_args=configs.GCP_AI_PLATFORM_TRAINING_ARGS,
+          ai_platform_training_args=configs.GCP_AI_PLATFORM_TRAINING_ARGS,
           # TODO(step 9): (Optional) Uncomment below to use Cloud AI Platform.
-          # ai_platform_serving_args=configs.GCP_AI_PLATFORM_SERVING_ARGS,
+          ai_platform_serving_args=configs.GCP_AI_PLATFORM_SERVING_ARGS,
       ))
 
 
