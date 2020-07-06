@@ -90,7 +90,7 @@ echo
 
 echo "Creating GCS bucket for artifacts..."
 if ! gsutil list "$GCS_BUCKET_NAME"; then
-gsutil mb -p $PROJECT_ID -l $REGION $GCS_BUCKET_NAME
+    gsutil mb -p $PROJECT_ID -l $REGION $GCS_BUCKET_NAME
 fi
 echo "GCS bucket available: $GCS_BUCKET_NAME"
 echo
