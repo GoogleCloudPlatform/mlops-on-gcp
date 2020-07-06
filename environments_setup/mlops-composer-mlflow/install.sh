@@ -51,6 +51,7 @@ export CLOUD_SQL="$DEPLOYMENT_NAME-sql"
 export COMPOSER_NAME="$DEPLOYMENT_NAME-af"
 export GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifact-store"
 export MLFLOW_IMAGE_URI="gcr.io/${PROJECT_ID}/$DEPLOYMENT_NAME"
+export MLFLOW_PROXY_URI="gcr.io/${PROJECT_ID}/inverted-proxy"
 
 
 tput setaf 3; echo Creating environment
@@ -173,6 +174,11 @@ echo "Build MLflow Docker container image..."
 gcloud builds submit mlflow-helm/docker --timeout 15m --tag ${MLFLOW_IMAGE_URI}:latest
 echo "MLflow Docker container image is built: ${MLFLOW_IMAGE_URI}:latest"
 
+# Build MLflow UI proxy image
+echo "Build MLflow UI proxy container image..."
+gcloud builds submit mlflow-helm/proxy --timeout 15m --tag ${MLFLOW_PROXY_URI}:latest
+echo "MLflow UI proxy container image is built: ${MLFLOW_PROXY_URI}:latest"
+
 # Using fix K8s namespace: 'mlflow' for MLflow
 
 echo "Create mlfow namespace to the GKE cluster..."
@@ -180,7 +186,8 @@ kubectl create namespace mlflow || echo "mlflow namespace exists"
 
 echo "Deploying mlflow helm configuration..."
 helm install mlflow --namespace mlflow \
---set image.repository=$MLFLOW_IMAGE_URI \
+--set images.mlflow=$MLFLOW_IMAGE_URI \
+--set images.proxyagent=$MLFLOW_PROXY_URI \
 --set defaultArtifactRoot=$GCS_BUCKET_NAME \
 --set backendStore.mysql.host="127.0.0.1" \
 --set backendStore.mysql.port="3306" \
@@ -192,7 +199,7 @@ mlflow-helm
 
 # Generate command for debug:
 #echo Template command
-#echo helm template mlflow --namespace mlflow --set image.repository=$MLFLOW_IMAGE_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlInstance.name=$CLOUD_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
+#echo helm template mlflow --namespace mlflow --set images.mlflow=$MLFLOW_IMAGE_URI --set images.proxyagent=$MLFLOW_PROXY_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlInstance.name=$CLOUD_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
 
 echo "MLflow Tracking server provisioned."
 echo

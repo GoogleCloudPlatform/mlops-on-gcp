@@ -48,7 +48,6 @@ The installation script performs the following steps:
 3. Creates Cloud SQL instance
 4. Provisions a Composer cluster environment in GKE
 5. Deploys MLflow server to Composer GKE cluster
-6. Create a AI Platform Notebooks instance using a custom image.
 
 ### 1. Enable the required APIs
 
@@ -58,7 +57,9 @@ In addition to the [services enabled by default](https://cloud.google.com/servic
 - Container Registry
 - Cloud Build
 - Cloud Composer
-
+- Dataflow
+- SQL Admin
+- Notebooks
 
 ### 2. Create a Cloud Storage bucket
 
@@ -72,7 +73,7 @@ The Cloud Storage bucket name will be set to **<DEPLOYMENT_NAME>-artifact-store*
 A Cloud SQL instance is used as a the MLflow backend to store ML metadata and pointers to artifacts stored
 in the Cloud Storage bucket.
 
-The Cloud SQL instance name will be set to **<DEPLOYMENT_NAME>-sql**, and the **root** user password will be set to <SQL_PASSWORD>.
+The Cloud SQL instance name will be set to **<DEPLOYMENT_NAME>-sql**, and the default **root** user password will be set to <SQL_PASSWORD>.
 A database named **mlflow** will be created in the Cloud SQL instance.
 
 For more information, see [Cloud SQL setup and available machine types](https://cloud.google.com/sql/docs/mysql/create-instance#gcloud>).
@@ -114,6 +115,7 @@ The service account is granted `cloudsql.client` IAM role.
 2. Docker container image with MLflow installed is created and pushed to Container Registry.
 The container image uses this [Dockerfile](mlflow-helm/docker/Dockerfile), where `mlflow server` 
 command is the entry point.
+Along with main MLflow image, a side-car container will be created to be a proxy server to expose MLflow UI [Dockerfile](mlflow-helm/proxy/Dockerfile).
 
 3. we use [Helm](https://helm.sh/) to deploy the MLflow container to the GKE cluster.
 Helm compiles Kubernetes application configuration and deploys all components to the cluster. 
