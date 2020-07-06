@@ -179,15 +179,15 @@ The installation script performs the following steps:
 3. Provision a new AI Notebooks instance from using the custom Docker container image
 
 ### 1. Build the custom Notebook container image
-    ```
+   ```
     NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
     gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
-    ```
+   ```
 
-    The build steps take around 5 minutes...
+The build steps take around 5 minutes...
 
 ### 2. Create environment variable file that will be used inside the Notebook instance
-    ```
+   ```
     GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifact-store"
 
     cat > custom-notebook/notebook-env.txt << EOF
@@ -198,11 +198,10 @@ The installation script performs the following steps:
 
     gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
     rm custom-notebook/notebook-env.txt
-    ```
+   ```
 
 ### 3. Provision a new AI Notebooks instance from using the custom Docker container image
-
-    ``` 
+   ```
     gcloud compute instances create $DEPLOYMENT_NAME-nb \
     --zone $ZONE \
     --image-family common-container \
@@ -214,18 +213,18 @@ The installation script performs the following steps:
     --boot-disk-type pd-ssd \
     --scopes cloud-platform,userinfo-email \
     --metadata proxy-mode=service_account,container=$NB_IMAGE_URI,container-env-file=$GCS_BUCKET_NAME/notebook-env.txt
-    ```
+   ```
 
-## Running the Notebook installation script
+### Running the Notebook installation script
 
 Start installation
+   ```
+    ./install-notebook.sh [PROJECT_ID] [SQL_PASSWORD] [DEPLOYMENT_NAME] [ZONE]
 
-    ``` 
-    ./install-notebbok.sh [PROJECT_ID] [SQL_PASSWORD] [DEPLOYMENT_NAME] [ZONE]
-    ```
+   ```
 
 The `install-notebook.sh` script has default parameters for `DEPLOYMENT_NAME` and `ZONE`. 
-You must provide `PROJECT_ID` and `SQL_PASSWORD` that must be same as used in install.sh script for environment setup.
+You must provide `PROJECT_ID` and `SQL_PASSWORD` that must be same as used in install.sh script for environment setup before.
 
 The AI Notebooks instance will be created in 2-5 minutes.
     
