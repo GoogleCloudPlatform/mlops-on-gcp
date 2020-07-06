@@ -27,14 +27,11 @@ extraArgs: {}
 
 replicaCount: 1
 
-image:
-  # The fully qualified name of the docker image to use
-  repository: 
-
-  # The tag for the repository (e.g. 'latest')
-  tag: latest
 images:
-  proxyagent: gcr.io/inverting-proxy/agent:latest
+  # The fully qualified name of the MLflow docker image to use
+  mlflow:
+  # The fully qualified name of the MLflow UI proxy docker image to use
+  proxyagent:
 
 imagePullSecrets: []
 nameOverride: ""

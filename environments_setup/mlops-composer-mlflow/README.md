@@ -115,6 +115,7 @@ The service account is granted `cloudsql.client` IAM role.
 2. Docker container image with MLflow installed is created and pushed to Container Registry.
 The container image uses this [Dockerfile](mlflow-helm/docker/Dockerfile), where `mlflow server` 
 command is the entry point.
+Along with main MLflow image, a side-car container will be created to be a proxy server to expose MLflow UI [Dockerfile](mlflow-helm/proxy/Dockerfile).
 
 3. we use [Helm](https://helm.sh/) to deploy the MLflow container to the GKE cluster.
 Helm compiles Kubernetes application configuration and deploys all components to the cluster. 
