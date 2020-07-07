@@ -172,39 +172,65 @@ instance via Cloud Proxy.
 We use a [custom Docker container image](custom-notebook) for the AI Notebooks instance with the required
 setup and libraries. 
 
-To create the AI Notebooks instance with the custom container, first you need to set `PROJECT_ID`, `NOTEBOOK_NAME` 
-and `$ZONE` environment variables, and perform the following steps:
+The installation script performs the following steps:
 
-1. Build the custom container image
+1. Build the custom Notebook container image
+2. Create environment variable file that will be used inside the Notebook instance
+3. Provision a new AI Notebooks instance from using the custom Docker container image
 
-    ```bash
-    NB_IMAGE_URI="gcr.io/${PROJECT_ID}/${NOTEBOOK_NAME}-image:latest"
-
+### 1. Build the custom Notebook container image
+   ```
+    NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
     gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
-    ```
+   ```
 
-    The build steps take around 5 minutes... 
+The build steps take around 5 minutes...
 
-2. Provision a new AI Notebooks instance from using the custom Docker container image
+### 2. Create environment variable file that will be used inside the Notebook instance
+   ```
+    GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifact-store"
 
-    ```bash
-    gcloud compute instances create $NOTEBOOK_NAME \
-    --zone=$ZONE \
-    --image-family=common-container \
-    --machine-type=n1-standard-2 \
-    --image-project=deeplearning-platform-release \
-    --maintenance-policy=TERMINATE \
-    --boot-disk-device-name=${NOTEBOOK_NAME}-disk \
-    --boot-disk-size=50GB \
-    --boot-disk-type=pd-ssd \
-    --scopes=cloud-platform,userinfo-email \
-    --metadata="proxy-mode=service_account,container=$NB_IMAGE_URI"
-    ```
+    cat > custom-notebook/notebook-env.txt << EOF
+    MLFLOWCONNECTION=mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow
+    SQLINSTANCE=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
+    MLFLOWARTIFACTBUCKET=$GCS_BUCKET_NAME
+    EOF
 
-    The AI Notebooks instance will be created in 2-5 minutes.
+    gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
+    rm custom-notebook/notebook-env.txt
+   ```
+
+### 3. Provision a new AI Notebooks instance from using the custom Docker container image
+   ```
+    gcloud compute instances create $DEPLOYMENT_NAME-nb \
+    --zone $ZONE \
+    --image-family common-container \
+    --machine-type n1-standard-2 \
+    --image-project deeplearning-platform-release \
+    --maintenance-policy TERMINATE \
+    --boot-disk-device-name $DEPLOYMENT_NAME-disk \
+    --boot-disk-size 50GB \
+    --boot-disk-type pd-ssd \
+    --scopes cloud-platform,userinfo-email \
+    --metadata proxy-mode=service_account,container=$NB_IMAGE_URI,container-env-file=$GCS_BUCKET_NAME/notebook-env.txt
+   ```
+
+### Running the Notebook installation script
+
+Start installation
+   ```
+    ./install-notebook.sh [PROJECT_ID] [SQL_PASSWORD] [DEPLOYMENT_NAME] [ZONE]
+
+   ```
+
+The `install-notebook.sh` script has default parameters for `DEPLOYMENT_NAME` and `ZONE`. 
+You must provide `PROJECT_ID` and `SQL_PASSWORD` that must be same as used in install.sh script for environment setup before.
+
+The AI Notebooks instance will be created in 2-5 minutes.
     
 The instance will be in the [AI Platform Notebooks list](https://console.google.com/ai-platform/notebooks/instances). 
 You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN JUPYTERLAB** link.
+
 
 ## Verifying the Infrastructure
 
