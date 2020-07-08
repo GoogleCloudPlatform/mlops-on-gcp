@@ -49,7 +49,7 @@ def _get_serve_tf_examples_fn(model, tf_transform_output):
     parsed_features = tf.io.parse_example(serialized_tf_examples, feature_spec)
 
     transformed_features = model.tft_layer(parsed_features)
-    transformed_features.pop(features.transformed_name(features.LABEL_KEY))
+    # transformed_features.pop(features.transformed_name(features.LABEL_KEY))
 
     return model(transformed_features)
 
@@ -192,7 +192,8 @@ def run_fn(fn_args):
       validation_steps=fn_args.eval_steps,
       verbose=2,
       callbacks=callbacks)
-    
+
+  
   signatures = {
       'serving_default':
           _get_serve_tf_examples_fn(model,

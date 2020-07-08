@@ -14,7 +14,6 @@
 """Covertype preprocessing.
 This file defines a template for TFX Transform component.
 """
-
 import tensorflow as tf
 import tensorflow_transform as tft
 
