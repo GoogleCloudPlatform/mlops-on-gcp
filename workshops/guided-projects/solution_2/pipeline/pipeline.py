@@ -138,24 +138,33 @@ def create_pipeline(
       model_blessing=Channel(type=ModelBlessing))
   # TODO(step 6): Uncomment here to add ResolverNode to the pipeline.
   components.append(model_resolver)
+    
+  accuracy_threshold = tfma.MetricThreshold(
+                value_threshold=tfma.GenericValueThreshold(
+                    lower_bound={'value': 0.5},
+                    upper_bound={'value': 0.99}),
+                change_threshold=tfma.GenericChangeThreshold(
+                    absolute={'value': 0.0001},
+                    direction=tfma.MetricDirection.HIGHER_IS_BETTER),
+                )
 
-  # Uses TFMA to compute a evaluation statistics over features of a model and
-  # perform quality validation of a candidate model (compared to a baseline).
+  metrics_specs = tfma.MetricsSpec(
+                   metrics = [
+                       tfma.MetricConfig(class_name='SparseCategoricalAccuracy',
+                           threshold=accuracy_threshold),
+                       tfma.MetricConfig(class_name='ExampleCount')])
+
   eval_config = tfma.EvalConfig(
-      model_specs=[tfma.ModelSpec(label_key='big_tipper')],
-      slicing_specs=[tfma.SlicingSpec()],
-      metrics_specs=[
-          tfma.MetricsSpec(metrics=[
-              tfma.MetricConfig(
-                  class_name='BinaryAccuracy',
-                  threshold=tfma.MetricThreshold(
-                      value_threshold=tfma.GenericValueThreshold(
-                          lower_bound={'value': eval_accuracy_threshold}),
-                      change_threshold=tfma.GenericChangeThreshold(
-                          direction=tfma.MetricDirection.HIGHER_IS_BETTER,
-                          absolute={'value': -1e-10})))
-          ])
-      ])
+    model_specs=[
+        tfma.ModelSpec(label_key='Cover_Type')
+    ],
+    metrics_specs=[metrics_specs],
+    slicing_specs=[
+        tfma.SlicingSpec(),
+        tfma.SlicingSpec(feature_keys=['Wilderness_Area'])
+    ]
+  )
+      
   evaluator = Evaluator(
       examples=example_gen.outputs['examples'],
       model=trainer.outputs['model'],
