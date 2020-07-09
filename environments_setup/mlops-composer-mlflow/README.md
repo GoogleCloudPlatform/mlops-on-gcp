@@ -143,10 +143,6 @@ To start the provisioning script:
    
     helm repo add stable https://kubernetes-charts.storage.googleapis.com/
     helm repo update
-   
-    kubectl create serviceaccount --namespace kube-system tiller
-    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-    kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
     ```
 4. Start installation
     ```
@@ -193,7 +189,7 @@ The build steps take around 5 minutes...
     cat > custom-notebook/notebook-env.txt << EOF
     MLFLOWCONNECTION=mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow
     SQLINSTANCE=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
-    MLFLOWARTIFACTBUCKET=$GCS_BUCKET_NAME
+    MLFLOWARTIFACTBUCKET=$GCS_BUCKET_NAME/notebooks
     EOF
 
     gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
