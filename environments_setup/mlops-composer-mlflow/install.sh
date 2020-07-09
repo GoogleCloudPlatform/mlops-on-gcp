@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Common error handler
 
 # Set up a global error handler
 err_handler() {
@@ -37,15 +36,13 @@ if [[ $# < 2 ]]; then
 fi
 
 # Set script constants
-
 PROJECT_ID=${1}
 SQL_PASSWORD=${2}
 export DEPLOYMENT_NAME=${3:-mlops}
-export REGION=${4:-us-central1} 
+export REGION=${4:-us-central1}
 export ZONE=${5:-us-central1-a}
 
-# Set calculated infrastucture and folder names
-
+# Set derived infrastucture and folder names
 export SQL_USERNAME="root"
 export CLOUD_SQL="$DEPLOYMENT_NAME-sql"
 export COMPOSER_NAME="$DEPLOYMENT_NAME-af"
@@ -71,6 +68,7 @@ echo "Setting the project to: $PROJECT_ID"
 gcloud config set project $PROJECT_ID
 
 # 1. Enable services
+
 echo "Enabling all required services..."
 
 gcloud services enable \
@@ -85,13 +83,13 @@ sqladmin.googleapis.com \
 notebooks.googleapis.com
 
 echo "Required services enabled."
-echo 
+echo
 
 #2. Creating GCS bucket
 
 echo "Creating GCS bucket for artifacts..."
 if ! gsutil list "$GCS_BUCKET_NAME"; then
-    gsutil mb -p $PROJECT_ID -l $REGION $GCS_BUCKET_NAME
+gsutil mb -p $PROJECT_ID -l $REGION $GCS_BUCKET_NAME
 fi
 echo "GCS bucket available: $GCS_BUCKET_NAME"
 echo
@@ -107,8 +105,9 @@ fi
 CLOUD_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
 echo "Cloud SQL is available: $CLOUD_SQL_CONNECTION_NAME"
 
-# 4. Creating Cloud Composer
+# 4. Provisioning Composer cluster
 
+# Creating Cloud Composer
 if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSER_NAME" --format='value(name)') != "$COMPOSER_NAME" ]]; then
     echo "Provisioing Cloud Composer..."
     gcloud composer environments create $COMPOSER_NAME \
@@ -125,8 +124,7 @@ fi
 echo "Cloud Composer is available: $COMPOSER_NAME"
 echo
 
-# Installing Python packages
-
+# Installing Python packages to Composer
 echo "Install Python packages to Cloud Composer..."
 gcloud composer environments update $COMPOSER_NAME \
   --update-pypi-packages-from-file=requirements.txt \
@@ -134,18 +132,16 @@ gcloud composer environments update $COMPOSER_NAME \
 echo "Python packages installed."
 echo
 
-# 5. Installing MLflow
+# 5. Installing MLflow to Composer
 
 echo "Provisioning MLflow Tracking server..."
 
 # Set local Kubernetes configuration to connect to Composer GKE cluster
-
 echo "Setting configuration to connect to Composer GKE cluster..."
 GKE_CLUSTER=$(gcloud container clusters list --limit=1 --zone=$ZONE --filter="name~$COMPOSER_NAME" --format="value(name)")
 gcloud container clusters get-credentials $GKE_CLUSTER --zone $ZONE  --project $PROJECT_ID
 
 # Create service account
-
 SA_EMAIL=sql-proxy-access@$PROJECT_ID.iam.gserviceaccount.com
 if [[ $(gcloud iam service-accounts list --filter="$SA_EMAIL" --format='value(email)') != "$SA_EMAIL" ]]; then
     echo "Create new service account: $SA_EMAIL"
@@ -153,7 +149,6 @@ if [[ $(gcloud iam service-accounts list --filter="$SA_EMAIL" --format='value(em
 fi
 
 # Download service account key
-
 if [[ -e mlflow-helm/sql-access.json ]]; then
     echo "Service account key already exists: mlflow-helm/sql-access.json"
 else
@@ -161,7 +156,6 @@ else
 fi
 
 # Set role to the service account
-
 echo "Set cloudsql.client role to the service account..."
 gcloud projects add-iam-policy-binding $PROJECT_ID \
 --member serviceAccount:$SA_EMAIL \
@@ -169,7 +163,6 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 echo "IAM policy binding is added."
 
 # Build MLflow docker image
-
 echo "Build MLflow Docker container image..."
 gcloud builds submit mlflow-helm/docker --timeout 15m --tag ${MLFLOW_IMAGE_URI}:latest
 echo "MLflow Docker container image is built: ${MLFLOW_IMAGE_URI}:latest"
@@ -179,11 +172,16 @@ echo "Build MLflow UI proxy container image..."
 gcloud builds submit mlflow-helm/proxy --timeout 15m --tag ${MLFLOW_PROXY_URI}:latest
 echo "MLflow UI proxy container image is built: ${MLFLOW_PROXY_URI}:latest"
 
-# Using fix K8s namespace: 'mlflow' for MLflow
+# Initializing kubectl
+echo "Initializing kubectl..."
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 
+# Using fix K8s namespace: 'mlflow' for MLflow
 echo "Create mlfow namespace to the GKE cluster..."
 kubectl create namespace mlflow || echo "mlflow namespace exists"
 
+# Deploying mlflow using helm
 echo "Deploying mlflow helm configuration..."
 helm install mlflow --namespace mlflow \
 --set images.mlflow=$MLFLOW_IMAGE_URI \
