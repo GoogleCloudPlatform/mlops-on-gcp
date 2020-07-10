@@ -1,5 +1,5 @@
 FROM gcr.io/deeplearning-platform-release/base-cpu:latest
-RUN apt update && apt -y install mysql-client && apt-get install kubectl
+RUN apt update && apt -y install mysql-client kubectl
 COPY entrypoint.sh .
 COPY requirements.txt .
 RUN python -m pip install -U -r requirements.txt --ignore-installed PyYAML==5.3.1
