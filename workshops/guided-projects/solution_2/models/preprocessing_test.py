@@ -12,12 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Constants of the taxi model.
 
-These values can be tweaked to affect model training performance.
-"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-HIDDEN_UNITS = [16, 8]
+import tensorflow as tf
 
-TRAIN_BATCH_SIZE = 40
-EVAL_BATCH_SIZE = 40
+from models import preprocessing
+
+
+class PreprocessingTest(tf.test.TestCase):
+
+  def testPreprocessingFn(self):
+    self.assertTrue(callable(preprocessing.preprocessing_fn))
+
+
+if __name__ == '__main__':
+  tf.test.main()
