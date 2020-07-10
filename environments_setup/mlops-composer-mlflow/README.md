@@ -190,6 +190,7 @@ The build steps take around 5 minutes...
     MLFLOWCONNECTION=mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow
     SQLINSTANCE=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
     MLFLOWARTIFACTBUCKET=$GCS_BUCKET_NAME/notebooks
+    TRACKINGURL="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
     EOF
 
     gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
