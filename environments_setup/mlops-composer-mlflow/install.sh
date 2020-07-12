@@ -172,8 +172,8 @@ echo "Build MLflow UI proxy container image..."
 gcloud builds submit mlflow-helm/proxy --timeout 15m --tag ${MLFLOW_PROXY_URI}:latest
 echo "MLflow UI proxy container image is built: ${MLFLOW_PROXY_URI}:latest"
 
-# Initializing kubectl
-echo "Initializing kubectl..."
+# Initializing Helm's tiller
+echo "Initializing Helm environment..."
 kubectl create serviceaccount --namespace kube-system tiller
 kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 
@@ -186,7 +186,7 @@ echo "Deploying mlflow helm configuration..."
 helm install mlflow --namespace mlflow \
 --set images.mlflow=$MLFLOW_IMAGE_URI \
 --set images.proxyagent=$MLFLOW_PROXY_URI \
---set defaultArtifactRoot=$GCS_BUCKET_NAME \
+--set defaultArtifactRoot=$GCS_BUCKET_NAME/experiments \
 --set backendStore.mysql.host="127.0.0.1" \
 --set backendStore.mysql.port="3306" \
 --set backendStore.mysql.database="mlflow" \
@@ -197,7 +197,7 @@ mlflow-helm
 
 # Generate command for debug:
 #echo Template command
-#echo helm template mlflow --namespace mlflow --set images.mlflow=$MLFLOW_IMAGE_URI --set images.proxyagent=$MLFLOW_PROXY_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlConnection.name=$MLFLOW_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
+#echo helm template mlflow --namespace mlflow --set images.mlflow=$MLFLOW_IMAGE_URI --set images.proxyagent=$MLFLOW_PROXY_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME/experiments --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlConnection.name=$MLFLOW_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
 
 echo "MLflow Tracking server provisioned."
 echo
@@ -211,6 +211,7 @@ gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
 MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
 MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
 MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
+MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
 
 # Create connection info which will be used as environment variables inside the Notebook instance.
 cat > custom-notebook/notebook-env.txt << EOF
@@ -219,6 +220,7 @@ MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
 MLFLOW_TRACKING_URI=http://127.0.0.1:80
 MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
+MLFLOW_URI_FOR_COMPOSER=${MLFLOW_URI_FOR_COMPOSER}
 MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
 MLOPS_REGION=${REGION}
 EOF

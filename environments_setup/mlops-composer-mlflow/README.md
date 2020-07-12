@@ -101,7 +101,6 @@ see [Creating environments](https://cloud.google.com/composer/docs/how-to/managi
 ---
 
 
-
 ### 5. Deploying MLflow server to Composer GKE cluster
 
 We deploy and run MLflow as a pod to the Composer GKE cluster, using the following steps:
@@ -121,6 +120,36 @@ Along with main MLflow image, a side-car container will be created to be a proxy
 Helm compiles Kubernetes application configuration and deploys all components to the cluster.
 The helm configurations for the our MLflow server installation are found in [mlflow-helm](mlflow-helm).
 
+### 6. Build the common ML container image
+
+Services and Notebook in ML container has access to external infrastucture components such as SQL server, MLflow service. Connection URIs and other settings are propagated
+via entironment variables. For example MLflow local service instance connects Cloud SQL service which is defined in [entrypoint.sh](custom-notebook/entrypoint.sh) leveraging these
+variables.
+
+   ```
+    NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
+    gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
+
+    GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifacts"
+
+    cat > custom-notebook/notebook-env.txt << EOF
+    MLFLOW_SQL_CONNECTION_STR=mysql+pymysql://${SQL_USERNAME}:${SQL_PASSWORD}@127.0.0.1:3306/mlflow
+    MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe ${CLOUD_SQL} --format="value(connectionName)")
+    MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
+    MLFLOW_TRACKING_URI=http://127.0.0.1:80
+    MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
+    MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
+    MLOPS_COMPOSER_NAME=${DEPLOYMENT_NAME}-af
+    MLOPS_REGION=${REGION}
+    EOF
+
+    gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
+    rm custom-notebook/notebook-env.txt
+   ```
+
+By convention MLFflow URI will be set from [MLFLOW_TRACKING_URI](https://www.mlflow.org/docs/latest/tracking.html#logging-functions)
+environment variable.
+The build steps take around 5 minutes...
 
 ## Running the installation script
 
@@ -149,8 +178,8 @@ To start the provisioning script:
     ./install.sh [PROJECT_ID] [SQL_PASSWORD] [DEPLOYMENT_NAME] [REGION] [ZONE]
     ```
 
-The `install.sh` script has default parameters for `DEPLOYMENT_NAME`, `REGION` and `ZONE`. 
-You must provide `PROJECT_ID` and `SQL_PASSWORD`. 
+The `install.sh` script has default parameters for `DEPLOYMENT_NAME`, `REGION` and `ZONE`.
+You must provide `PROJECT_ID` and `SQL_PASSWORD`.
 
 Executing the script takes around 30 minutes. At the end of execution MLflow URL will be printed to console after 'MLflow UI
 can be accessed at the below URI' message.
@@ -168,38 +197,9 @@ instance via Cloud Proxy.
 We use a [custom Docker container image](custom-notebook) for the AI Notebooks instance with the required
 setup and libraries.
 
-The installation script performs the following steps:
+The installation script provisions a new AI Notebooks instance from using the custom Docker container image
 
-1. Build the custom Notebook container image
-2. Create environment variable file that will be used inside the Notebook instance
-3. Provision a new AI Notebooks instance from using the custom Docker container image
-
-### 1. Build the custom Notebook container image
-   ```
-    NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
-    gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
-   ```
-
-The build steps take around 5 minutes...
-
-### 2. Create environment variable file that will be used inside the Notebook instance
-   ```
-    GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifacts"
-
-    cat > custom-notebook/notebook-env.txt << EOF
-    MLFLOW_SQL_CONNECTION_STR=mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow
-    MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
-    MLFLOW_EXPERIMENTS_URI=$GCS_BUCKET_NAME/experiments
-    MLFLOW_TRACKING_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
-    EOF
-
-    gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
-    rm custom-notebook/notebook-env.txt
-   ```
-
-   Note: By convention MLFflow URI is set from [MLFLOW_TRACKING_URI](https://www.mlflow.org/docs/latest/tracking.html#logging-functions)
-
-### 3. Provision a new AI Notebooks instance from using the custom Docker container image
+### Provision a new AI Notebooks instance from using the custom Docker container image
    ```
     gcloud compute instances create $DEPLOYMENT_NAME-nb \
     --zone $ZONE \
@@ -218,14 +218,13 @@ The build steps take around 5 minutes...
 
 Start installation
    ```
-    ./install-notebook.sh [PROJECT_ID] [SQL_PASSWORD] [DEPLOYMENT_NAME] [ZONE]
-
+    ./install-notebook.sh [PROJECT_ID] [DEPLOYMENT_NAME] [ZONE]
    ```
 
 The `install-notebook.sh` script has default parameters for `DEPLOYMENT_NAME` and `ZONE`.
-You must provide `PROJECT_ID` and `SQL_PASSWORD` that must be same as used in install.sh script for environment setup before.
+You must provide `PROJECT_ID` that must be same as used in install.sh script for environment setup before.
 
-The AI Notebooks instance will be created in 2-5 minutes.
+AI Notebooks instance will be created in 2-5 minutes.
 
 The instance will be in the [AI Platform Notebooks list](https://console.google.com/ai-platform/notebooks/instances).
 You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN JUPYTERLAB** link.
@@ -236,15 +235,22 @@ You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN
 
 2. Clone Github repository
     ```bash
-    cd /home
+    cd /home/jupyter
     git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
     ```
 
 3. Open 'environment-test.ipynb' Notebook under `mlops-on-gcp/environments_setup/mlops-composer-mlflow` directory.
 Select 'Run'->'Run All Cells'. The Notebook trains a simple logistic regression while sending logs to MLflow.
 
-4. Open MLflow UI ($MLFLOW_URL) and check new logs of environment-test execution should be appeared.
+4. Open MLflow UI and check new logs of environment-test execution should be appeared. Notebook UI URL available in
 
+   a. Notebook terminal
+
+    ```bash
+   echo $MLFLOW_TRACKING_EXTERNAL_URI
+    ```
+
+   b. Cloud Shell
     ```bash
     echo "https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
     ```
