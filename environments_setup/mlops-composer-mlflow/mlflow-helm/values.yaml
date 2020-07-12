@@ -57,10 +57,6 @@ service:
   type: NodePort
   port: 5000
 
-ingress:
-  enabled: false
-  annotations: {}
-
 resources:
   requests:
     memory: "1000Mi"
