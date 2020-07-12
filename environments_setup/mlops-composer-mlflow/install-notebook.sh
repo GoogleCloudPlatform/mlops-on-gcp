@@ -28,7 +28,7 @@ trap 'err_handler "$LINENO" "$BASH_COMMAND" "$?"' ERR
 
 # Check command line parameters
 if [[ $# < 2 ]]; then
-  echo 'USAGE:  ./install-notebook.sh PROJECT_ID SQL_PASSWORD [DEPLOYMENT_NAME=mlops] [ZONE=us-central1-a]'
+  echo 'USAGE:  ./install-notebook.sh PROJECT_ID [DEPLOYMENT_NAME=mlops] [ZONE=us-central1-a]'
   echo 'PROJECT_ID      - GCP project Id'
   echo 'DEPLOYMENT_NAME - Short name prefix of infrastructure element and folder names, like SQL instance, Cloud Composer name'
   echo 'ZONE            - A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones'
@@ -38,9 +38,8 @@ fi
 # Set script constants
 
 PROJECT_ID=${1}
-SQL_PASSWORD=${2}
-DEPLOYMENT_NAME=${3:-mlops}
-ZONE=${4:-us-central1-a}
+DEPLOYMENT_NAME=${2:-mlops}
+ZONE=${3:-us-central1-a}
 
 # Set calculated infrastucture and folder names
 

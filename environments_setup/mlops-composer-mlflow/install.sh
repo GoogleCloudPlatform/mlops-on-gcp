@@ -210,14 +210,17 @@ gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
 # Note: MLflow provisioning takes minutes. After the mlimage creation it should be available.
 MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
 MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
-MLFLOW_TRACKING_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
+MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
 
 # Create connection info which will be used as environment variables inside the Notebook instance.
 cat > custom-notebook/notebook-env.txt << EOF
 MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
 MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
-MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+MLFLOW_TRACKING_URI=http://127.0.0.1:80
+MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
+MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
+MLOPS_REGION=${REGION}
 EOF
 
 gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
@@ -225,7 +228,7 @@ rm custom-notebook/notebook-env.txt
 
 tput setaf 3;
 echo MLflow UI can be accessed externally at the below URI:
-echo $MLFLOW_TRACKING_URI
+echo $MLFLOW_TRACKING_EXTERNAL_URI
 tput setaf 7;
 
 echo "Enviornment is provisioned successfully."
