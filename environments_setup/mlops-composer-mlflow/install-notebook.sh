@@ -50,8 +50,8 @@ CLOUD_SQL="$DEPLOYMENT_NAME-sql"
 GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifact-store"
 NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
 
-CLOUD_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
-MLFLOWCONNECTION="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
+MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
+MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
 
 tput setaf 3; echo Creating environment
 echo Project: $PROJECT_ID
@@ -73,9 +73,10 @@ gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
 
 # Create connection info which will be used as environment variables inside the Notebook instance.
 cat > custom-notebook/notebook-env.txt << EOF
-MLFLOWCONNECTION=$MLFLOWCONNECTION
-SQLINSTANCE=$CLOUD_SQL_CONNECTION_NAME
-MLFLOWARTIFACTBUCKET=$GCS_BUCKET_NAME
+MLFLOW_SQL_CONNECTION_STR=$MLFLOW_SQL_CONNECTION_STR
+MLFLOW_SQL_CONNECTION_NAME=$MLFLOW_SQL_CONNECTION_NAME
+MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
+MLFLOW_TRACKING_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
 EOF
 
 gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME

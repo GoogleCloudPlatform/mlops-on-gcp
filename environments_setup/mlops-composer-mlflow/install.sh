@@ -102,8 +102,8 @@ if [[ $(gcloud sql instances list --filter="$CLOUD_SQL" --format='value(name)') 
     gcloud sql databases create mlflow --instance=$CLOUD_SQL
     gcloud sql users set-password $SQL_USERNAME --host=% --instance=$CLOUD_SQL --password=$SQL_PASSWORD
 fi
-CLOUD_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
-echo "Cloud SQL is available: $CLOUD_SQL_CONNECTION_NAME"
+MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
+echo "Cloud SQL is available: $MLFLOW_SQL_CONNECTION_NAME"
 
 # 4. Provisioning Composer cluster
 
@@ -192,12 +192,12 @@ helm install mlflow --namespace mlflow \
 --set backendStore.mysql.database="mlflow" \
 --set backendStore.mysql.username=$SQL_USERNAME \
 --set backendStore.mysql.password=$SQL_PASSWORD \
---set cloudSqlInstance.name=$CLOUD_SQL_CONNECTION_NAME \
+--set cloudSqlConnection.name=$MLFLOW_SQL_CONNECTION_NAME \
 mlflow-helm
 
 # Generate command for debug:
 #echo Template command
-#echo helm template mlflow --namespace mlflow --set images.mlflow=$MLFLOW_IMAGE_URI --set images.proxyagent=$MLFLOW_PROXY_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlInstance.name=$CLOUD_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
+#echo helm template mlflow --namespace mlflow --set images.mlflow=$MLFLOW_IMAGE_URI --set images.proxyagent=$MLFLOW_PROXY_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlConnection.name=$MLFLOW_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
 
 echo "MLflow Tracking server provisioned."
 echo

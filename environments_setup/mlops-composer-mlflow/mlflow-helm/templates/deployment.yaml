@@ -46,7 +46,7 @@ spec:
             # - "-ip_address_types=PRIVATE"
             # tcp:3306 port the proxy should listen on
             # MySQL: 3306, Postgres: 5432, SQLServer: 1433
-            - "-instances={{ required "you must specify cloudsqlInstance" .Values.cloudSqlInstance.name }}=tcp:3306"
+            - "-instances={{ required "you must specify cloudSqlConnection.name" .Values.cloudSqlConnection.name }}=tcp:3306"
             - "-credential_file=/secrets/service_account.json"
             - "-verbose=true"
           securityContext:

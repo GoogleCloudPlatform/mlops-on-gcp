@@ -1,4 +1,4 @@
-cloudSqlInstance:
+cloudSqlConnection:
   name:
 
 # backendStore -- Either a filepath, a database or the default value.
@@ -58,7 +58,7 @@ service:
   port: 5000
 
 ingress:
-  enabled: true
+  enabled: false
   annotations: {}
 
 resources:
