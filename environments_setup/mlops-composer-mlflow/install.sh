@@ -46,7 +46,7 @@ export ZONE=${5:-us-central1-a}
 export SQL_USERNAME="root"
 export CLOUD_SQL="$DEPLOYMENT_NAME-sql"
 export COMPOSER_NAME="$DEPLOYMENT_NAME-af"
-export GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifact-store"
+export GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifacts"
 export MLFLOW_IMAGE_URI="gcr.io/${PROJECT_ID}/$DEPLOYMENT_NAME"
 export MLFLOW_PROXY_URI="gcr.io/${PROJECT_ID}/inverted-proxy"
 
@@ -56,7 +56,7 @@ echo Project: $PROJECT_ID
 echo Deployment name: $DEPLOYMENT_NAME
 echo Region: $REGION, zone: $ZONE
 echo Cloud SQL name: $CLOUD_SQL
-echo MLflow artifacts: $GCS_BUCKET_NAME
+echo MLflow GCS bucket: $GCS_BUCKET_NAME
 echo Composer name: $COMPOSER_NAME
 echo Setup started at:
 date
@@ -201,5 +201,31 @@ mlflow-helm
 
 echo "MLflow Tracking server provisioned."
 echo
+
+echo Build customized common ML docker image for AI Platform
+
+NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
+gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
+
+# Note: MLflow provisioning takes minutes. After the mlimage creation it should be available.
+MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
+MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
+MLFLOW_TRACKING_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
+
+# Create connection info which will be used as environment variables inside the Notebook instance.
+cat > custom-notebook/notebook-env.txt << EOF
+MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
+MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
+MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
+MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+EOF
+
+gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
+rm custom-notebook/notebook-env.txt
+
+tput setaf 3;
+echo MLflow UI can be accessed externally at the below URI:
+echo $MLFLOW_TRACKING_URI
+tput setaf 7;
 
 echo "Enviornment is provisioned successfully."

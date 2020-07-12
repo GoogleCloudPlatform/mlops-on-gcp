@@ -44,22 +44,15 @@ ZONE=${4:-us-central1-a}
 
 # Set calculated infrastucture and folder names
 
-SQL_USERNAME="root"
-CLOUD_SQL="$DEPLOYMENT_NAME-sql"
-# If you want to create multiple notebook instances each must have unique NOTEBOOK_NAME
-GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifact-store"
+GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifacts"
 NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
-
-MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
-MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
 
 tput setaf 3; echo Creating environment
 echo Project: $PROJECT_ID
 echo Deployment name: $DEPLOYMENT_NAME
 echo Zone: $ZONE
-echo Cloud SQL name: $CLOUD_SQL
-echo MLflow artifacts: $GCS_BUCKET_NAME
-echo Setup started at:
+echo MLflow GCS bucket: $GCS_BUCKET_NAME
+echo Notebook provisioning started at:
 date
 
 tput setaf 7
@@ -68,21 +61,10 @@ tput setaf 7
 echo "Setting the project to: $PROJECT_ID"
 gcloud config set project $PROJECT_ID
 
-echo Build customized AI Platform Notebook docker image
-gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
-
-# Create connection info which will be used as environment variables inside the Notebook instance.
-cat > custom-notebook/notebook-env.txt << EOF
-MLFLOW_SQL_CONNECTION_STR=$MLFLOW_SQL_CONNECTION_STR
-MLFLOW_SQL_CONNECTION_NAME=$MLFLOW_SQL_CONNECTION_NAME
-MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
-MLFLOW_TRACKING_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
-EOF
-
-gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
-rm custom-notebook/notebook-env.txt
-
 # Create Notebook instance
+# If you want to create multiple notebook instances each must have unique notebook name
+# e.g $DEPLOYMENT_NAME-nb-1, $DEPLOYMENT_NAME-nb-2
+
 gcloud compute instances create $DEPLOYMENT_NAME-nb \
 --zone $ZONE \
 --image-family common-container \
