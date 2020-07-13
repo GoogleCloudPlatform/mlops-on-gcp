@@ -138,7 +138,6 @@ variables.
     MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
     MLFLOW_TRACKING_URI=http://127.0.0.1:80
     MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
-    MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
     MLOPS_COMPOSER_NAME=${DEPLOYMENT_NAME}-af
     MLOPS_REGION=${REGION}
     EOF

@@ -129,7 +129,6 @@ echo "Install Python packages to Cloud Composer..."
 gcloud composer environments update $COMPOSER_NAME \
   --update-pypi-packages-from-file=composer-requirements.txt \
   --location=$REGION
-  --async
 echo
 
 # 5. Installing MLflow to Composer
@@ -213,11 +212,11 @@ MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1
 MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
 MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
 
-# Add environment MLflow URI to Cloud Composer
-echo "Add environment MLflow URI to Cloud Composer..."
+# Add MLflow URI to Cloud Composer as environment variable
+echo "Add MLflow URI to Cloud Composer as environment variable..."
 gcloud composer environments update $COMPOSER_NAME \
-  --update-env-variables=MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER
-  --location=$REGION
+  --update-env-variables=MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER \
+  --location=$REGION \
   --async
 echo
 
@@ -228,7 +227,6 @@ MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
 MLFLOW_TRACKING_URI=http://127.0.0.1:80
 MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
-MLFLOW_URI_FOR_COMPOSER=${MLFLOW_URI_FOR_COMPOSER}
 MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
 MLOPS_REGION=${REGION}
 EOF
