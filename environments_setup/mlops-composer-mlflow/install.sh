@@ -127,9 +127,9 @@ echo
 # Installing Python packages to Composer
 echo "Install Python packages to Cloud Composer..."
 gcloud composer environments update $COMPOSER_NAME \
-  --update-pypi-packages-from-file=requirements.txt \
+  --update-pypi-packages-from-file=composer-requirements.txt \
   --location=$REGION
-echo "Python packages installed."
+  --async
 echo
 
 # 5. Installing MLflow to Composer
@@ -212,6 +212,14 @@ MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="
 MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
 MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
 MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
+
+# Add environment MLflow URI to Cloud Composer
+echo "Add environment MLflow URI to Cloud Composer..."
+gcloud composer environments update $COMPOSER_NAME \
+  --update-env-variables=MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER
+  --location=$REGION
+  --async
+echo
 
 # Create connection info which will be used as environment variables inside the Notebook instance.
 cat > custom-notebook/notebook-env.txt << EOF

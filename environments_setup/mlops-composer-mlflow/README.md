@@ -88,7 +88,7 @@ The Cloud Composer cluster name will be set to **<DEPLOYMENT_NAME>-af**
 
 By default, the `--machine-type` is set to `n1-standard-2`, `--node-count` is set to 3, and `--python-version` is set to 3.
 
-After the Cloud Composer is provisioned, Python packages in the [requirements.txt](requirements.txt) file are installed
+After the Cloud Composer is provisioned, Python packages in the [composer-requirements.txt](composer-requirements.txt) file are installed
 to the Composer runtime. The file includes MLflow, SciPy, and Scikit-learn. For more information,
 see [Creating environments](https://cloud.google.com/composer/docs/how-to/managing/creating) in the Cloud Composer documentation.
 
