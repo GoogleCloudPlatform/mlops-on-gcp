@@ -1,0 +1,11 @@
+apiVersion: skaffold/v2beta4
+build:
+  artifacts:
+  - context: .
+    docker:
+      dockerfile: Dockerfile
+    image: gcr.io/asl-ml-immersion/tfx_covertype_lab_04
+  tagPolicy:
+    envTemplate:
+      template: '{{.IMAGE_NAME}}:latest'
+kind: Config
