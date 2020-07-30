@@ -30,6 +30,7 @@ export DEPLOYMENT_NAME=${2:-mlops}
 export REGION=${3:-us-central1}
 export ZONE=${4:-us-central1-a}
 
+export SQL_USERNAME="root"
 # Set calculated infrastucture and folder names
 export GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifacts"
 export NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
