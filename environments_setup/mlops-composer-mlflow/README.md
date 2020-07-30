@@ -125,6 +125,24 @@ Along with the main MLflow image, a side-car container will be created to be a p
 Helm compiles Kubernetes application configuration and deploys all components.
 The helm templates for the MLflow server installation are found in [mlflow-helm](mlflow-helm) folder.
 
+After all image buildings, hosting and SQL connection definitions, the process and the final landscape of interconections will be this:
+
+![mlflow-connections](../../images/mlops-composer-mlflow-mlflow-connections.png)
+
+> MLflow connections detailed:
+> 
+> In this MLOps environment we implemented two MLflow Tracking server instances.
+> To reduce connection complexities, each instances are available thought local connections.
+>
+> 1. from Notebook through localhost
+> 2. from Airflow through K8s cluster internal IP exposed by K8s service.
+> 
+> Both instances share the same MySQL database in the same Cloud SQL instance, thanks to MLflow Tracking Service stateless operation.
+> Instead of accessing SQL server directly we applied SQL proxy between MLFlow and SQL server.
+> MLflow tracking server doesn't have internal authentication method or TLS, because of those limitations MLFlow Web interface exposed via
+> inverted proxy which available via an hashed URL format, like this: `https://abcdef123456789-dot-us-central1.notebooks.googleusercontent.com/`.
+> MLFlow URL will be saved to `MLFLOW_TRACKING_EXTERNAL_URI` env. variable as a result of provisioning process.
+
 ### 6. Build the common ML container image
 
 Services and Jupyter notebook in ML container has access to provisioned infrastucture components such as SQL server and MLflow service.
@@ -192,8 +210,14 @@ Script  calls [set-env-var.sh](set-env-var.sh) to setup environment variables, t
 The `install.sh` script has default parameters for `DEPLOYMENT_NAME`, `REGION` and `ZONE`.
 You must provide `PROJECT_ID` and `SQL_PASSWORD`.
 
-Executing script takes around 30 minutes. At the end of execution MLflow URL will be printed to console after the 'MLflow UI
-can be accessed at the below URI' message.
+Executing script takes around 30 minutes.
+
+Please, note:
+
+1. At the end of process, MLflow URL will be printed to console after the
+   'MLflow UI can be accessed at the below URI:' message.
+2. MLFLOW_TRACKING_EXTERNAL_URI variable will be set to MLflow URL in Cloud Shell.
+3. MLFLOW_TRACKING_EXTERNAL_URI will be available in Notebook Terminal as well.
 
 
 ## Creating AI Platform Notebooks Instance
