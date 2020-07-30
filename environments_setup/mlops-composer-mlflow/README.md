@@ -36,9 +36,9 @@ The following tables describes the parameters required for the installation:
 |-----------------|----------|---------------|-----------------------------------------------------------------------------------------------------------------------------------|
 | PROJECT_ID      | Required |               | The project id of your GCP project                                                                                                    |
 | SQL_PASSWORD    | Required |               | The password for the Cloud SQL root user                                                                                          |
-| DEPLOYMENT_NAME | Optional | mlops         | Short name prefix of infrastructure element and folder names                                                                      |
-| REGION          | Optional | us-central1   | A GCP region across the globe. Best to select one of the nearest.                                                                 |
-| ZONE            | Optional | us-central1-a | A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones' |
+| DEPLOYMENT_NAME | Optional | mlops         | Short name prefix of infrastructure element and folder names. Default: mlflow                                                                      |
+| REGION          | Optional | us-central1   | A GCP region across the globe. Best to select one of the nearest. Default: us-central-1                                                                |
+| ZONE            | Optional | us-central1-a | A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones'. Default: us-central1-a |
 
 
 The installation script performs the following steps:
@@ -66,7 +66,7 @@ In addition to the [services enabled by default](https://cloud.google.com/servic
 A Cloud Storage bucket is required as an ML **artifact store**. The artifacts produced by the various ML steps, such as 
 data splits, trained models, evaluation metrics, will be saved in this bucket.
 
-The Cloud Storage bucket name will be set to **<DEPLOYMENT_NAME>-artifact-store**.
+The Cloud Storage bucket name will be set to **<DEPLOYMENT_NAME>-artifacts**.
 
 ### 3. Provisioning a Cloud SQL instance
 
@@ -74,14 +74,15 @@ A Cloud SQL instance is used as a the MLflow backend to store ML metadata and po
 in the Cloud Storage bucket.
 
 The Cloud SQL instance name will be set to **<DEPLOYMENT_NAME>-sql**, and the default **root** user password will be set to <SQL_PASSWORD>.
-A database named **mlflow** will be created in the Cloud SQL instance.
+A database named **mlflow** will be created in the Cloud SQL, MySQL instance.
 
-For more information, see [Cloud SQL setup and available machine types](https://cloud.google.com/sql/docs/mysql/create-instance#gcloud>).
+For more information, see [Cloud SQL setup](https://cloud.google.com/sql/docs/mysql>) and about user and security management,
+see [Creating and managing MySQL users](https://cloud.google.com/sql/docs/mysql/create-manage-users).
 
 
 ### 4. Provisioning Cloud Composer
 
-Cloud Composer will run ML training pipelines, implemented in  Airflow, on a managed environment.
+Cloud Composer will run ML training pipelines, implemented in Airflow, on a managed environment.
 Cloud Composer installation created a GKE cluster in the `REGION` and `ZONE` provided.
 
 The Cloud Composer cluster name will be set to **<DEPLOYMENT_NAME>-af**
@@ -103,52 +104,61 @@ see [Creating environments](https://cloud.google.com/composer/docs/how-to/managi
 
 ### 5. Deploying MLflow server to Composer GKE cluster
 
-We deploy and run MLflow as a pod to the Composer GKE cluster, using the following steps:
+Script deploys and runs MLflow as a pod to the Composer GKE cluster, using the following steps:
 
 1. MLflow server will need to connect to the Cloud SQL to store the ML metadata.
 The connection will be possible via a [Cloud SQL Proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy).
-Therefore, we create a service account `sql-proxy-access@PROJECT_ID.iam.gserviceaccount.com`,
-and download the account key to `sql-access.json` file. This will be used by the Cloud Proxy.
-The service account is granted `cloudsql.client` IAM role.
+Therefore, script creates a service account `sql-proxy-access@PROJECT_ID.iam.gserviceaccount.com`,
+and downloads the account key to `sql-access.json` file.
+Key will be used for the [Cloud SQL Proxy authorization](https://cloud.google.com/sql/docs/mysql/authorize-proxy).
+The service account is granted a single `cloudsql.client` IAM role, which enables the connection between proxy and
+MySQL server, but it does not restrict database level permissions. Database access is managed by general MySQL user name based
+authorization.
 
 2. Docker container image with MLflow installed is created and pushed to Container Registry.
 The container image uses this [Dockerfile](mlflow-helm/docker/Dockerfile), where `mlflow server`
 command is the entry point.
-Along with main MLflow image, a side-car container will be created to be a proxy server to expose MLflow UI [Dockerfile](mlflow-helm/proxy/Dockerfile).
+Along with the main MLflow image, a side-car container will be created to be a proxy server to expose
+[MLflow Tracking web UI](https://www.mlflow.org/docs/latest/tracking.html#tracking-ui).
 
-3. we use [Helm](https://helm.sh/) to deploy the MLflow container to the GKE cluster.
-Helm compiles Kubernetes application configuration and deploys all components to the cluster.
-The helm configurations for the our MLflow server installation are found in [mlflow-helm](mlflow-helm).
+3. Script uses [Helm](https://helm.sh/) to deploy the MLflow container to the Composer's GKE cluster.
+Helm compiles Kubernetes application configuration and deploys all components.
+The helm templates for the MLflow server installation are found in [mlflow-helm](mlflow-helm) folder.
 
 ### 6. Build the common ML container image
 
-Services and Notebook in ML container has access to external infrastucture components such as SQL server, MLflow service. Connection URIs and other settings are propagated
-via entironment variables. For example MLflow local service instance connects Cloud SQL service which is defined in [entrypoint.sh](custom-notebook/entrypoint.sh) leveraging these
-variables.
+Services and Jupyter notebook in ML container has access to provisioned infrastucture components such as SQL server and MLflow service.
+Connection URIs and other settings are propagated via entironment variables. Environment setting for Notebook is build in this method
+and stored in file in GCS
 
    ```
-    NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
-    gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
-
-    GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifacts"
-
     cat > custom-notebook/notebook-env.txt << EOF
     MLFLOW_SQL_CONNECTION_STR=mysql+pymysql://${SQL_USERNAME}:${SQL_PASSWORD}@127.0.0.1:3306/mlflow
     MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe ${CLOUD_SQL} --format="value(connectionName)")
-    MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
+    MLFLOW_EXPERIMENTS_URI=${gs://$DEPLOYMENT_NAME-artifacts/experiments}
     MLFLOW_TRACKING_URI=http://127.0.0.1:80
     MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
     MLOPS_COMPOSER_NAME=${DEPLOYMENT_NAME}-af
     MLOPS_REGION=${REGION}
     EOF
 
-    gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
+    gsutil cp custom-notebook/notebook-env.txt ${gs://$DEPLOYMENT_NAME-artifacts}
     rm custom-notebook/notebook-env.txt
    ```
 
-By convention MLFflow URI will be set from [MLFLOW_TRACKING_URI](https://www.mlflow.org/docs/latest/tracking.html#logging-functions)
-environment variable.
-The build steps take around 5 minutes...
+This file will be refered in Notebook provisioning command parameter:
+`--metadata ... container-env-file=$GCS_BUCKET_NAME/notebook-env.txt`
+
+MLflow local service instance connects Cloud SQL service which is defined in [entrypoint.sh](custom-notebook/entrypoint.sh) leveraging these variables.
+
+By convention MLFflow URI will be set from [MLFLOW_TRACKING_URI](https://www.mlflow.org/docs/latest/tracking.html#where-runs-are-recorded)
+environment variable, but pointing to the localhost server instance (127.0.0.1).
+
+This common ML container build step defined in [custom-notebook](custom-notebook) folder and the build requires around 5 minutes for completion.
+   ```
+   NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
+   gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
+   ```
 
 ## Running the installation script
 
@@ -174,31 +184,32 @@ To start the provisioning script:
     ```
 4. Start installation
     ```
-    ./install.sh [PROJECT_ID] [SQL_PASSWORD] [DEPLOYMENT_NAME] [REGION] [ZONE]
+    source install.sh [PROJECT_ID] [SQL_PASSWORD] [DEPLOYMENT_NAME] [REGION] [ZONE]
     ```
+
+Script  calls [set-env-var.sh](set-env-var.sh) to setup environment variables, that will be required for AI Platform Notebook provisioning step.
 
 The `install.sh` script has default parameters for `DEPLOYMENT_NAME`, `REGION` and `ZONE`.
 You must provide `PROJECT_ID` and `SQL_PASSWORD`.
 
-Executing the script takes around 30 minutes. At the end of execution MLflow URL will be printed to console after 'MLflow UI
+Executing script takes around 30 minutes. At the end of execution MLflow URL will be printed to console after the 'MLflow UI
 can be accessed at the below URI' message.
 
 
 ## Creating AI Platform Notebooks Instance
 
 The AI Platform Notebooks instance will be your interface of the development environment to define and save experimentation code.
-Your notebooks and code files will be saved to your source repository.
+Your notebooks and code files will be saved to Notebook local instance which is a stateless Docker container, therefore please use
+[integrated Git to save your experiments](https://cloud.google.com/ai-platform/notebooks/docs/save-to-github).
 
-Your instance  will need to use MLflow, which uses the same Cloud SQL instance used by the Cloud Composer
-environment as a backend. Therefore, your instance will need to Mlflow installed, and access to the Cloud SQL
-instance via Cloud Proxy.
+Your Notebook instance will need to use local MLflow server, which connects to the same Cloud SQL instance that is used by the previously provisioned
+and dedicated MLflow instance (5th step).
 
-We use a [custom Docker container image](custom-notebook) for the AI Notebooks instance with the required
+We use the custom ML image created saved to Cloud Repository ($NB_IMAGE_URI) in the previous 6th step for the AI Notebooks instance. Image contains all required
 setup and libraries.
 
-The installation script provisions a new AI Notebooks instance from using the custom Docker container image
+This command provisions a new AI Notebooks instance.
 
-### Provision a new AI Notebooks instance from using the custom Docker container image
    ```
     gcloud compute instances create $DEPLOYMENT_NAME-nb \
     --zone $ZONE \
@@ -213,20 +224,15 @@ The installation script provisions a new AI Notebooks instance from using the cu
     --metadata proxy-mode=service_account,container=$NB_IMAGE_URI,container-env-file=$GCS_BUCKET_NAME/notebook-env.txt
    ```
 
-### Running the Notebook installation script
-
-Start installation
-   ```
-    ./install-notebook.sh [PROJECT_ID] [DEPLOYMENT_NAME] [ZONE]
-   ```
-
-The `install-notebook.sh` script has default parameters for `DEPLOYMENT_NAME` and `ZONE`.
-You must provide `PROJECT_ID` that must be same as used in install.sh script for environment setup before.
-
-AI Notebooks instance will be created in 2-5 minutes.
+AI Notebooks instance will be created in 2-5 minutes. Required variables already set. If you need to redeploy Notebook
+with different parameters later, might call `set-env-vars.sh` before.
 
 The instance will be in the [AI Platform Notebooks list](https://console.google.com/ai-platform/notebooks/instances).
 You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN JUPYTERLAB** link.
+
+> Please note that this method is very custom and based on Beta features, might change in the near future.
+> For more details and about Notebook customization parameters,
+> see [Using a custom container](https://cloud.google.com/ai-platform/notebooks/docs/custom-container)
 
 ## Verifying the Infrastructure
 
@@ -257,9 +263,11 @@ Select 'Run'->'Run All Cells'. The Notebook trains a simple logistic regression 
 ![MLflow logs](../../images/mlflow-env-test.png)
 
 
-## Uninstall the environment
+## Uninstall and clean up the environment
 
 Run the [destroy.sh](destroy.sh) script to turn down the services you provisioned:
 ```
 ./destroy.sh [PROJECT_ID] [DEPLOYMENT_NAME] [REGION] [ZONE]
 ```
+
+This destroy script won't turn-down AI Platform Notebook instance and won't clear IAM service account and key. You need to delete them manually.
