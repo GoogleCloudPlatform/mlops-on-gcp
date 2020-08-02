@@ -1,6 +1,6 @@
 # Setting up an MLOps Environment with Cloud Composer and MLflow on Google Cloud
 
-We describe how to provision and MLOps environment using [Cloud Composer](https://cloud.google.com/composer)
+We describe how to provision an MLOps environment using [Cloud Composer](https://cloud.google.com/composer)
 and [MLflow](https://mlflow.org/) on Google Cloud. This environment enables deploying and executing
 ML continuous training pipelines, as well as managing and tracking ML experiments, metadata, and artifacts.
 
