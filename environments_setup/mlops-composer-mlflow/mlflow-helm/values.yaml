@@ -1,0 +1,72 @@
+cloudSqlConnection:
+  name:
+
+# backendStore -- Either a filepath, a database or the default value.
+backendStore:
+  # backendStore.filepath -- A local or remote filesystem path (e.g. /mnt/persistent-disk)
+  filepath:
+
+  # backendStore.mysql -- A map with the values for (username, password, host, port and database).
+  mysql:
+    username: root
+  #   password: 
+  #   host:
+  #   port:
+  #   database:
+
+# defaultArtifactRoot -- A local or remote filepath (e.g. s3://my-bucket). It is mandatory when specifying a database backend store
+defaultArtifactRoot:
+
+# MLflow UI port.
+mlFlowUiPort: 80
+
+# extraArgs -- A map of arguments and values to pass to the `mlflow server` command
+extraArgs: {}
+  # workers: 2
+  # expose-prometheus: yes
+
+replicaCount: 1
+
+images:
+  # The fully qualified name of the MLflow docker image to use
+  mlflow:
+  # The fully qualified name of the MLflow UI proxy docker image to use
+  proxyagent:
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 5000
+
+resources:
+  requests:
+    memory: "1000Mi"
+    cpu: "768m"
+  limits:
+    memory: "1500Mi"
+    cpu: "1000m"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

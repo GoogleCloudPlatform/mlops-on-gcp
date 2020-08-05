@@ -1,0 +1,10 @@
+apiVersion: v2
+name: mlflow
+description: |
+  [Deploy MLFlow](https://mlflow.org/) is an open source platform specialized in tracking ML experiments, and packaging and deploying ML models. This chart based on https://github.com/larribas/helm-charts.
+maintainers:
+  - email: rkornel@google.com
+    name: Kornel Regius
+type: application
+appVersion: 1.8.0
+version: 0.1.0

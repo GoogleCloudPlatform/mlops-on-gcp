@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mlflow.fullname" . }}
+  labels:
+    {{- include "mlflow.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "mlflow.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mlflow.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "mlflow.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      - name: mlflow-sql-access-secret-vol
+        secret:
+          secretName: mlflow-sql-access-secret
+      containers:
+        - name: mlflow-proxy-agent
+          image: {{ required "you must specify the MLflow UI proxy docker source" .Values.images.proxyagent }}:latest
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: ML_PIPELINE_UI_SERVICE_HOST
+            value: "127.0.0.1"
+          - name: ML_PIPELINE_UI_SERVICE_PORT
+            value: "{{ .Values.mlFlowUiPort }}"
+        - name: cloud-sql-proxy
+          # It is recommended to use the latest version of the Cloud SQL proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.17
+          command:
+            - "/cloud_sql_proxy"
+            # If connecting from a VPC-native GKE cluster, you can use the
+            # following flag to have the proxy connect over private IP
+            # - "-ip_address_types=PRIVATE"
+            # tcp:3306 port the proxy should listen on
+            # MySQL: 3306, Postgres: 5432, SQLServer: 1433
+            - "-instances={{ required "you must specify cloudSqlConnection.name" .Values.cloudSqlConnection.name }}=tcp:3306"
+            - "-credential_file=/secrets/service_account.json"
+            - "-verbose=true"
+          securityContext:
+            # The default Cloud SQL proxy image runs as the
+            # "nonroot" user and group (uid: 65532) by default.
+            # runAsNonRoot: true
+          ports:
+            - name: mysql
+              containerPort: 3306
+          volumeMounts:
+          - name: mlflow-sql-access-secret-vol
+            mountPath: /secrets/
+            readOnly: true
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ required "you must specify the MLflow docker source" .Values.images.mlflow }}:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - --host=0.0.0.0
+            - --port={{ required "you must specify container port" .Values.mlFlowUiPort }}
+          {{- if .Values.backendStore.filepath }}
+            - --backend-store-uri={{ .Values.backendStore.filepath }}
+          {{- else if .Values.backendStore.mysql.username }}
+            - --backend-store-uri=mysql+pymysql://{{ required "you must specify a username for the database" .Values.backendStore.mysql.username }}:$(SECRET_PASSWORD)@{{ required "you must specify a host for the database" .Values.backendStore.mysql.host }}:{{ required "you must specify a port for the database" .Values.backendStore.mysql.port }}/{{ required "you must specify a database name" .Values.backendStore.mysql.database }}
+          {{- end }}
+          {{- if .Values.defaultArtifactRoot }}
+            - --default-artifact-root={{ .Values.defaultArtifactRoot }}
+          {{- end }}
+          {{- range $key, $value := .Values.extraArgs }}
+            - --{{ $key }}={{ $value }}
+          {{- end }}
+          {{- if .Values.backendStore.mysql }}
+          env:
+            - name: SECRET_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.mysqlSecretName" . }}
+                  key: password
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.mlFlowUiPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
