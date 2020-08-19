@@ -26,7 +26,7 @@ The notebook covers:
 * Preparing and running load tests
 * Retrieving and consolidating test results
 
-[03-analyze-tests.ipynb](03-analyze-tests.ipynb). This notebook outlines techniques for analyzing load test results. 
+[03-analyze-results.ipynb](03-analyze-results.ipynb). This notebook outlines techniques for analyzing load test results. 
 The notebook covers:
 * Aligning and normalizing metric time series
 * Using Pandas and Matplotlib to analyze and visualize test results
@@ -40,7 +40,14 @@ The notebook covers:
 
 ## Environment setup
 
-The code samples were tested on [AI Platform Notebooks](https://cloud.google.com/ai-platform-notebooks) using the standard TensorFlow 2.2 image. 
+1. Create a [Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets)
+2. Create an [AI Notebooks instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) TensorFlow 2.2
+3. Open the JupyterLab from the AI Notebook instance
+4. Open a new Terminal to execute the following commands to clone the repository:
+    ```
+    git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
+    cd mlops-on-gcp/model_serving/caio-load-testing
+    ```
 
 
 
