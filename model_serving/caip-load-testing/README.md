@@ -49,6 +49,7 @@ In addition to the notebooks, the directory includes the following artifacts:
 1. Create a [Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets).
 2. Create a [Cloud Monitoring Workspace](https://cloud.google.com/monitoring/workspaces/create) in your project.
 3. Create a [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-cluster) cluster with the required CPUs. 
+The node pool must have access to the Cloud APIs.
 4. Create an [AI Notebooks instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) TensorFlow 2.2.
 5. Open the JupyterLab from the AI Notebook instance.
 6. Open a new Terminal to execute the following commands to clone the repository:
