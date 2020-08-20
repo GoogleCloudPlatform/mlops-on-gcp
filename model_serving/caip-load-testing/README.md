@@ -10,32 +10,38 @@ We use [Locust](locust.io) to simulate the user prediction requests workload.
 The code samples utilize the [ResNet101 image classification model](https://tfhub.dev/google/imagenet/resnet_v2_101/classification/4) from TensorFlow Hub. 
 The design patterns and techniques demonstrated in the samples can be easily adapted to other domains and types of models.
 
-## The repo content:
-[01-prepare-and-deploy.ipynb](01-prepare-and-deployipynb). This notebook shows how to prepare a [TensorFlow SavedModel](https://www.tensorflow.org/guide/saved_model) for 
+## The directory contents:
+The load testing system is driven by the following three notebooks:
+
+* [01-prepare-and-deploy.ipynb](01-prepare-and-deployipynb). This notebook shows how to prepare a [TensorFlow SavedModel](https://www.tensorflow.org/guide/saved_model) for 
 serving and deploy to AI Platform Prediction. The notebook covers:
- * Re-using pre-trained models from TensorFlow Hub
- * Enhancing a pre-trained model with pre-processing and post-processing graphs
- * Defining multiple serving signatures
- * Deploying the SavedModel to AI Platform Prediction with auto-scaling and GPUs
- * Validate deployed model versions
+    1. Using pre-trained models from TensorFlow Hub
+    2. Extending the pre-trained model with pre-processing and post-processing operations 
+    3. Defining multiple serving signatures for the model and exporting it as a SavedModel
+    4. Deploying the SavedModel to AI Platform Prediction with auto-scaling and GPUs
+    5. Validate deployed model versions
 
-[02-perf-testing.ipynb](02-perf-testing.ipynb). This notebook demonstrates how to use [Locust](locust.io), [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine) and [Cloud Monitoring](https://cloud.google.com/monitoring) to perform load testing of model versions deployed in AI Platform Prediction. 
+* [02-perf-testing.ipynb](02-perf-testing.ipynb). This notebook demonstrates how to use [Locust](locust.io), [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine) and [Cloud Monitoring](https://cloud.google.com/monitoring) to perform load testing of model versions deployed in AI Platform Prediction. 
 The notebook covers:
-* Deploying Locust to a [GKE cluster](https://cloud.google.com/kubernetes-engine)
-* Creating custom [Cloud Monitoring](https://cloud.google.com/monitoring) dashboards
-* Preparing and running load tests
-* Retrieving and consolidating test results
+    1. Creating custom log-based metrics in [Cloud Monitoring](https://cloud.google.com/monitoring)
+    2. Creating custom Cloud Monitoring dashboard
+    3. Deploying Locust to a [GKE cluster](https://cloud.google.com/kubernetes-engine)
+    4. Preparing and running load tests
+    5. Retrieving and consolidating test results in DataFrame
 
-[03-analyze-results.ipynb](03-analyze-results.ipynb). This notebook outlines techniques for analyzing load test results. 
+* [03-analyze-results.ipynb](03-analyze-results.ipynb). This notebook outlines techniques for analyzing load test results. 
 The notebook covers:
-* Aligning and normalizing metric time series
-* Using Pandas and Matplotlib to analyze and visualize test results
+    1. Loading the DataFrame with the test results
+    2. Aligning and normalizing metric time series
+    3. Using Pandas and Matplotlib to analyze and visualize test results
 
-[monitoring-template.json](monitoring-template.json). This is an example template of a custom [Cloud Monitoring dashboard](https://cloud.google.com/monitoring/dashboards) that demonstrates how to aggregate the standard [AI Platform Prediction metrics](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-ml) with custom [Cloud Logging log-based metrics](https://cloud.google.com/logging/docs/logs-based-metrics) based on Locust test statistcs.
+In addition to the notebooks, the directory includes the following artifacts:
 
-[locust](locust). This folder contains [Kustomize](https://kustomize.io/) manifests to deploy Locust to a GKE cluster and a [locustfile](https://docs.locust.io/en/stable/writing-a-locustfile.html) script demonstrating how to load test the AI Platform Prediction REST API `predict` method.
+* [monitoring-template.json](monitoring-template.json) - An example template of a custom [Cloud Monitoring dashboard](https://cloud.google.com/monitoring/dashboards) that displays both the standard [AI Platform Prediction metrics](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-ml) and the custom [Cloud Logging log-based metrics](https://cloud.google.com/logging/docs/logs-based-metrics) for the Locust test logs.
 
-[test](test). This folder contains the artifacts required for running the load test, and sample results produced of the test.
+* [locust](locust) - A folder containing [Kustomize](https://kustomize.io/) manifests to deploy Locust to a GKE cluster and a [locustfile](https://docs.locust.io/en/stable/writing-a-locustfile.html) script demonstrating how to load test the AI Platform Prediction REST API `predict` method.
+
+* [test](test) - A folder contains sample data for running the load test, and sample results produced of the test.
 
 
 ## Environment setup
