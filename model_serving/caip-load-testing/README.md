@@ -41,7 +41,7 @@ In addition to the notebooks, the directory includes the following artifacts:
 
 * [locust](locust) - A folder containing [Kustomize](https://kustomize.io/) manifests to deploy Locust to a GKE cluster and a [locustfile](https://docs.locust.io/en/stable/writing-a-locustfile.html) script demonstrating how to load test the AI Platform Prediction REST API `predict` method.
 
-* [test](test) - A folder contains sample data for running the load test, and sample results produced of the test.
+* [test_images](test_images) - A folder contains sample image data for running the load test on the ResNet image classification model.
 
 
 ## Environment setup
