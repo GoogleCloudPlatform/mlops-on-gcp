@@ -1,16 +1,38 @@
 # Load Testing AI Platform Prediction for Online Serving
 
-This directory contains code samples that demonstrate how to test and monitor AI Platform Prediction online serving performance with respect to:
-1. Service latency
-2. CPU, GPU, and Memory Utilization 
-3. Auto-scaling
-
-We use [Locust](locust.io) to simulate the user prediction requests workload. 
+This directory contains code samples that demonstrate how to test and monitor AI Platform Prediction online serving performance with respect to
+service latency and resources utilization. 
 
 The code samples utilize the [ResNet101 image classification model](https://tfhub.dev/google/imagenet/resnet_v2_101/classification/4) from TensorFlow Hub. 
 The design patterns and techniques demonstrated in the samples can be easily adapted to other domains and types of models.
 
-## The directory contents:
+
+We use [Locust](locust.io) to simulate the user prediction requests workload. 
+The following diagram depicts the load testing environment utilized in this example.
+
+![Test harness](architecture.png)
+
+## Overview
+In the environment, Locust is run in a distributed mode on a GKE cluster. 
+Locust's master and workers are deployed to the cluster as Kubernetes [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) 
+using a custom docker image dervied from the baseline [locustio/locust](https://hub.docker.com/r/locustio/locust) image. The custom image incorporates the [locustfile](locust/locust-image/tasks.py) script and its dependencies.
+
+The script simulates calls to the `predict` method of the  AI Platform Prediction REST endpoint. 
+The test parameters retrieved from a Cloud Storage location at the start of each test.
+
+In addition to simulating requests, the script logs test statistics managed by the Locust master to [Cloud Logging](https://cloud.google.com/logging). 
+The log entries created by the script are used to define a set of [Log-based metrics](https://cloud.google.com/logging/docs/logs-based-metrics) 
+that complement standard [AI Platform Prediction metrics](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-ml). 
+
+Load tests can be configured, started, and stopped using **Locust's** [web interface](https://docs.locust.io/en/stable/quickstart.html#locust-s-web-interface). 
+The **Locust's** web interface is enabled on the Locust master and exposed through a Kubernetes [Service](https://kubernetes.io/docs/concepts/services-networking/service/) 
+configured as an external load balancer.
+
+The progress of the tests can be monitored using [Locust's web interface](https://docs.locust.io/en/stable/quickstart.html#locust-s-web-interface) 
+or a Cloud Monitoring [dashboard](https://cloud.google.com/monitoring/dashboards). 
+The Cloud Monitoring dashboard combines the AI Platform Prediction metrics with the custom Locust log-based metrics.
+
+## Directory contents
 The load testing system is driven by the following three notebooks:
 
 * [01-prepare-and-deploy.ipynb](01-prepare-and-deployipynb). This notebook shows how to prepare a [TensorFlow SavedModel](https://www.tensorflow.org/guide/saved_model) for 
