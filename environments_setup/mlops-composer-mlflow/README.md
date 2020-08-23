@@ -204,7 +204,7 @@ The following tables describes the parameters required for the installation:
 | PROJECT_ID      | Required |               | The project id of your GCP project                                                                                                    |
 | SQL_PASSWORD    | Required |               | The password for the Cloud SQL root user                                                                                          |
 | DEPLOYMENT_NAME | Optional | mlops         | Short name prefix of infrastructure element and folder names. Default: mlflow                                                                      |
-| REGION          | Optional | us-central1   | A GCP region across the globe. Best to select one of the nearest. Default: us-central-1                                                                |
+| REGION          | Optional | us-central1   | A GCP region across the globe. Best to select one of the nearest where Cloud AI Platform available. Default: us-central-1                                                                |
 | ZONE            | Optional | us-central1-a | A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones'. Default: us-central1-a |
 
 Script  calls [set-env-var.sh](set-env-var.sh) to setup environment variables, that will be required for AI Platform Notebook provisioning step.
@@ -219,6 +219,8 @@ Executing the script takes around 30 minutes.
    'MLflow UI can be accessed at the below URI:' message.
 > 2. MLFLOW_TRACKING_EXTERNAL_URI variable will be set to MLflow URL in Cloud Shell.
 > 3. MLFLOW_TRACKING_EXTERNAL_URI will be available in Notebook Terminal as well.
+> 4. Cloud AI Platform services are not available every regions. Please check [Training regions](https://cloud.google.com/ai-platform/training/docs/regions)
+>    and [compute regions](https://cloud.google.com/compute/docs/regions-zones/) (for Notebooks)
 
 
 ## Creating AI Platform Notebooks Instance

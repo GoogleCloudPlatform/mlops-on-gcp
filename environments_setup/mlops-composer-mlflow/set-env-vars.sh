@@ -19,7 +19,7 @@ if [[ $# < 1 ]]; then
   echo 'USAGE:  ./set-env-vars.sh PROJECT_ID [DEPLOYMENT_NAME=mlops] [REGION=us-central1] [ZONE=us-central1-a]'
   echo 'PROJECT_ID      - GCP project Id'
   echo 'DEPLOYMENT_NAME - Short name prefix of infrastructure element and folder names, like SQL instance, Cloud Composer name'
-  echo 'REGION          - A GCP region across the globe. Best to select one of the nearest.'
+  echo 'REGION          - A GCP region across the globe. Best to select one of the nearest where Cloud AI Platform available.'
   echo 'ZONE            - A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones'
   exit 1
 fi
