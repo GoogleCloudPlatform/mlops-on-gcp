@@ -77,7 +77,7 @@ The node pool must have access to the Cloud APIs.
 6. Open a new Terminal to execute the following commands to clone the repository:
     ```
     git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
-    cd mlops-on-gcp/model_serving/caio-load-testing
+    cd mlops-on-gcp/model_serving/caip-load-testing
     ```
 
 
