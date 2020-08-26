@@ -36,8 +36,9 @@ export GCS_BUCKET_NAME="gs://$DEPLOYMENT_NAME-artifacts"
 export NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
 export CLOUD_SQL="$DEPLOYMENT_NAME-sql"
 export COMPOSER_NAME="$DEPLOYMENT_NAME-af"
-export MLFLOW_IMAGE_URI="gcr.io/${PROJECT_ID}/$DEPLOYMENT_NAME"
+export MLFLOW_IMAGE_URI="gcr.io/${PROJECT_ID}/$DEPLOYMENT_NAME-mlflow"
 export MLFLOW_PROXY_URI="gcr.io/${PROJECT_ID}/inverted-proxy"
+export TRAINER_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-training:latest"
 
 tput setaf 3; echo Environment variables are set
 echo Project \(PROJECT_ID\): $PROJECT_ID
@@ -49,6 +50,7 @@ echo Cloud composer name \(COMPOSER_NAME\): $COMPOSER_NAME
 echo MLflow artifacts GCS bucket \(GCS_BUCKET_NAME\): $GCS_BUCKET_NAME
 echo MLflow serving docker image \(MLFLOW_IMAGE_URI\): $MLFLOW_IMAGE_URI
 echo MLflow web proxy docker image \(MLFLOW_PROXY_URI\): $MLFLOW_PROXY_URI
+echo Custom trainer image \(TRAINER_IMAGE_URI\): $TRAINER_IMAGE_URI
 
 tput setaf 7
 

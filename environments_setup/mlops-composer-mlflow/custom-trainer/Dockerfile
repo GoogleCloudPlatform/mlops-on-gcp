@@ -14,7 +14,6 @@
 
 # Enable required deep learning base image. See available options:
 # https://cloud.google.com/ai-platform/deep-learning-containers/docs/choosing-container
-
 # CPU only
 FROM gcr.io/deeplearning-platform-release/base-cpu:latest
 
@@ -22,10 +21,16 @@ FROM gcr.io/deeplearning-platform-release/base-cpu:latest
 # FROM gcr.io/deeplearning-platform-release/base-cu100:latest
 # FROM gcr.io/deeplearning-platform-release/base-cu101:latest
 
-RUN apt update && apt -y install mysql-client kubectl
-COPY entrypoint.sh .
-COPY requirements.txt .
-RUN python -m pip install -U -r requirements.txt --ignore-installed PyYAML==5.3.1
+RUN apt-get update && apt-get install -y --no-install-recommends \
+         mysql-client \
+         kubectl && \
+     rm -rf /var/lib/apt/lists/*
+
+COPY init.sh .
+RUN pip install pandas==1.0.4 click==7.0 PyMySQL==0.9.3 google-cloud-storage==1.28.1 mlflow[extras]==1.8.0 apache-airflow==1.10.10 cloudml-hypertune
 RUN curl -o /usr/local/bin/cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
     chmod +x /usr/local/bin/cloud_sql_proxy && \
-    chmod +x /entrypoint.sh
+    chmod +x /init.sh
+
+# Jupyter notebook start prescribed in base image which is turned off by redefining ENTRYPOINT
+ENTRYPOINT ["/entrypoint.sh"]
