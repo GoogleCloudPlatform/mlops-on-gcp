@@ -22,7 +22,7 @@ resources:
 
 images:
 - name: locustio/locust
-  newName: gcr.io/mlops-dev-env/locust:latest
+  newName: gcr.io/[your-project-Id]/locust:latest
 
 replicas:
 - name: locust-worker
@@ -36,8 +36,8 @@ patches:
 configMapGenerator:
 - name: test-config-locations
   literals:
-    - LOCUST_TEST_BUCKET=mlops-dev-workspace
-    - LOCUST_TEST_CONFIG=test-config/test-config.json
-    - LOCUST_TEST_DATA=test-config/test-payload.json
+    - LOCUST_TEST_BUCKET=[your-GCS-bucket]
+    - LOCUST_TEST_CONFIG=locust-test/test-config.json
+    - LOCUST_TEST_DATA=locust-test/test-payload.json
   options:
     disableNameSuffixHash: true
