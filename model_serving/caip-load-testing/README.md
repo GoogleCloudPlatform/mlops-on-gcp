@@ -72,6 +72,19 @@ In addition to the notebooks, the directory includes the following artifacts:
 2. Create a [Cloud Monitoring Workspace](https://cloud.google.com/monitoring/workspaces/create) in your project.
 3. Create a [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-cluster) cluster with the required CPUs. 
 The node pool must have access to the Cloud APIs.
+    ```
+    PROJECT_ID=[YOUR-GCP-PROJECT-ID]
+    CLUSTER_NAME=[YOUR-CLUSTER-NAME]
+    ZONE=[YOUR-CLUSTER-ZONE]
+    MACHINE_TYPE=n1-standard-8
+    SIZE=5
+
+    gcloud beta container --project=$PROJECT clusters create $CLUSTER_NAME \
+        --zone=$ZONE \
+        --machine-type=$MACHINE_TYPE \
+        --num-nodes=$SIZE \
+        --scopes=cloud-platform 
+     ```
 4. Create an [AI Notebooks instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) TensorFlow 2.2.
 5. Open the JupyterLab from the AI Notebook instance.
 6. Open a new Terminal to execute the following commands to clone the repository:
