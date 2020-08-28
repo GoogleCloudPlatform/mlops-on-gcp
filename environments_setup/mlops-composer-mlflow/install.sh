@@ -103,16 +103,17 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
     --node-count=3 \
     --python-version=3 \
     --enable-ip-alias
+
+# Installing Python packages to Composer
+  echo "Install Python packages to Cloud Composer..."
+  gcloud composer environments update $COMPOSER_NAME \
+    --update-pypi-packages-from-file=composer-requirements.txt \
+    --location=$REGION
+  echo
 fi
 echo "Cloud Composer is available: $COMPOSER_NAME"
 echo
 
-# Installing Python packages to Composer
-echo "Install Python packages to Cloud Composer..."
-gcloud composer environments update $COMPOSER_NAME \
-  --update-pypi-packages-from-file=composer-requirements.txt \
-  --location=$REGION
-echo
 
 # 5. Installing MLflow to Composer
 
@@ -201,7 +202,7 @@ export MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
 export MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
 export MLOPS_REGION=${REGION}
 
-/usr/local/bin/cloud_sql_proxy -dir=/var/run/cloud-sql-proxy -instances=${MLFLOW_SQL_CONNECTION_NAME}=tcp:3306 &
+/usr/local/bin/cloud_sql_proxy -dir=/var/run/cloud-sql-proxy -instances=${MLFLOW_SQL_CONNECTION_NAME}=tcp:3306 -credential_file=/usr/local/bin/sql-access.json &
 sleep 5s
 mlflow server --host=127.0.0.1 --port=80 --backend-store-uri=${MLFLOW_SQL_CONNECTION_STR} --default-artifact-root=${MLFLOW_EXPERIMENTS_URI} &
 EOF

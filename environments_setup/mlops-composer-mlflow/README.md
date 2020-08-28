@@ -254,7 +254,7 @@ This command provisions a new AI Notebooks instance.
 AI Notebooks instance will be created in 2-5 minutes. Required variables already set. If you need to redeploy Notebook
 with different parameters later, might call `set-env-vars.sh` before.
 
-The instance will be in the [AI Platform Notebooks list](https://console.google.com/ai-platform/notebooks/instances).
+The instance will be in the [AI Platform Notebooks list](https://console.cloud.google.com/ai-platform/notebooks/instances).
 You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN JUPYTERLAB** link.
 
 > Please note that this method is very custom and based on Beta features, might change in the near future.
