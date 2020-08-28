@@ -35,7 +35,7 @@ The Cloud Monitoring dashboard combines the AI Platform Prediction metrics with 
 ## Directory contents
 The load testing system is driven by the following three notebooks:
 
-* [01-prepare-and-deploy.ipynb](01-prepare-and-deployipynb). This notebook shows how to prepare a [TensorFlow SavedModel](https://www.tensorflow.org/guide/saved_model) for 
+* [01-prepare-and-deploy.ipynb](01-prepare-and-deploy.ipynb). This notebook shows how to prepare a [TensorFlow SavedModel](https://www.tensorflow.org/guide/saved_model) for 
 serving and deploy to AI Platform Prediction. The notebook covers:
     1. Using pre-trained models from TensorFlow Hub
     2. Extending the pre-trained model with pre-processing and post-processing operations 
