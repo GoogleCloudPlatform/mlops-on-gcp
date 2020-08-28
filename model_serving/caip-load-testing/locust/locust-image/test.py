@@ -22,15 +22,15 @@ from locust import User, task, between, events
 import tasks
 from tasks import AIPPUser, on_test_start, on_test_stop
 
-LOCUST_TEST_BUCKET='mlops-dev-workspace'
+LOCUST_TEST_BUCKET=''
 LOCUST_TEST_DATA='test-config/test-payload.json'
 LOCUST_TEST_CONFIG='test-config/test-config.json'
 
 @pytest.fixture(autouse=True)
 def env_setup(monkeypatch):
-    monkeypatch.setenv('LOCUST_TEST_BUCKET', 'mlops-dev-workspace')
-    monkeypatch.setenv('LOCUST_TEST_DATA', 'test-config/test-payload.json')
-    monkeypatch.setenv('LOCUST_TEST_CONFIG', 'test-config/test-config.json')
+    monkeypatch.setenv('LOCUST_TEST_BUCKET')
+    monkeypatch.setenv('LOCUST_TEST_DATA', 'locust-test/test-payload.json')
+    monkeypatch.setenv('LOCUST_TEST_CONFIG', 'locust-test/test-config.json')
 
 @pytest.fixture
 def environment():

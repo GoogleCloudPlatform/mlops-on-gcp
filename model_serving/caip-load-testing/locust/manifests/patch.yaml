@@ -27,4 +27,4 @@ spec:
               - key: cloud.google.com/gke-nodepool
                 operator: In
                 values:
-                - locust     
+                - default-pool
