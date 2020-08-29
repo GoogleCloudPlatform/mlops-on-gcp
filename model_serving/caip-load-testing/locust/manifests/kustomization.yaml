@@ -38,6 +38,6 @@ configMapGenerator:
   literals:
     - LOCUST_TEST_BUCKET=[your-GCS-bucket]
     - LOCUST_TEST_CONFIG=locust-test/test-config.json
-    - LOCUST_TEST_DATA=locust-test/test-payload.json
+    - LOCUST_TEST_PLAYLOAD=locust-test/test-payload.json
   options:
     disableNameSuffixHash: true

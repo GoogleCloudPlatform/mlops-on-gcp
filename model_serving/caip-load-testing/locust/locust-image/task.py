@@ -53,7 +53,7 @@ LOG_STATS_INTERVAL_SEC = 5
 LOG_NAME = 'locust'
 
 TEST_BUCKET_ENV = 'LOCUST_TEST_BUCKET'
-TEST_DATA_ENV= 'LOCUST_TEST_DATA'
+TEST_PAYLOAD_ENV= 'LOCUST_TEST_PAYLOAD'
 TEST_CONFIG_ENV = 'LOCUST_TEST_CONFIG'
 
 
@@ -252,7 +252,7 @@ class AIPPUser(User):
         if not AIPPUser.test_data:
             bucket = os.getenv(TEST_BUCKET_ENV)
             config_blob = os.getenv(TEST_CONFIG_ENV)
-            test_data_blob = os.getenv(TEST_DATA_ENV)
+            test_data_blob = os.getenv(TEST_PAYLOAD_ENV)
             client = storage.Client()
             bucket = client.get_bucket(bucket)
             blob = storage.Blob(config_blob, bucket)
