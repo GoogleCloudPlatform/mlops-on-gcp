@@ -136,6 +136,7 @@ if [[ -e mlflow-helm/sql-access.json ]]; then
     echo "Service account key already exists: mlflow-helm/sql-access.json"
 else
     gcloud iam service-accounts keys create mlflow-helm/sql-access.json --iam-account=$SA_EMAIL
+    cp mlflow-helm/sql-access.json custom-trainer/
 fi
 
 # Set role to the service account
@@ -189,6 +190,10 @@ echo Build customized common ML docker image for AI Platform
 NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
 gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
 
+MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
+MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
+MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
+
 echo Build customized ML docker image for AI Platform Training
 
 # init.sh will be executed durring trainer image containerization
@@ -204,16 +209,13 @@ export MLOPS_REGION=${REGION}
 
 /usr/local/bin/cloud_sql_proxy -dir=/var/run/cloud-sql-proxy -instances=${MLFLOW_SQL_CONNECTION_NAME}=tcp:3306 -credential_file=/usr/local/bin/sql-access.json &
 sleep 5s
-mlflow server --host=127.0.0.1 --port=80 --backend-store-uri=${MLFLOW_SQL_CONNECTION_STR} --default-artifact-root=${MLFLOW_EXPERIMENTS_URI} &
+mlflow server --host=127.0.0.1 --port=80 --backend-store-uri=${MLFLOW_SQL_CONNECTION_STR} --default-artifact-root=${GCS_BUCKET_NAME}/experiments &
 EOF
 
 # Trainer image URI needed for projecting a new trainer job from Notebooks or Airflow 
 gcloud builds submit custom-trainer --timeout 15m --tag ${TRAINER_IMAGE_URI}
 
 # Note: MLflow provisioning takes minutes. After the mlimage creation it should be available.
-MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
-MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
-MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
 
 # Add MLflow URI to Cloud Composer as environment variable
 echo "Add MLflow URI to Cloud Composer as environment variable..."

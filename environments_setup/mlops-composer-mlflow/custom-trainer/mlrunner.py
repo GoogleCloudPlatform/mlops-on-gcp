@@ -1,84 +1,87 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the \"License\");
+# you may not use this file except in compliance with the License.\n",
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an \"AS IS\" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import datetime
 import os
 import subprocess
 import argparse
-import logging
 import os
 import sys
 import time  
 import json
 
-# Upload results
-# gcs_model_path = os.path.join('gs://', BUCKET_NAME,
-#     datetime.datetime.now().strftime('iris_%Y%m%d_%H%M%S'), model_filename)
-# subprocess.check_call(['gsutil', 'cp', model_filename, gcs_model_path],
-#     stderr=sys.stdout)
-
 def upload_to_gcs(local, uri):
     pid=subprocess.Popen(['gsutil', '-q', 'cp', local, uri])
     pid.wait()
-    logging.info('Uploaded to GCS: %s', uri)
+    print('Uploaded from {} to GCS: {}}'.format(local, uri))
 
 def download_from_gcs(uri, local):
     pid=subprocess.Popen(['gsutil', '-q', 'cp', uri, local])
     pid.wait()
-    logging.info('Downloaded from GCS: %s', uri)
+    print('Downloaded from GCS: {} to {}'.format(uri, local))
 
 def install_package(package):
     pid=subprocess.Popen(['pip3', 'install', '--user', '--upgrade', '--force-reinstall', '--no-deps', package])
     pid.wait()
-    logging.info('Installed package: %s', package)
+    print('Installed package: {}'.format(package))
 
 def run_trainer(module, trainer_args):
     pid=subprocess.Popen(['python3', '-m', module] + trainer_args)
     pid.wait()
-    logging.info('Training finished: %s', module)
+    print('Training finished: {}'.format(module))
 
 def main():
     # Example parameters
-    # --cluster='{"chief": ["127.0.0.1:2222"]}'
-    # --task='{"type": "chief", "index": 0}'
-    # --job='{ "package_uris": ["gs://x-artifacts/caip-training/training_20200828_151350/packages/4dcbe0be4eda1060c4747/trainer-0.1.tar.gz"],
-    #       "python_module": "training.task",
-    #       "args": ["--sqlname", "demo:us-central1:mlops1-sql", "--sqlconn", "mysql+pymysql://user:password@127.0.0.1:3306/mlflow", "--mlflowuri", "gs://mlops1-artifacts/experiments", "--epochs", "2"],
-    #       "region": "us-central1",
-    #       "runtime_version": "2.1",
-    #       "job_dir": "gs://mlops1-artifacts/experiments/caip-training/training_20200828_151350",
-    #       "run_on_raw_vm": true,
-    #       "python_version": "3.7" }'
-    logging.info('Arguments: %s',' '.join(sys.argv[1:]))
+    #--module_name=training.task 
+    #--package_uris=gs://mlops1-artifacts/experiments/caip-training/training_20200828_222445/packages/dae4fdaadf6/trainer-0.1.tar.gz
+    #--job-dir=gs://mlops1-artifacts/experiments/caip-training/training_20200828_222445
+    #--mlflowuri gs://mlops1-artifacts/experiments
+    #--epochs 2
+
+    print('Arguments: {}'.format(' '.join(sys.argv[1:])))
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cluster', type=json.loads)
-    parser.add_argument('--task', type=json.loads)
-    parser.add_argument('--job', type=json.loads)
-    parser.add_argument('--tpu_node', type=json.loads)
-    parser.add_argument('--hyperparams', type=json.loads)
+    # GCS folder of training package
+    parser.add_argument('--package_uris', type=str)
+    # Job result GCS folder output
+    parser.add_argument('--job-dir', type=str)
+    # Python module name of ML task
+    parser.add_argument('--module_name', type=str)
+    # MLflow experiments result folder
+    parser.add_argument('--mlflowuri', type=str)
+    # Data source file URI for training examples
+    parser.add_argument('--data_source', type=str)
 
-    # parser.add_argument('--job-dir', type=str)
-    # parser.add_argument('--mlflowuri', type=str)
-    # parser.add_argument('--epochs', type=str)
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
-    if not os.path.isdir('mltrainer'):
-        os.mkdir('mltrainer')
-    os.chdir('mltrainer')
+    local_data_dir='/mltrainer/data'
+    if not os.path.isdir(local_data_dir):
+        os.mkdir(local_data_dir)
+    os.chdir(local_data_dir)
 
-    package_uris = args.job.get('package_uris', [])
-    if (not package_uris):
+    if not args.package_uris:
         raise ValueError('Missing package URI. Please provide --package-path during job submit')
-    for uri in package_uris:
-        local = uri.rsplit('/',1)[-1]
-        download_from_gcs(uri,local)
-        install_package(local)
-    # envvariables = dict(MLFLOW_TRACKING_URI=,MLFLOW_EXPERIMENTS_URI=,MLOPS_REGION=,MLOPS_COMPOSER_NAME=)
-    trainer_args=args.job.get('args',[])
-    jobdir=args.job.get('job_dir', None)
-    if jobdir:
-        trainer_args.extend(['--job_dir', args.job.get('job_dir', None)])
-    python_module=args.job.get('python_module', None)
-    print(f"args: {' '.join(trainer_args)}")
-    run_trainer(python_module, trainer_args)
+
+    local = args.package_uris.rsplit('/',1)[-1]
+    download_from_gcs(args.package_uris, local)
+    install_package(local)
+
+    if args.data_source:
+        download_from_gcs(args.data_source, local_data_dir)
+        sys.argv.append('--local_data')
+        sys.argv.append(local_data_dir)
+    run_trainer(args.module_name, sys.argv[1:])
 
 if __name__ == '__main__':
-    logging.info('Training main started')
+    print('ML runner started')
     main()

@@ -12,30 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Enable required deep learning base image. See available options:
+# Start from Deep learning base image. See available options:
 # https://cloud.google.com/ai-platform/deep-learning-containers/docs/choosing-container
 # CPU only
 FROM gcr.io/deeplearning-platform-release/base-cpu:latest
 
-# with GPU
+# For GPU accelerated training
 # FROM gcr.io/deeplearning-platform-release/base-cu100:latest
 # FROM gcr.io/deeplearning-platform-release/base-cu101:latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-         mysql-client \
-         kubectl && \
-     rm -rf /var/lib/apt/lists/*
-
-RUN pip install pandas==1.0.4 click==7.0 PyMySQL==0.9.3 google-cloud-storage==1.28.1 mlflow[extras]==1.8.0 apache-airflow==1.10.10 cloudml-hypertune
-RUN curl -o /usr/local/bin/cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
-    chmod +x /usr/local/bin/cloud_sql_proxy && \
-    chmod +x /init.sh
-
-COPY ../mlflow-helm/sql-access.json /usr/local/bin/
+COPY sql-access.json /usr/local/bin/
 COPY entrypoint.sh .
 COPY init.sh .
+COPY mlrunner.py /mltrainer/
 
-WORKDIR /training
-COPY mlrunner.py /training/
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    mysql-client \
+    kubectl && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip3 install pandas==1.0.4 click==7.0 PyMySQL==0.9.3 google-cloud-storage==1.28.1 mlflow==1.8.0 apache-airflow==1.10.10 cloudml-hypertune && \
+    curl -o /usr/local/bin/cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
+    chmod +x /usr/local/bin/cloud_sql_proxy && chmod +x /init.sh && chmod +x /entrypoint.sh
+
 # Jupyter notebook start prescribed in base image which is turned off by redefining ENTRYPOINT
 ENTRYPOINT ["/entrypoint.sh"]
