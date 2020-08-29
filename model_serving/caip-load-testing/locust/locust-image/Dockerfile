@@ -15,6 +15,6 @@
 
 FROM locustio/locust
 WORKDIR /tasks
-COPY tasks.py .
+COPY task.py .
 RUN pip install -U google-auth google-cloud-storage google-cloud-logging python-dotenv
 
