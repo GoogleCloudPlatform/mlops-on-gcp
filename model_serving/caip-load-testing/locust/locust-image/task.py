@@ -37,7 +37,6 @@ import google.auth.transport.requests
 from google.cloud import storage
 from google.api_core.exceptions import GoogleAPICallError
 from google.api_core.exceptions import RetryError
-from google.auth.credentials import Credentials
 from google.auth.transport.requests import AuthorizedSession
 from google.cloud.logging_v2 import LoggingServiceV2Client
 from google.cloud.logging_v2.types import LogEntry
@@ -63,7 +62,8 @@ def greenlet_exception_handler():
     unhandled exceptions.
     """
     def exception_handler(greenlet):
-        logging.error("Unhandled exception in greenlet: %s", greenlet, exc_info=greenlet.exc_info)
+        logging.error("Unhandled exception in greenlet: %s", greenlet,
+                      exc_info=greenlet.exc_info)
         global unhandled_greenlet_exception
         unhandled_greenlet_exception = True
     return exception_handler
@@ -167,7 +167,9 @@ class AIPPClient(object):
     """
     
     def __init__(self, service_endpoint):
-        logging.info("Setting the AIPP service endpoint: {}".format(service_endpoint))
+        logging.info(
+            "Setting the AI Platform Prediction service endpoint: {}".format(
+                service_endpoint))
         credentials, _ = google.auth.default()
         self._authed_session = AuthorizedSession(credentials)
         self._service_endpoint = service_endpoint
@@ -177,7 +179,8 @@ class AIPPClient(object):
         Invokes the predict method on the specified signature.
         """
         
-        url = '{}/v1/projects/{}/models/{}/versions/{}:predict'.format(self._service_endpoint, project_id, model, version)    
+        url = '{}/v1/projects/{}/models/{}/versions/{}:predict'.format(
+            self._service_endpoint, project_id, model, version)
             
         request_body = {
             'signature_name': signature,
