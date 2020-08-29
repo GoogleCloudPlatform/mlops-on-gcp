@@ -31,7 +31,7 @@ spec:
       containers:
         - image: locustio/locust
           name: locust-worker
-          args: ["-f", "/tasks/tasks.py",  "--worker", "--master-host", "$(LOCUST_MASTER)"]
+          args: ["-f", "/tasks/task.py",  "--worker", "--master-host", "$(LOCUST_MASTER)"]
           env:
             - name: LOCUST_MASTER
               value: locust-master
