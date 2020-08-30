@@ -86,6 +86,14 @@ if [[ $(gcloud sql instances list --filter="$CLOUD_SQL" --format='value(name)') 
     echo Cloud SQL deleted
 fi
 
-# Temporary removed: delete notebook is not working (location ZONE vs. REGION issue).
+# Delete service account keys
+if [[ -e mlflow-helm/sql-access.json ]]; then
+    rm -f mlflow-helm/sql-access.json
+fi
+if [[ -e custom-trainer/sql-access.json ]]; then
+    rm -f custom-trainer/sql-access.json
+fi
+
+# Delete notebook currently does not working (location ZONE vs. REGION issue).
 # echo Delete Notebook with name '$NOTEBOOK_NAME'
 # gcloud beta notebooks instances delete $NOTEBOOK_NAME --location=$ZONE
