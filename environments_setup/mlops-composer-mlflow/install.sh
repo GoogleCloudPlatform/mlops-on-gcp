@@ -185,7 +185,7 @@ mlflow-helm
 echo "MLflow Tracking server provisioned."
 echo
 
-echo Build customized common ML docker image for AI Platform
+echo "Build customized Docker container image for AI Platform"
 
 NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
 gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
@@ -241,7 +241,7 @@ gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
 rm custom-notebook/notebook-env.txt
 
 tput setaf 3;
-echo MLflow UI can be accessed externally at the below URI:
+echo "MLflow UI can be accessed externally at the below URI:"
 echo $MLFLOW_TRACKING_EXTERNAL_URI
 tput setaf 7;
 
