@@ -24,23 +24,44 @@ err_handler() {
     return $3
 }
 
-# Check command line parameters
-if [[ $# < 2 ]]; then
-  echo 'USAGE:  ./install.sh PROJECT_ID SQL_PASSWORD [DEPLOYMENT_NAME=mlops] [REGION=us-central1] [ZONE=us-central1-a]'
-  echo 'PROJECT_ID      - GCP project Id'
-  echo 'SQL_PASSWORD    - Password to connect database'
-  echo 'DEPLOYMENT_NAME - Short name prefix of infrastructure element and folder names, like SQL instance, Cloud Composer name. Default: mlflow'
-  echo 'REGION          - A GCP region across the globe. Best to select one of the nearest. Default: us-central-1'
-  echo 'ZONE            - A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones. Default: us-central1-a'
-  return 1
+if [[ -z "${PROJECT_ID}" ]]; then
+  echo PROJECT_ID is not set
+  exit 1
 fi
 
-# Set script constants
-SQL_PASSWORD=${2}
-source set-env-vars.sh ${1} ${3} ${4} ${5}
-if [ $? -ne 0 ]; then
-  echo "Error"
-  return 1
+if [[ -z "${SQL_USERNAME}" ]]; then
+  echo SQL_USERNAME is not set
+  exit 1
+fi
+
+if [[ -z "${SQL_PASSWORD}" ]]; then
+  echo SQL_PASSWORD is not set
+  exit 1
+fi
+
+if [[ -z "${DEPLOYMENT_NAME}" ]]; then
+  echo DEPLOYMENT_NAME is not set
+  exit 1
+fi
+
+if [[ -z "${REGION}" ]]; then
+  echo REGION is not set
+  exit 1
+fi
+
+if [[ -z "${ZONE}" ]]; then
+  echo ZONE is not set
+  exit 1
+fi
+
+if [[ -z "${GCS_BUCKET_NAME}" ]]; then
+  echo GCS_BUCKET_NAME is not set
+  exit 1
+fi
+
+if [[ -z "${ML_IMAGE_URI}" ]]; then
+  echo ML_IMAGE_URI is not set
+  exit 1
 fi
 
 trap 'err_handler "$LINENO" "$BASH_COMMAND" "$?"' ERR
@@ -49,6 +70,14 @@ tput setaf 3; echo Creating environment
 echo Setup started at:
 date
 tput setaf 7
+
+# Set calculated infrastucture names
+CLOUD_SQL="$DEPLOYMENT_NAME-sql"
+COMPOSER_NAME="$DEPLOYMENT_NAME-af"
+MLFLOW_IMAGE_URI="gcr.io/${PROJECT_ID}/$DEPLOYMENT_NAME-mlflow"
+MLFLOW_PROXY_URI="gcr.io/${PROJECT_ID}/inverted-proxy"
+ML_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-training:latest"
+
 
 # 1. Enable services
 
@@ -121,8 +150,9 @@ echo "Provisioning MLflow Tracking server..."
 
 # Set local Kubernetes configuration to connect to Composer GKE cluster
 echo "Setting configuration to connect to Composer GKE cluster..."
-GKE_CLUSTER=$(gcloud container clusters list --limit=1 --zone=$ZONE --filter="name~$COMPOSER_NAME" --format="value(name)")
-gcloud container clusters get-credentials $GKE_CLUSTER --zone $ZONE  --project $PROJECT_ID
+# 'goog-composer-environment' label is set to $COMPOSER_NAME
+GKE_CLUSTER=$(gcloud container clusters list --limit=1 --zone=$ZONE --filter="resourceLabels.goog-composer-environment=$COMPOSER_NAME" --format="value(name)")
+gcloud container clusters get-credentials $GKE_CLUSTER --zone $ZONE --project $PROJECT_ID
 
 # Create service account
 SA_EMAIL=sql-proxy-access@$PROJECT_ID.iam.gserviceaccount.com
@@ -136,7 +166,7 @@ if [[ -e mlflow-helm/sql-access.json ]]; then
     echo "Service account key already exists: mlflow-helm/sql-access.json"
 else
     gcloud iam service-accounts keys create mlflow-helm/sql-access.json --iam-account=$SA_EMAIL
-    cp mlflow-helm/sql-access.json custom-trainer/
+    cp mlflow-helm/sql-access.json custom-ml-image/
 fi
 
 # Set role to the service account
@@ -163,7 +193,7 @@ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admi
 
 # Using fix K8s namespace: 'mlflow' for MLflow
 echo "Create mlfow namespace to the GKE cluster..."
-kubectl create namespace mlflow || echo "mlflow namespace exists"
+kubectl create namespace mlflow || echo "'mlflow' namespace already exists"
 
 # Deploying mlflow using helm
 echo "Deploying mlflow helm configuration..."
@@ -187,9 +217,6 @@ echo
 
 echo "Build customized Docker container image for AI Platform"
 
-NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
-gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
-
 MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
 MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
 MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
@@ -197,7 +224,7 @@ MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath=
 echo Build customized ML docker image for AI Platform Training
 
 # init.sh will be executed durring trainer image containerization
-cat > custom-trainer/init.sh << EOF
+cat > custom-ml-image/init.sh << EOF
 #!/bin/bash
 export MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
 export MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
@@ -212,8 +239,8 @@ sleep 5s
 mlflow server --host=127.0.0.1 --port=80 --backend-store-uri=${MLFLOW_SQL_CONNECTION_STR} --default-artifact-root=${GCS_BUCKET_NAME}/experiments &
 EOF
 
-# Trainer image URI needed for projecting a new trainer job from Notebooks or Airflow 
-gcloud builds submit custom-trainer --timeout 15m --tag ${TRAINER_IMAGE_URI}
+# Custom ML image URI needed for projecting a new trainer job from Notebooks or Airflow 
+gcloud builds submit custom-ml-image --timeout 15m --tag ${ML_IMAGE_URI}
 
 # Note: MLflow provisioning takes minutes. After the mlimage creation it should be available.
 
@@ -226,7 +253,7 @@ gcloud composer environments update $COMPOSER_NAME \
 echo
 
 # Create connection info which will be used as environment variables inside the Notebook instance.
-cat > custom-notebook/notebook-env.txt << EOF
+cat > custom-ml-image/notebook-env.txt << EOF
 MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
 MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
@@ -234,11 +261,11 @@ MLFLOW_TRACKING_URI=http://127.0.0.1:80
 MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
 MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
 MLOPS_REGION=${REGION}
-TRAINER_IMAGE_URI=${TRAINER_IMAGE_URI}
+ML_IMAGE_URI=${ML_IMAGE_URI}
 EOF
 
-gsutil cp custom-notebook/notebook-env.txt $GCS_BUCKET_NAME
-rm custom-notebook/notebook-env.txt
+gsutil cp custom-ml-image/notebook-env.txt $GCS_BUCKET_NAME
+rm custom-ml-image/notebook-env.txt
 
 tput setaf 3;
 echo "MLflow UI can be accessed externally at the below URI:"
