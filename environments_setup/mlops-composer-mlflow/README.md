@@ -205,8 +205,8 @@ To start the provisioning script:
     source install.sh
     ```
 
-Executing the script takes around 30 minutes.
-
+Executing the script takes around 30 minutes. 
+ 
 At the end of the installation process, MLflow URL for the web UI will be printed to the console. 
 You can use it to browse the MLflow Tracking UI:
 
@@ -274,7 +274,7 @@ You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN
 4. Run the cells of the Notebook. The Notebook has two parts:
     1. Running a local experiment that trains a simple Scikit-learn logistic regression model. 
     2. Creating, deploying, and executing a simple Airflow workflow that trains a simple Scikit-learn logistic regression model.
-    
+
 Both experiments are tracked by MLflow, where information is stored in Cloud SQL, and artifacts are stored in Cloud Storage.
 You can open MLflow UI and check log information and artifacts produced by the experiments.  MLflow UI URL available in `MLFLOW_TRACKING_EXTERNAL_URI` environment variable.
 
