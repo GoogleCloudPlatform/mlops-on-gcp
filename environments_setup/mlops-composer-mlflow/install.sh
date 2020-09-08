@@ -76,8 +76,6 @@ CLOUD_SQL="$DEPLOYMENT_NAME-sql"
 COMPOSER_NAME="$DEPLOYMENT_NAME-af"
 MLFLOW_IMAGE_URI="gcr.io/${PROJECT_ID}/$DEPLOYMENT_NAME-mlflow"
 MLFLOW_PROXY_URI="gcr.io/${PROJECT_ID}/inverted-proxy"
-ML_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-training:latest"
-
 
 # 1. Enable services
 
@@ -97,7 +95,7 @@ notebooks.googleapis.com
 echo "Required services enabled."
 echo
 
-#2. Creating GCS bucket
+#2. Create a Cloud Storage bucket
 
 echo "Creating GCS bucket for artifacts..."
 if ! gsutil list "$GCS_BUCKET_NAME"; then
@@ -106,7 +104,7 @@ fi
 echo "GCS bucket available: $GCS_BUCKET_NAME"
 echo
 
-# 3. Creating Cloud SQL
+# 3. Provisioning a Cloud SQL instance
 
 if [[ $(gcloud sql instances list --filter="$CLOUD_SQL" --format='value(name)') != "$CLOUD_SQL" ]]; then
     echo "Provisioning Cloud SQL..."
@@ -117,7 +115,7 @@ fi
 MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe $CLOUD_SQL --format="value(connectionName)")
 echo "Cloud SQL is available: $MLFLOW_SQL_CONNECTION_NAME"
 
-# 4. Provisioning Composer cluster
+# 4. Provisioning Cloud Composer
 
 # Creating Cloud Composer
 if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSER_NAME" --format='value(name)') != "$COMPOSER_NAME" ]]; then
@@ -138,13 +136,12 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
   gcloud composer environments update $COMPOSER_NAME \
     --update-pypi-packages-from-file=composer-requirements.txt \
     --location=$REGION
-  echo
 fi
 echo "Cloud Composer is available: $COMPOSER_NAME"
 echo
 
 
-# 5. Installing MLflow to Composer
+# 5. Deploying MLflow server to Composer GKE cluster
 
 echo "Provisioning MLflow Tracking server..."
 
@@ -212,16 +209,22 @@ mlflow-helm
 # Generate command for debug:
 #echo helm template mlflow --namespace mlflow --set images.mlflow=$MLFLOW_IMAGE_URI --set images.proxyagent=$MLFLOW_PROXY_URI --set defaultArtifactRoot=$GCS_BUCKET_NAME/experiments --set backendStore.mysql.host="127.0.0.1" --set backendStore.mysql.port="3306" --set backendStore.mysql.database="mlflow" --set backendStore.mysql.user=$SQL_USERNAME --set backendStore.mysql.password=$SQL_PASSWORD --set cloudSqlConnection.name=$MLFLOW_SQL_CONNECTION_NAME --output-dir './yamls' mlflow-helm
 
-echo "MLflow Tracking server provisioned."
-echo
-
-echo "Build customized Docker container image for AI Platform"
-
 MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1:3306/mlflow"
-MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
-MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
 
-echo Build customized ML docker image for AI Platform Training
+echo "Waiting for MLflow Tracking server provisioned"
+
+MLFLOW_TRACKING_EXTERNAL_URI="https://"
+while [ "$MLFLOW_TRACKING_EXTERNAL_URI" == "https://" ]
+do
+  echo "wait 5 seconds..."
+  sleep 5s
+  MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
+  MLFLOW_URI_FOR_COMPOSER="http://"$(kubectl get svc -n mlflow mlflow -o jsonpath='{.spec.clusterIP}{":"}{.spec.ports[0].port}')
+done
+
+echo "MLflow Tracking server provisioned"
+echo
+echo 6. Build the common ML container image
 
 # init.sh will be executed durring trainer image containerization
 cat > custom-ml-image/init.sh << EOF

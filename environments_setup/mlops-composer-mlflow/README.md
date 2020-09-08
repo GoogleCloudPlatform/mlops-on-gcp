@@ -24,14 +24,14 @@ The proposed MLOps environment consists of the following components:
 
 In this environment, the MLflow Tracking server is a used in locally in three services.
 
-1. AI Platform Notebook instance(s) - accessed by local Notebooks. 
+1. AI Platform Notebook instance(s) - accessed by local Notebooks.
 2. Cloud Composer GKE Cluster - accessed by Airflow through K8s cluster internal IP. MLflow is deployed as a pod in the GKE cluster.
 3. AI Platform Training - accessed locally by the ML training code.
 
-All the MLflow tracking service share the same backend MySQL database hosted in Cloud SQL, thanks to MLflow Tracking Service stateless operation.
+All the MLflow tracking services share the same backend MySQL database hosted in Cloud SQL, thanks to MLflow Tracking Service stateless operation.
 This setup reduces the interconnection complexity.
 
-In addition, [Cloud SQL proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy) 
+In addition, [Cloud SQL proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy)
 is used to allow MLflow to connect to the Cloud SQL instance.
 
 
@@ -133,7 +133,7 @@ The helm templates for the MLflow server installation are found in [mlflow-helm]
 
 Services and Jupyter notebook in ML container have access to provisioned infrastructure components such as 
 Cloud SQL and MLflow Tracking service.
-Connection URIs and other settings are propagated via environment variables. 
+Connection URIs and other settings are propagated via environment variables.
 Environment setting for the AI Platform Notebooks instance is created and stored 
 in file in Cloud Storage, to be used in provisioning an AI Platform Notebooks instance:
 
