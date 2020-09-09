@@ -45,9 +45,9 @@ export ZONE=${4:-us-central1-a}
 
 # Set calculated infrastucture and folder names
 
-export CLOUD_SQL="$DEPLOYMENT_NAME-sql"
-export COMPOSER_NAME="$DEPLOYMENT_NAME-af"
-export NOTEBOOK_NAME="$DEPLOYMENT_NAME-nb"
+CLOUD_SQL="$DEPLOYMENT_NAME-sql"
+COMPOSER_NAME="$DEPLOYMENT_NAME-af"
+NOTEBOOK_NAME="$DEPLOYMENT_NAME-nb"
 
 tput setaf 3; echo Creating environment
 echo Project: $PROJECT_ID
@@ -86,6 +86,14 @@ if [[ $(gcloud sql instances list --filter="$CLOUD_SQL" --format='value(name)') 
     echo Cloud SQL deleted
 fi
 
-# Temporary removed: delete notebook is not working (location ZONE vs. REGION issue).
+# Delete service account keys
+if [[ -e mlflow-helm/sql-access.json ]]; then
+    rm -f mlflow-helm/sql-access.json
+fi
+if [[ -e custom-ml-image/sql-access.json ]]; then
+    rm -f custom-ml-image/sql-access.json
+fi
+
+# Delete notebook currently does not working (location ZONE vs. REGION issue).
 # echo Delete Notebook with name '$NOTEBOOK_NAME'
 # gcloud beta notebooks instances delete $NOTEBOOK_NAME --location=$ZONE

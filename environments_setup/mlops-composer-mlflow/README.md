@@ -24,14 +24,14 @@ The proposed MLOps environment consists of the following components:
 
 In this environment, the MLflow Tracking server is a used in locally in three services.
 
-1. AI Platform Notebook instance(s) - accessed by local Notebooks. 
+1. AI Platform Notebook instance(s) - accessed by local Notebooks.
 2. Cloud Composer GKE Cluster - accessed by Airflow through K8s cluster internal IP. MLflow is deployed as a pod in the GKE cluster.
 3. AI Platform Training - accessed locally by the ML training code.
- 
-All the MLflow tracking service share the same backend MySQL database hosted in Cloud SQL, thanks to MLflow Tracking Service stateless operation.
+
+All the MLflow tracking services share the same backend MySQL database hosted in Cloud SQL, thanks to MLflow Tracking Service stateless operation.
 This setup reduces the interconnection complexity.
 
-In addition, [Cloud SQL proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy) 
+In addition, [Cloud SQL proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy)
 is used to allow MLflow to connect to the Cloud SQL instance.
 
 
@@ -133,12 +133,12 @@ The helm templates for the MLflow server installation are found in [mlflow-helm]
 
 Services and Jupyter notebook in ML container have access to provisioned infrastructure components such as 
 Cloud SQL and MLflow Tracking service.
-Connection URIs and other settings are propagated via environment variables. 
+Connection URIs and other settings are propagated via environment variables.
 Environment setting for the AI Platform Notebooks instance is created and stored 
 in file in Cloud Storage, to be used in provisioning an AI Platform Notebooks instance:
 
    ```
-    cat > custom-notebook/notebook-env.txt << EOF
+    cat > custom-ml-image/notebook-env.txt << EOF
     MLFLOW_SQL_CONNECTION_STR=mysql+pymysql://${SQL_USERNAME}:${SQL_PASSWORD}@127.0.0.1:3306/mlflow
     MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe ${CLOUD_SQL} --format="value(connectionName)")
     MLFLOW_EXPERIMENTS_URI=${gs://$DEPLOYMENT_NAME-artifacts/experiments}
@@ -148,16 +148,16 @@ in file in Cloud Storage, to be used in provisioning an AI Platform Notebooks in
     MLOPS_REGION=${REGION}
     EOF
 
-    gsutil cp custom-notebook/notebook-env.txt ${gs://$DEPLOYMENT_NAME-artifacts}
-    rm custom-notebook/notebook-env.txt
+    gsutil cp custom-ml-image/notebook-env.txt ${gs://$DEPLOYMENT_NAME-artifacts}
+    rm custom-ml-image/notebook-env.txt
    ```
 
-MLflow local service instance connects Cloud SQL service which is defined in [entrypoint.sh](custom-notebook/entrypoint.sh) leveraging these variables.
+MLflow local service instance connects Cloud SQL service which is defined in 'init.sh' leveraging these variables.
 
-This common ML container build step is defined in the [custom-notebook](custom-notebook) folder and the build requires around 5 minutes for completion.
+This common ML container build step is defined in the [custom-ml-image](custom-ml-image) folder and the build requires around 5 minutes for completion.
    ```
-   NB_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
-   gcloud builds submit custom-notebook --timeout 15m --tag ${NB_IMAGE_URI}
+   ML_IMAGE_URI="gcr.io/$PROJECT_ID/$DEPLOYMENT_NAME-mlimage:latest"
+   gcloud builds submit custom-ml-image --timeout 15m --tag ${ML_IMAGE_URI}
    ```
 
 ## Running the installation script
@@ -194,11 +194,11 @@ To start the provisioning script:
     
     | Parameter       | Optional | Default       | Description                                                                                                                       |
     |-----------------|----------|---------------|-----------------------------------------------------------------------------------------------------------------------------------|
-    | PROJECT_ID      | Required |               | The project id of your GCP project                                                                                                    |
-    | SQL_PASSWORD    | Required |               | The password for the Cloud SQL root user                                                                                          |
-    | DEPLOYMENT_NAME | Optional | mlops         | Short name prefix of infrastructure element and folder names. Default: mlflow                                                                      |
-    | REGION          | Optional | us-central1   | A GCP region across the globe. Best to select one of the nearest. Default: us-central-1                                                                |
-    | ZONE            | Optional | us-central1-a | A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones'. Default: us-central1-a |
+    | PROJECT_ID      | Required |               | The project id of your GCP project                                                  |
+    | SQL_PASSWORD    | Required |               | The password for the Cloud SQL root user                                            |
+    | DEPLOYMENT_NAME | Optional | mlops         | Short name prefix of infrastructure element and folder names.                       |
+    | REGION          | Optional | us-central1   | A GCP region across the globe. Best to select one of the nearest.                   |
+    | ZONE            | Optional | us-central1-a | A zone is an isolated location within a region. Available Regions and Zones: https://cloud.google.com/compute/docs/regions-zones'. |
 
 5. Start installation
     ```
@@ -209,6 +209,14 @@ Executing the script takes around 30 minutes.
  
 At the end of the installation process, MLflow URL for the web UI will be printed to the console. 
 You can use it to browse the MLflow Tracking UI:
+
+> Please, note:
+> 1. At the end of process, MLflow URL will be printed to the console after the
+   'MLflow UI can be accessed at the below URI:' message.
+> 2. MLFLOW_TRACKING_EXTERNAL_URI variable will be set to MLflow URL in Cloud Shell.
+> 3. MLFLOW_TRACKING_EXTERNAL_URI will be available in Notebook Terminal as well.
+> 4. Cloud AI Platform services are not available every regions. Please check [Training regions](https://cloud.google.com/ai-platform/training/docs/regions)
+>    and [compute regions](https://cloud.google.com/compute/docs/regions-zones/) (for Notebooks)
 
 ![MLflow logs](../../images/mlflow-ui-01.png)
 
@@ -222,7 +230,7 @@ Your notebooks and code files will be saved to Notebook local instance which is 
 Your Notebook instance will need to use a local MLflow server, which connects to the same Cloud SQL instance that is used by the previously provisioned
 and dedicated MLflow instance (5th step).
 
-We use the custom ML image created saved to Cloud Repository ($NB_IMAGE_URI) in the previous 6th step for the AI Notebooks instance. Image contains all required
+We use the custom ML image created saved to Cloud Repository ($ML_IMAGE_URI) in the previous 6th step for the AI Notebooks instance. Image contains all required
 setup and libraries.
 
 This command provisions a new AI Notebooks instance.
@@ -238,7 +246,7 @@ This command provisions a new AI Notebooks instance.
     --boot-disk-size 50GB \
     --boot-disk-type pd-ssd \
     --scopes cloud-platform,userinfo-email \
-    --metadata proxy-mode=service_account,container=$NB_IMAGE_URI,container-env-file=$GCS_BUCKET_NAME/notebook-env.txt
+    --metadata proxy-mode=service_account,container=$ML_IMAGE_URI,container-env-file=$GCS_BUCKET_NAME/notebook-env.txt
    ```
 
 AI Notebooks instance will be created in 2-5 minutes. 
@@ -266,7 +274,7 @@ You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN
 4. Run the cells of the Notebook. The Notebook has two parts:
     1. Running a local experiment that trains a simple Scikit-learn logistic regression model. 
     2. Creating, deploying, and executing a simple Airflow workflow that trains a simple Scikit-learn logistic regression model.
-    
+
 Both experiments are tracked by MLflow, where information is stored in Cloud SQL, and artifacts are stored in Cloud Storage.
 You can open MLflow UI and check log information and artifacts produced by the experiments.  MLflow UI URL available in `MLFLOW_TRACKING_EXTERNAL_URI` environment variable.
 
