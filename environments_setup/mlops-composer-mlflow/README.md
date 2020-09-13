@@ -269,17 +269,32 @@ You can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the **OPEN
     git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
     ```
 
-3. Open `environment-test.ipynb Notebook` under `mlops-on-gcp/environments_setup/mlops-composer-mlflow` directory.
+3. Open `environment-test.ipynb Notebook` in `mlops-on-gcp/environments_setup/mlops-composer-mlflow` directory.
 
 4. Run the cells of the Notebook. The Notebook has two parts:
-    1. Running a local experiment that trains a simple Scikit-learn logistic regression model. 
+    1. Running a local experiment that trains a simple Scikit-learn logistic regression model.
     2. Creating, deploying, and executing a simple Airflow workflow that trains a simple Scikit-learn logistic regression model.
+
+5. Open `caip-training-test.ipynb Notebook` in `mlops-on-gcp/environments_setup/mlops-composer-mlflow` directory.
+
+6. Run cells of the Notebook which has several parts. Please notice, you need to wait between couple of cells for the environmet readiness:
+   1. Creating a training package with trainer routine and support files.
+   2. Sending the training package in Cloud AI Platform Training. Checing the training job result from Cloud SQL database.
+   3. Importing the training package and a simple workflow to Cloud Composer.
+   4. Triggering Cloud Composer to run training package in Cloud AI Platform Training as a job. Checing the training job result from Cloud SQL database.
 
 Both experiments are tracked by MLflow, where information is stored in Cloud SQL, and artifacts are stored in Cloud Storage.
 You can open MLflow UI and check log information and artifacts produced by the experiments.  MLflow UI URL available in `MLFLOW_TRACKING_EXTERNAL_URI` environment variable.
 
-
 ![MLflow logs](../../images/mlflow-env-test.png)
+
+### Experiments names associated to these test runs:
+
+#### 'notebooks-test' - `environment-test.ipynb Notebook` metrics from local and Airflow traing runs. Results of both 5.1 and 5.2 sections above
+
+#### 'caipt-test' - `caip-training-test.ipynb Notebook` metrics from Cloud AI Platform Training job submited from notebook. Results of 6.2
+
+#### 'airflow-test' - `caip-training-test.ipynb Notebook` metrics from Airflow workflow managed training. Results of 6.4
 
 
 ## Uninstall and clean up the environment
