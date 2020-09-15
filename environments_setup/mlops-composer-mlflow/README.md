@@ -288,13 +288,13 @@ You can open MLflow UI and check log information and artifacts produced by the e
 
 ![MLflow logs](../../images/mlflow-env-test.png)
 
-### Experiments names associated to these test runs:
+Experiments names associated to these test runs:
 
-#### 'notebooks-test' - `environment-test.ipynb Notebook` metrics from local and Airflow traing runs. Results of both 5.1 and 5.2 sections above
+* 'notebooks-test' - `environment-test.ipynb Notebook` metrics from local and Airflow traing runs. Results of both 5.1 and 5.2 sections above
 
-#### 'caipt-test' - `caip-training-test.ipynb Notebook` metrics from Cloud AI Platform Training job submited from notebook. Results of 6.2
+* 'caipt-test' - `caip-training-test.ipynb Notebook` metrics from Cloud AI Platform Training job submited from notebook. Results of 6.2
 
-#### 'airflow-test' - `caip-training-test.ipynb Notebook` metrics from Airflow workflow managed training. Results of 6.4
+* 'airflow-test' - `caip-training-test.ipynb Notebook` metrics from Airflow workflow managed training. Results of 6.4
 
 
 ## Uninstall and clean up the environment
