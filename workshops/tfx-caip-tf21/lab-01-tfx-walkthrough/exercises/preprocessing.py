@@ -56,12 +56,12 @@ def preprocessing_fn(inputs):
   # Scale numerical features
   for key in features.NUMERIC_FEATURE_KEYS:
     # TODO: your code here to scale numeric features with z-score with Tensorflow Transform.        
-    outputs[features.transformed_name(key)] = 
+    outputs[features.transformed_name(key)] =
 
   # Generate vocabularies and maps categorical features
   for key in features.CATEGORICAL_FEATURE_KEYS:
     # TODO: your code here to integerize categorical features and generate vocabulary file with Tensorflow Transform.
-    outputs[features.transformed_name(key)] =
+    outputs[features.transformed_name(key)] = 
 
   # Convert Cover_Type to dense tensor
   outputs[features.transformed_name(features.LABEL_KEY)] = _fill_in_missing(
