@@ -34,5 +34,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends mysql-client ku
     chmod +x /init.sh && \
     chmod +x /entrypoint.sh
 
-# Base image turned off by redefining ENTRYPOINT
+# Turn off base image's ENTYPOINT by redefining a new ENTRYPOINT
 ENTRYPOINT ["/entrypoint.sh"]

@@ -229,6 +229,7 @@ echo 6. Build the common ML container image
 # init.sh will be executed durring trainer image containerization
 cat > custom-ml-image/init.sh << EOF
 #!/bin/bash
+export MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
 export MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
 export MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 export MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
@@ -257,6 +258,7 @@ echo
 
 # Create connection info which will be used as environment variables inside the Notebook instance.
 cat > custom-ml-image/notebook-env.txt << EOF
+MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
 MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
 MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
