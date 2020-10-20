@@ -1,4 +1,5 @@
 # [START dag_imports]
+import os
 import datetime
 import logging
 import pprint
@@ -25,8 +26,8 @@ from airflow.providers.google.cloud.operators.bigquery import (
 INTERVAL = '@once'
 START_DATE = datetime.datetime(2020, 9, 1)
 
-PROJECT = "edgeml-demo"
-LOCATION = "us-central"
+PROJECT_ID = os.getenv("GCP_PROJECT", "edgeml-demo")
+REGION = os.getenv("COMPOSER_LOCATION", "us-central")
 
 # GCS folder where dataset CSV files are stored
 DATASET_GCS_FOLDER="gs://mlops-long-deployment-name-42-artifacts/data"
@@ -69,9 +70,9 @@ with DAG('dual_model_trainer',
            doc_md=__doc__
 )  as dag:
     
-    training_table_name = f"{PROJECT}.{BQ_DATASET}.{BQ_TABLE}{TRAINING_POSTFIX}"
-    eval_table_name = f"{PROJECT}.{BQ_DATASET}.{BQ_TABLE}{EVAL_POSTFIX}"
-    validation_table_name = f"{PROJECT}.{BQ_DATASET}.{BQ_TABLE}{VALIDATION_POSTFIX}"
+    training_table_name = f"{PROJECT_ID}.{BQ_DATASET}.{BQ_TABLE}{TRAINING_POSTFIX}"
+    eval_table_name = f"{PROJECT_ID}.{BQ_DATASET}.{BQ_TABLE}{EVAL_POSTFIX}"
+    validation_table_name = f"{PROJECT_ID}.{BQ_DATASET}.{BQ_TABLE}{VALIDATION_POSTFIX}"
 
     # Delete existing BQ tables
     traning_table_delete_task = BigQueryTableDeleteOperator(
@@ -100,7 +101,7 @@ with DAG('dual_model_trainer',
                 "useLegacySql": False,
             }
         },
-        location=LOCATION,
+        location=REGION,
     )
     split_evalset_task = BigQueryInsertJobOperator(
         task_id="split_evalset_task",
@@ -112,7 +113,7 @@ with DAG('dual_model_trainer',
                 "useLegacySql": False,
             }
         },
-        location=LOCATION,
+        location=REGION,
     )
     split_validationset_task = BigQueryInsertJobOperator(
         task_id="split_validset_task",
@@ -124,7 +125,7 @@ with DAG('dual_model_trainer',
                 "useLegacySql": False,
             }
         },
-        location=LOCATION,
+        location=REGION,
     )
 
     extract_trainingset_to_gcs_task = BigQueryToCloudStorageOperator(

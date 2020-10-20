@@ -41,6 +41,12 @@ In the following steps we assume that you already have a [GCP Project](https://c
 [billing enabled](https://cloud.google.com/billing/docs/how-to/modify-project). You will also need
 [Project Editor](https://cloud.google.com/iam/docs/understanding-roles) permission to provision this environment.
 
+Update to the latest gcloud command
+
+   ```
+   sudo gcloud components update
+   ```
+
 ## Installation Script
 
 Provisioning of the environment has been automated with the [install.sh](install.sh) script.

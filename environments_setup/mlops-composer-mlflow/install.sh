@@ -82,15 +82,15 @@ MLFLOW_PROXY_URI="gcr.io/${PROJECT_ID}/inverted-proxy"
 echo "Enabling all required services..."
 
 gcloud services enable \
-cloudbuild.googleapis.com \
-sourcerepo.googleapis.com \
-container.googleapis.com \
-compute.googleapis.com \
-composer.googleapis.com \
-containerregistry.googleapis.com \
-dataflow.googleapis.com \
-sqladmin.googleapis.com \
-notebooks.googleapis.com
+  cloudbuild.googleapis.com \
+  sourcerepo.googleapis.com \
+  container.googleapis.com \
+  compute.googleapis.com \
+  composer.googleapis.com \
+  containerregistry.googleapis.com \
+  dataflow.googleapis.com \
+  sqladmin.googleapis.com \
+  notebooks.googleapis.com
 
 echo "Required services enabled."
 echo
@@ -213,8 +213,11 @@ MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1
 
 echo "Waiting for MLflow Tracking server provisioned"
 
+# External URL to Mlflow
 MLFLOW_TRACKING_EXTERNAL_URI="https://"
-while [ "$MLFLOW_TRACKING_EXTERNAL_URI" == "https://" ]
+# Internal access from Composer to Mlflow
+MLFLOW_URI_FOR_COMPOSER=="http://"
+while [ "$MLFLOW_TRACKING_EXTERNAL_URI" == "https://" ] || [ "$MLFLOW_URI_FOR_COMPOSER" == "http://" ]
 do
   echo "wait 5 seconds..."
   sleep 5s
