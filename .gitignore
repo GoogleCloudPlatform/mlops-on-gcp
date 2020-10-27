@@ -110,3 +110,5 @@ venv.bak/
 
 *.tar.gz
 .idea
+
+environments_setup/mlops-composer-mlflow/mlflow-helm/sql-access.json
