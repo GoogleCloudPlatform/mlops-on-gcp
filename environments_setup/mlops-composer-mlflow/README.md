@@ -139,27 +139,7 @@ The helm templates for the MLflow server installation are found in [mlflow-helm]
 
 Services and Jupyter notebook in ML container have access to provisioned infrastructure components such as 
 Cloud SQL and MLflow Tracking service.
-Connection URIs and other settings are propagated via environment variables.
-Environment setting for the AI Platform Notebooks instance is created and stored 
-in file in Cloud Storage, to be used in provisioning an AI Platform Notebooks instance:
-
-   ```
-    cat > custom-ml-image/notebook-env.txt << EOF
-    MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
-    MLFLOW_SQL_CONNECTION_STR=mysql+pymysql://${SQL_USERNAME}:${SQL_PASSWORD}@127.0.0.1:3306/mlflow
-    MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe ${CLOUD_SQL} --format="value(connectionName)")
-    MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
-    MLFLOW_TRACKING_URI=http://127.0.0.1:80
-    MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
-    MLOPS_COMPOSER_NAME=${DEPLOYMENT_NAME}-af
-    MLOPS_REGION=${REGION}
-    EOF
-
-    gsutil cp custom-ml-image/notebook-env.txt ${gs://$DEPLOYMENT_NAME-artifacts}
-    rm custom-ml-image/notebook-env.txt
-   ```
-
-MLflow local service instance connects Cloud SQL service which is defined in 'init.sh' leveraging these variables.
+MLflow local service instance connects Cloud SQL service. SQL connection URIs and other settings are propagated via environment variables defined in 'init.sh'.
 
 This common ML container build step is defined in the [custom-ml-image](custom-ml-image) folder and the build requires around 5 minutes for completion.
    ```
@@ -253,7 +233,7 @@ This command provisions a new AI Notebooks instance.
     --boot-disk-size 50GB \
     --boot-disk-type pd-ssd \
     --scopes cloud-platform,userinfo-email \
-    --metadata proxy-mode=service_account,container=$ML_IMAGE_URI,container-env-file=$GCS_BUCKET_NAME/notebook-env.txt
+    --metadata proxy-mode=service_account,container=$ML_IMAGE_URI
    ```
 
 AI Notebooks instance will be created in 2-5 minutes. 

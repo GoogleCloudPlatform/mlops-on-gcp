@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "edgeml-demo",
+  "private_key_id": "42b26dbd0b741f4c7cf735fa5ad28f9ca32db29b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDYzkO8cYjvUbRt\nulW6owFPtzJKti0m2G4cMG0W6Ii9N+4Z4FH/xeNGw5g8vMtFMVWalF0VvFW++rT+\nhvLfSUYDdxt3p7U/KX5Q5KJfjmlHbrgYLW+aNewdpASiiBl6u3ATHOwiuPUaYeqF\nN+2LGpeXBmhGZKJb0VSkkg1Ze+fxRZfI56j0snEt+jxmPD64ggK1GRnoD392XRdD\n6DgNErlqi+UAiJxJmBPzmCxl3Yv6akqFkgvRAhbT3eYKRPqLc4qzeYZ7shNR0zJP\nTgCXzxCH0w1a7I6zyg4OIrRYmPNwgX4gs50s323kE60b81/CPsBQEE2Bp6bsCpH2\nSkHuMVB7AgMBAAECggEAEillPzn7kKC1jqOXXuUczQK5scyFB8YFo1LjMJIWMlOn\nHH/QHq8DFQB5lkzycj9pvmNDUPjP7gmuc8v2OII43T1zDZj88+eT707X001owFUk\nEtJrkO2HdAwzXzIrgD6HavJ3TYlU7vrY3IQM4CRAIqSkw5DWkP5+KrMZby+UBH/6\nXtnYEH1emDUkdnBaJZ3fiP87HVSoGcp8fFkf0lnKVRD1rgsyv+yaQDTL3MWgz78q\niMVq6o9uhXkx3JDAR4hwOcTLm51iq4MNqc81CH0HCWaMrx6LHj3LG3qOkWKqoBSG\nSnVaEZgkm3f9Tg/oEU8n3Aus9vA0+cHfpPEoZx9RUQKBgQD8/kNTQwO1tNj7W1or\nK1lNT9EAw6fi8rT0q3eQcuu3z8ljT50KB59ZYlV7S530x5iWymmFUB9Sy7mywRuv\n88XEhUa3XKrjba7RMVJrGv+01ql+qe8ESDi1aUkwpT5SFPCO/H9k++yT41Zu+3t5\ndWDO3bIpW7W77d97fq5ZJ6CZ9wKBgQDbYeaBymxHwbLlSzHhSRPzd26ELdWvbN+0\nmjrtwi3gLWX1GcwbBLrLsIwVqE7PvlZ97Dcuj1Mv/DehKGX27LLqK1phbYHPsqI5\n6FFAQvxU9RNDodMwewGpiOMePGOtEtzUs+9eYkYHz9fJLQCFKM+2ixp68fG8RWE0\n7OSu2Qs8nQKBgQC3jsvOV2sTpXlhNjC/7Z3HiEe+ZDclZK+Cbf48IgWAwhP+KD9q\njYlCUyRuZrjeZwsBLS9OeImhiwra9V1fVmGBaqmaVHPwux4BzeVcrKQm0zD7I9S1\nqKjshs2BrAMBjwvS0sSjwl0uF94YfAJkZ5OrxBKGC3JaPgbOFWXubeAKlQKBgBay\n+YPCaxO9ogIBlsalpg/R8rhweaSuEjOApcpGBjMk32DN64V8Jsu+l7AB+y2Zlx9u\nWoNRxxy27xaYtHwpH5YFKFPeXckcxZZSSF3q0GsF9JlR3CUvBQwCouVVAEc/JWRI\nveK5Ll/OjJg/NMeSYnOTzwibkhSV5SnxvPOud3AtAoGBAJtmnEcLBcRuxTiaTZqS\n4LWFG/J0JdVju+MigWfChnfUoNaeeO9huonU3W6n59+xgr7VNgVQmCKkYaeueqU2\nLCWQHGhrijk9QA7m4E5EGgVtQ3xZNGwfh6TnR7kyUVejzlU7fSiNeyu7FJFOTml8\nvIMI+5x6peHwkC+jjyeS8fF/\n-----END PRIVATE KEY-----\n",
+  "client_email": "sql-proxy-access@edgeml-demo.iam.gserviceaccount.com",
+  "client_id": "118312271371152074715",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/sql-proxy-access%40edgeml-demo.iam.gserviceaccount.com"
+}

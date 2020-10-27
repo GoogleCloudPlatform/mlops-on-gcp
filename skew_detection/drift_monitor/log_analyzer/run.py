@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""A command life interface to start a Beam pipeline to analyze a time series of records
+"""A command line interface to start a Beam pipeline to analyze a time series of records
 from the AI Platform Prediction request-response log."""
 
 import argparse

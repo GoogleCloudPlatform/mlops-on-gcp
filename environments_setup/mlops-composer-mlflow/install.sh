@@ -125,7 +125,7 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
     --zone=$ZONE \
     --airflow-configs=core-dags_are_paused_at_creation=True \
     --disk-size=20GB \
-    --image-version=composer-1.10.4-airflow-1.10.6 \
+    --image-version=composer-1.12.4-airflow-1.10.10 \
     --machine-type=n1-standard-2 \
     --node-count=3 \
     --python-version=3 \
@@ -240,6 +240,7 @@ export MLFLOW_TRACKING_URI=http://127.0.0.1:80
 export MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
 export MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
 export MLOPS_REGION=${REGION}
+export ML_IMAGE_URI=${ML_IMAGE_URI}
 
 /usr/local/bin/cloud_sql_proxy -dir=/var/run/cloud-sql-proxy -instances=${MLFLOW_SQL_CONNECTION_NAME}=tcp:3306 -credential_file=/usr/local/bin/sql-access.json &
 sleep 5s
@@ -254,26 +255,10 @@ gcloud builds submit custom-ml-image --timeout 15m --tag ${ML_IMAGE_URI}
 # Add MLflow URI to Cloud Composer as environment variable
 echo "Add MLflow URI to Cloud Composer as environment variable..."
 gcloud composer environments update $COMPOSER_NAME \
-  --update-env-variables=MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER \
+  --update-env-variables=MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER, MLFLOW_GCS_ROOT_URI=$GCS_BUCKET_NAME \
   --location=$REGION \
   --async
 echo
-
-# Create connection info which will be used as environment variables inside the Notebook instance.
-cat > custom-ml-image/notebook-env.txt << EOF
-MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
-MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
-MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
-MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
-MLFLOW_TRACKING_URI=http://127.0.0.1:80
-MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
-MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
-MLOPS_REGION=${REGION}
-ML_IMAGE_URI=${ML_IMAGE_URI}
-EOF
-
-gsutil cp custom-ml-image/notebook-env.txt $GCS_BUCKET_NAME
-rm custom-ml-image/notebook-env.txt
 
 tput setaf 3;
 echo "MLflow UI can be accessed externally at the below URI:"
