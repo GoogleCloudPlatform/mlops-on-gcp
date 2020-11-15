@@ -18,4 +18,4 @@ metadata:
   name: tfserving-configs
 data:
   MODEL_NAME: image_classifier
-  MODEL_PATH: gs://labs-workspace/models/resnet_101
+  MODEL_PATH: gs://your-bucket-name/resnet_101
