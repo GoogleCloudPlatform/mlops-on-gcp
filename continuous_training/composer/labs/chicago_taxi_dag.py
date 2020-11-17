@@ -13,8 +13,7 @@
 # limitations under the License.
 
 """"DAG definition for Chicago Taxifare pipeline.
-    This pipeline was created for use as a demo in the Data Engineering
-    on GCP Course"""
+    This pipeline was created for the ML Pipelines on Google Cloud course on Coursera."""
 
 import datetime
 import logging
