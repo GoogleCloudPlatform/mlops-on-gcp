@@ -165,7 +165,7 @@ def create_pipeline(pipeline_name: Text,
   serving_config = infra_validator_pb2.ServingSpec(
       tensorflow_serving=infra_validator_pb2.TensorFlowServing(
           tags=['latest']),
-      local_docker=infra_validator_pb2.LocalDockerConfig(),
+      kubernetes=infra_validator_pb2.KubernetesConfig(),
   )
   
   validation_config = infra_validator_pb2.ValidationSpec(
@@ -189,20 +189,11 @@ def create_pipeline(pipeline_name: Text,
   # Checks whether the model passed the validation steps and pushes the model
   # to a file destination if check passed.
   deploy = Pusher(
+      custom_executor_spec=executor_spec.ExecutorClassSpec(ai_platform_pusher_executor.Executor),      
       model=train.outputs['model'],
       model_blessing=analyze.outputs['blessing'],
       infra_blessing=infra_validate.outputs['blessing'],
-      push_destination=pusher_pb2.PushDestination(
-          filesystem=pusher_pb2.PushDestination.Filesystem(
-              base_directory=os.path.join(
-                  str(pipeline.ROOT_PARAMETER), 'model_serving'))))
-               
-  #deploy = Pusher(
-  #    custom_executor_spec=executor_spec.ExecutorClassSpec(
-  #        ai_platform_pusher_executor.Executor),
-  #    model=train.outputs.model,
-  #    model_blessing=validate.outputs.blessing,
-  #    custom_config={'ai_platform_serving_args': ai_platform_serving_args})
+      custom_config={ai_platform_pusher_executor.SERVING_ARGS_KEY: ai_platform_serving_args})
 
 
   return pipeline.Pipeline(
