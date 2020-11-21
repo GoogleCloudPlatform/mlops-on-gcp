@@ -62,7 +62,7 @@ class TFServingClient(locust.HttpUser):
     Simulated TF Serving client.
     """
 
-    wait_time = locust.between(0.9, 1.0)
+    wait_time = locust.between(0.8, 0.9)
 
     @locust.task
     def predict(self):
