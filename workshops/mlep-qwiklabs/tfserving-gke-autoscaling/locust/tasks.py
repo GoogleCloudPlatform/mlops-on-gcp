@@ -55,8 +55,6 @@ class StepLoad(locust.LoadTestShape):
             else:
                 return None
 
-    
-
 
 
 class TFServingClient(locust.HttpUser):
@@ -64,7 +62,7 @@ class TFServingClient(locust.HttpUser):
     Simulated TF Serving client.
     """
 
-    wait_time = locust.between(0.8, 1.2)
+    wait_time = locust.between(0.9, 1.0)
 
     @locust.task
     def predict(self):
