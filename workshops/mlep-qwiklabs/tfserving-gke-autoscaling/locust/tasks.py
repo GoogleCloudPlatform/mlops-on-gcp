@@ -20,6 +20,7 @@ an AI Platform Prediction predict endpoint.
 
 import json
 import logging
+import math
 import os
 
 import locust
@@ -28,8 +29,41 @@ import locust
 TEST_REQUEST_BODY = 'request-body.json'
 TEST_CONFIG = 'test-config.json'
 
+class StepLoad(locust.LoadTestShape):
+    """
+    The load shape class that progressively adds users up to the maximum.
+    After the maximum load has been reached the class starts to progressively decrease 
+    the load till all users are stopped.
+    """
+
+    max_steps = 32
+    step_time = 30
+    step_load = 1
+    spawn_rate = 1
+
+    def tick(self):
+        run_time = self.get_run_time()
+
+        current_step = math.floor(run_time / self.step_time) + 1
+
+        if current_step <= self.max_steps:
+            return (current_step * self.step_load, self.spawn_rate)
+        else:
+            user_count = (2 * self.max_steps - current_step) * self.step_load
+            if user_count > 0:
+                return (user_count, self.spawn_rate)
+            else:
+                return None
+
+    
+
+
 
 class TFServingClient(locust.HttpUser):
+    """
+    Simulated TF Serving client.
+    """
+
     wait_time = locust.between(0.8, 1.2)
 
     @locust.task
