@@ -36,7 +36,7 @@ class StepLoad(locust.LoadTestShape):
     the load till all users are stopped.
     """
 
-    max_steps = 12
+    max_steps = 11
     step_time = 60
     step_load = 2
     spawn_rate = 1
