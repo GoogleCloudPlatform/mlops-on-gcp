@@ -37,7 +37,7 @@ class StepLoad(locust.LoadTestShape):
     """
 
     max_steps = 15
-    step_time = 0
+    step_time = 60
     step_load = 2
     spawn_rate = 1
 
