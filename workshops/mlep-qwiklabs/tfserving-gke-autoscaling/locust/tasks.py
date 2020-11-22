@@ -49,11 +49,11 @@ class StepLoad(locust.LoadTestShape):
         if current_step <= self.max_steps:
             return (current_step * self.step_load, self.spawn_rate)
         else:
-            user_count = 2 * self.max_steps - current_step
-            if user_count > 1:
-                return (user_count/2, self.spawn_rate)
-            else:
-                return None
+            #user_count = 2 * self.max_steps - current_step
+            #if user_count > 1:
+            #    return (user_count/2, self.spawn_rate)
+            #else:
+            return None
 
 
 
