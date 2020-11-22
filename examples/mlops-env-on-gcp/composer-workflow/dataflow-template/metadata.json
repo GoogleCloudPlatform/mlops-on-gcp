@@ -1,0 +1,31 @@
+{
+  "name": "TFDV data analyzer Python flex template",
+  "description": "TFDV data analyzer Python flex template",
+  "parameters": [
+    {
+      "name": "source_path",
+      "label": "Source path to CSV file",
+      "helpText": "A full path to CSV file",
+      "regexes": [
+        "gs://[-:_./a-zA-Z0-9]+"
+      ]
+    },
+    {
+      "name": "output_path",
+      "label": "Output path.",
+      "helpText": "The output GCS path for stats and anomalies protobufs.",
+      "regexes": [
+        "gs://[-:_./a-zA-Z0-9]+"
+      ]
+    },
+    {
+      "name": "baseline_stats_file",
+      "label": "Baseline stats file.",
+      "helpText": "A GCS path to a baseline statistics file.",
+      "is_optional": true,
+      "regexes": [
+        "gs://[-_./a-zA-Z0-9]+"
+      ]
+    }
+  ]
+}

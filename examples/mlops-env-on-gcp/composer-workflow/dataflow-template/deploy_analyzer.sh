@@ -28,15 +28,15 @@ trap 'err_handler "$LINENO" "$BASH_COMMAND" "$?"' ERR
 
 # Check command line parameters
 if [[ $# < 2 ]]; then
-  echo 'USAGE:  ./deploy_log_analyzer.sh PROJECT_ID TEMPLATE_LOCATION'
+  echo 'USAGE:  ./deploy_analyzer.sh PROJECT_ID TEMPLATE_GCS_PATH'
   exit 1
 fi
 
 # Set script constants
 
 _PROJECT_ID=${1}
-_TEMPLATE_LOCATION=${2}
-_TEMPLATE_NAME=log_analyzer
+_TEMPLATE_GCS_PATH=${2}
+_TEMPLATE_NAME=tfdv_csv_analyzer
 
 
 # Set project
@@ -48,8 +48,8 @@ export TEMPLATE_IMAGE="gcr.io/$_PROJECT_ID/$_TEMPLATE_NAME:latest"
 gcloud builds submit --tag "$TEMPLATE_IMAGE" .
 
 # Deploy the template
-export TEMPLATE_PATH="$_TEMPLATE_LOCATION/$_TEMPLATE_NAME.json"
-gcloud beta dataflow flex-template build $TEMPLATE_PATH \
+export TEMPLATE_PATH="$_TEMPLATE_GCS_PATH/$_TEMPLATE_NAME.json"
+gcloud dataflow flex-template build $TEMPLATE_PATH \
   --image "$TEMPLATE_IMAGE" \
   --sdk-language "PYTHON" \
   --metadata-file "metadata.json"

@@ -124,8 +124,8 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
     --location=$REGION \
     --zone=$ZONE \
     --airflow-configs=core-dags_are_paused_at_creation=True \
-    --disk-size=20GB \
-    --image-version=composer-1.12.4-airflow-1.10.10 \
+    --disk-size=50GB \
+    --image-version=composer-1.13.0-airflow-1.10.12 \
     --machine-type=n1-standard-2 \
     --node-count=3 \
     --python-version=3 \
@@ -255,11 +255,26 @@ gcloud builds submit custom-ml-image --timeout 15m --tag ${ML_IMAGE_URI}
 # Add MLflow URI to Cloud Composer as environment variable
 echo "Add MLflow URI to Cloud Composer as environment variable..."
 gcloud composer environments update $COMPOSER_NAME \
-  --update-env-variables=MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER, MLFLOW_GCS_ROOT_URI=$GCS_BUCKET_NAME \
-  --location=$REGION \
+  --update-env-variables MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER,MLFLOW_GCS_ROOT_URI=$GCS_BUCKET_NAME \
+  --location $REGION \
   --async
 echo
 
+# Create connection info which will be used as environment variables inside the Notebook instance.
+cat > custom-ml-image/notebook-env.txt << EOF
+MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
+MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
+MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
+MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
+MLFLOW_TRACKING_URI=http://127.0.0.1:80
+MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
+MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
+MLOPS_REGION=${REGION}
+ML_IMAGE_URI=${ML_IMAGE_URI}
+EOF
+
+gsutil cp custom-ml-image/notebook-env.txt $GCS_BUCKET_NAME
+rm custom-ml-image/notebook-env.txt
 tput setaf 3;
 echo "MLflow UI can be accessed externally at the below URI:"
 echo $MLFLOW_TRACKING_EXTERNAL_URI
