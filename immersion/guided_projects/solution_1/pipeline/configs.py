@@ -20,7 +20,7 @@ This file defines environments for a TFX taxi pipeline.
 import os  # pylint: disable=unused-import
 
 # Pipeline name will be used to identify this pipeline.
-PIPELINE_NAME = 'tfx_templated_pipeline'
+PIPELINE_NAME = 'solution_1'
 
 # GCP related configs.
 
