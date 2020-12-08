@@ -18,4 +18,4 @@ metadata:
   name: resnet101-configs
 data:
   MODEL_NAME: image_classifier
-  MODEL_PATH: gs://labs-workspace/models/resnet_101
+  MODEL_PATH: gs://[YOUR_BUCKET]/resnet_101
