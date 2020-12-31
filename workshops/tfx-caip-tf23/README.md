@@ -1,6 +1,6 @@
 # Continuous training with TFX and Cloud AI Platform
 
-This series of hands on labs guides you through the process of implementing a TensorFlow Extended (TFX) continuous training pipeline that automates training and deployment of a TensorFlow 2.1 model.
+This series of hands on labs guides you through the process of implementing a TensorFlow Extended (TFX) continuous training pipeline that automates training and deployment of a TensorFlow 2.3 model.
 
 The below diagram represents the workflow orchestrated by the pipeline.
 
@@ -11,11 +11,13 @@ The below diagram represents the workflow orchestrated by the pipeline.
 3. The *SchemaGen* component autogenerates a schema . This is done for tracking. The pipeline uses a curated schema imported by the *ImportedNode* component.
 4. The *ImporterNode* component is used to bring the curated schema file into the pipeline. The location of the schema file is passed as a runtime parameter. 
 5. The *ExampleValidator* component validates the generated examples against the imported schema
-6. The *Transform* component preprocess the data to the format required by the *Trainer* compoment. It also saves the preprocessing TensorFlow graph. 
+6. The *Transform* component preprocess the data to the format required by the *Trainer* compoment. It also saves the preprocessing TensorFlow graph.
 7. The *Trainer* starts an AI Platform Training job. The AI Platform Training job is configured for training in a custom container. 
-8. The *ResolverNode* component retrieves the best performing model from the previous runs and passed it to the *Evaluator* to be used as a baseline during model validation.
-8. The *Evaluator* component evaluates the trained model against the eval split and validates against the baseline model from the *ResolverNode*. If the new model exceeds validation thresholds it is marked as "blessed".
-9. If the new model is blessed by the *Evaluator*, the *Pusher* deploys the model to AI Platform Prediction.
+8. The *Tuner* component  
+9. The *ResolverNode* component retrieves the best performing model from the previous runs and passed it to the *Evaluator* to be used as a baseline during model validation.
+10. The *Evaluator* component evaluates the trained model against the eval split and validates against the baseline model from the *ResolverNode*. If the new model exceeds validation thresholds it is marked as "blessed".
+11. The *InfraValidator* component  
+12. If the new model is blessed by the *Evaluator*, the *Pusher* deploys the model to AI Platform Prediction.
 
 The ML model utilized in the labs  is a multi-class classifier that predicts the type of  forest cover from cartographic data. The model is trained on the [Covertype Data Set](/datasets/covertype/README.md) dataset.
 
@@ -27,6 +29,7 @@ You will use the lab environment configured as on the below diagram:
 The core services in the environment are:
 - ML experimentation and development - AI Platform Notebooks 
 - Scalable, serverless model training - AI Platform Training  
+- Scalable, serverless model training - AI Platform Tuning   
 - Scalable, serverless model serving - AI Platform Prediction 
 - Machine learning pipelines - AI Platform Pipelines
 - Distributed data processing - Cloud Dataflow  
