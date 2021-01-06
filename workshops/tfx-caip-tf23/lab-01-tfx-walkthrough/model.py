@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2021 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The Covertype classifier DNN keras model."""
+"""Covertype Keras WideDeep Classifier."""
 
 import functools
 import absl
@@ -31,8 +31,6 @@ from tfx_bsl.tfxio import dataset_options
 
 import features
 
-HIDDEN_UNITS = [16, 8]
-LEARNING_RATE = 0.001
 EPOCHS = 1
 TRAIN_BATCH_SIZE = 64
 EVAL_BATCH_SIZE = 64
@@ -100,7 +98,7 @@ def _get_hyperparameters() -> kerastuner.HyperParameters:
 
 def _build_keras_model(hparams: kerastuner.HyperParameters, 
                        tf_transform_output: tft.TFTransformOutput) -> tf.keras.Model:
-  """Creates a DNN Classifier Keras model.
+  """Creates a Keras WideDeep Classifier model.
   Args:
     hparams: Holds HyperParameters for tuning.
     tf_transform_output: A TFTransformOutput.
@@ -166,7 +164,6 @@ def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
   """Build the tuner using the KerasTuner API.
   Args:
     fn_args: Holds args as name/value pairs.
-      - 
       - working_dir: working dir for tuning.
       - train_files: List of file paths containing training tf.Example data.
       - eval_files: List of file paths containing eval tf.Example data.
@@ -192,6 +189,7 @@ def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
       build_keras_model_fn,
       max_trials=10,
       hyperparameters=_get_hyperparameters(),
+      # New entries allowed for n_units hyperparameter construction conditional on n_layers selected.
       allow_new_entries=True,
       tune_new_entries=True,
       objective=kerastuner.Objective('val_sparse_categorical_accuracy', 'max'),
@@ -249,7 +247,8 @@ def run_fn(fn_args: TrainerFnArgs):
     # _build_keras_model.
     hparams = _get_hyperparameters()
   absl.logging.info('HyperParameters for training: %s' % hparams.get_config())
-    
+  
+  # Distribute training over multiple replicas on the same machine.
   mirrored_strategy = tf.distribute.MirroredStrategy()
   with mirrored_strategy.scope():
         model = _build_keras_model(

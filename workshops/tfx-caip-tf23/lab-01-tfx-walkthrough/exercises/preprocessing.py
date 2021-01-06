@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2021 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,35 +37,22 @@ def _fill_in_missing(x):
       axis=1)
 
 def preprocessing_fn(inputs):
-  """Preprocesses input columns into transformed columns.
-  Preprocesses Covertype Dataset features using Tensorflow Transform library.
-  Args:
-    inputs(dict): A `dict` of `string` to `Tensor` or `SparseTensor`, where key is a
-      Features key in Example proto, value is a Tensor containing the Feature
-      proto's value.
-
-  Returns:
-    outputs(dict): A `dict` of `string` to `Tensor` or `SparseTensor`, where key is a new set
-    of Feature keys, and values are possibly transformed `Tensor` or
-    `SparseTensor`.    
-    
-  """
+  """Preprocesses Covertype Dataset."""
 
   outputs = {}
 
-  # Scale numerical features
+  # Scale numerical features.
   for key in features.NUMERIC_FEATURE_KEYS:
-    # TODO: your code here to scale numeric features with z-score with Tensorflow Transform.        
-    outputs[features.transformed_name(key)] =
+    outputs[features.transformed_name(key)] = tft.scale_to_z_score(
+        _fill_in_missing(inputs[key]))
 
-  # Generate vocabularies and maps categorical features
+  # Generate vocabularies and maps categorical features.
   for key in features.CATEGORICAL_FEATURE_KEYS:
-    # TODO: your code here to integerize categorical features and generate vocabulary file with Tensorflow Transform.
-    outputs[features.transformed_name(key)] = 
+    outputs[features.transformed_name(key)] = tft.compute_and_apply_vocabulary(
+        x=_fill_in_missing(inputs[key]), num_oov_buckets=1, vocab_filename=key)
 
-  # Convert Cover_Type to dense tensor
+  # Convert Cover_Type to dense tensor.
   outputs[features.transformed_name(features.LABEL_KEY)] = _fill_in_missing(
       inputs[features.LABEL_KEY])
 
   return outputs
-
