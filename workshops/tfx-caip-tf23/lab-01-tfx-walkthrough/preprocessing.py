@@ -41,17 +41,17 @@ def preprocessing_fn(inputs):
 
   outputs = {}
 
-  # Scale numerical features
+  # Scale numerical features.
   for key in features.NUMERIC_FEATURE_KEYS:
     outputs[features.transformed_name(key)] = tft.scale_to_z_score(
         _fill_in_missing(inputs[key]))
 
-  # Generate vocabularies and maps categorical features
+  # Generate vocabularies and maps categorical features.
   for key in features.CATEGORICAL_FEATURE_KEYS:
     outputs[features.transformed_name(key)] = tft.compute_and_apply_vocabulary(
         x=_fill_in_missing(inputs[key]), num_oov_buckets=1, vocab_filename=key)
 
-  # Convert Cover_Type to dense tensor
+  # Convert Cover_Type to dense tensor.
   outputs[features.transformed_name(features.LABEL_KEY)] = _fill_in_missing(
       inputs[features.LABEL_KEY])
 

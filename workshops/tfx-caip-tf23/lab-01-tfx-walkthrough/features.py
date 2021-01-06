@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Covertype model  taxi model features."""
+"""Covertype model features."""
 import tensorflow as tf
 import tensorflow_model_analysis as tfma
 import tensorflow_transform as tft
