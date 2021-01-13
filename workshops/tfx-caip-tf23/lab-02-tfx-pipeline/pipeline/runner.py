@@ -31,6 +31,7 @@ if __name__ == '__main__':
   ai_platform_training_args = {
       'project': Config.PROJECT_ID,
       'region': Config.GCP_REGION,
+      'serviceAccount': 'tfx-tuner-caip-service-account@dougkelly-sandbox.iam.gserviceaccount.com',
       'masterConfig': {
           'imageUri': Config.TFX_IMAGE,
       }
@@ -74,6 +75,12 @@ if __name__ == '__main__':
       ptype=int
   )
 
+  enable_tuning = data_types.RuntimeParameter(
+      name='enable_tuning',
+      default='True',
+      ptype=Text
+  )
+
   pipeline_root = '{}/{}/{}'.format(
       Config.ARTIFACT_STORE_URI, 
       Config.PIPELINE_NAME,
@@ -98,6 +105,7 @@ if __name__ == '__main__':
         eval_steps=eval_steps,
         ai_platform_training_args=ai_platform_training_args,
         ai_platform_serving_args=ai_platform_serving_args,
+        enable_tuning=enable_tuning,
         beam_pipeline_args=beam_pipeline_args))
      
         
