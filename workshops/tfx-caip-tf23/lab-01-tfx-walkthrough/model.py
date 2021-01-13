@@ -91,7 +91,12 @@ def _get_hyperparameters() -> kerastuner.HyperParameters:
   hp = kerastuner.HyperParameters()
   # Defines search space.
   hp.Choice('learning_rate', [1e-2, 1e-3, 1e-4], default=1e-3)
-  hp.Int('n_layers', 1, 3, default=1)
+  hp.Int('n_layers', 1, 2, default=1)
+  with hp.conditional_scope('n_layers', 1):
+        hp.Int('n_units_1', min_value=8, max_value=128, step=8, default=8)
+  with hp.conditional_scope('n_layers', 2):
+        hp.Int('n_units_1', min_value=8, max_value=128, step=8, default=8)
+        hp.Int('n_units_2', min_value=8, max_value=128, step=8, default=8)        
 
   return hp
 
@@ -137,12 +142,8 @@ def _build_keras_model(hparams: kerastuner.HyperParameters,
 
 
   deep = tf.keras.layers.DenseFeatures(deep_columns)(input_layers)
-  for i in range(int(hparams.get('n_layers'))):
-    deep = tf.keras.layers.Dense(units=hparams.Int('units_' + str(i),
-                                                   min_value=8,
-                                                   max_value=128,
-                                                   step=8,
-                                                   default=8))(deep)
+  for n in range(int(hparams.get('n_layers'))):
+    deep = tf.keras.layers.Dense(units=hparams.get('n_units_' + str(n + 1)))(deep)
 
   wide = tf.keras.layers.DenseFeatures(wide_columns)(input_layers)
 
@@ -190,8 +191,8 @@ def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
       max_trials=10,
       hyperparameters=_get_hyperparameters(),
       # New entries allowed for n_units hyperparameter construction conditional on n_layers selected.
-      allow_new_entries=True,
-      tune_new_entries=True,
+#       allow_new_entries=True,
+#       tune_new_entries=True,
       objective=kerastuner.Objective('val_sparse_categorical_accuracy', 'max'),
       directory=fn_args.working_dir,
       project_name='covertype_tuning')

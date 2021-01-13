@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2020 Google Inc. All Rights Reserved.
+# Copyright 2021 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 cat > requirements.txt << EOF
 pandas<1.0.0
 tfx==0.25.0
-kfp==1.2.0
+kfp==1.0.4
 EOF
 
 python -m pip install -U --user -r requirements.txt
