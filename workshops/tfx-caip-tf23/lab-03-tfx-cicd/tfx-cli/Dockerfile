@@ -1,5 +1,5 @@
-FROM gcr.io/deeplearning-platform-release/tf2-cpu.2-1
+FROM gcr.io/deeplearning-platform-release/tf2-cpu.2-3
 COPY requirements.txt .
-RUN python -m pip install -U -r requirements.txt
+RUN python3 -m pip install -U -r requirements.txt
 
 ENTRYPOINT ["tfx"]
