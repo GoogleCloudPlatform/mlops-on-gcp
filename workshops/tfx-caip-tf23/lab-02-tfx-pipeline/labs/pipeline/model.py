@@ -11,19 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Covertype Keras WideDeep Classifier."""
+"""Covertype Keras WideDeep Classifier.
+
+See additional TFX example pipelines, including the Penguin Pipeline Kubeflow GCP example 
+that this pipeline is based upon: https://github.com/tensorflow/tfx/blob/master/tfx/examples.
+
+"""
 
 import functools
 import absl
 import os
 from typing import List, Text
 
-import kerastuner
-from tensorflow_cloud import CloudTuner
 import tensorflow as tf
 import tensorflow_model_analysis as tfma
 import tensorflow_transform as tft
 from tensorflow_transform.tf_metadata import schema_utils
+import kerastuner
+from tensorflow_cloud import CloudTuner
 
 from tfx.components.trainer.executor import TrainerFnArgs
 from tfx.components.trainer.fn_args_utils import DataAccessor
@@ -33,6 +38,7 @@ from tfx_bsl.tfxio import dataset_options
 from config import Config
 import features
 
+# Model training constants.
 EPOCHS = 1
 TRAIN_BATCH_SIZE = 64
 EVAL_BATCH_SIZE = 64
@@ -74,7 +80,7 @@ def _input_fn(file_pattern: List[Text],
     data_accessor: DataAccessor for converting input to RecordBatch.
     tf_transform_output: A TFTransformOutput.
     batch_size: representing the number of consecutive elements of returned
-      dataset to combine in a single batch
+      dataset to combine in a single batch.
 
   Returns:
     A dataset that contains (features, indices) tuple where features is a
@@ -90,11 +96,21 @@ def _input_fn(file_pattern: List[Text],
 
 
 def _get_hyperparameters() -> kerastuner.HyperParameters:
-  """Returns hyperparameters for building Keras model."""
+  """Returns hyperparameters for building Keras model.
+  
+  This function defines a conditional hyperparameter space and default values
+  that are used to build the model.
+  
+  Args:
+    None.
+  Returns:
+    A kerastuner HyperParameters object.
+  """
   hp = kerastuner.HyperParameters()
-  # Defines search space.
+  # Defines hyperparameter search space.
   hp.Float('learning_rate', min_value=1e-4, max_value=1e-2, sampling='log', default=1e-3)
   hp.Int('n_layers', 1, 2, default=1)
+  # Based on n_layers, search for the optimal number of hidden units in each layer.
   with hp.conditional_scope('n_layers', 1):
         hp.Int('n_units_1', min_value=8, max_value=128, step=8, default=8)
   with hp.conditional_scope('n_layers', 2):
@@ -113,18 +129,20 @@ def _build_keras_model(hparams: kerastuner.HyperParameters,
   Returns:
     A keras Model.
   """
+  # Defines deep feature columns and input layers.
   deep_columns = [
       tf.feature_column.numeric_column(
           key=features.transformed_name(key), 
           shape=())
       for key in features.NUMERIC_FEATURE_KEYS
   ]
-    
+  
   input_layers = {
       column.key: tf.keras.layers.Input(name=column.key, shape=(), dtype=tf.float32)
       for column in deep_columns
   }    
 
+  # Defines wide feature columns and input layers.
   categorical_columns = [
       tf.feature_column.categorical_column_with_identity(
           key=features.transformed_name(key), 
@@ -143,7 +161,7 @@ def _build_keras_model(hparams: kerastuner.HyperParameters,
       for column in wide_columns
   })
 
-
+  # Build Keras model using hparams.
   deep = tf.keras.layers.DenseFeatures(deep_columns)(input_layers)
   for n in range(int(hparams.get('n_layers'))):
     deep = tf.keras.layers.Dense(units=hparams.get('n_units_' + str(n + 1)))(deep)
@@ -165,7 +183,7 @@ def _build_keras_model(hparams: kerastuner.HyperParameters,
 
 # TFX Tuner will call this function.
 def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
-  """Build the tuner using the KerasTuner API.
+  """Build the tuner using CloudTuner (KerasTuner instance).
   Args:
     fn_args: Holds args as name/value pairs.
       - working_dir: working dir for tuning.
@@ -188,7 +206,7 @@ def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
   build_keras_model_fn = functools.partial(
       _build_keras_model, tf_transform_output=transform_graph)  
 
-  # BayesianOptimization is a subclass of kerastuner.Tuner which inherits from BaseTuner.    
+  # CloudTuner is a subclass of kerastuner.Tuner which inherits from BaseTuner.   
   tuner = CloudTuner(
       build_keras_model_fn,
       project_id=Config.PROJECT_ID,
@@ -220,14 +238,26 @@ def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
       })
 
 
-def _copy_tensorboard_logs(local_path, gcs_path):
-    """Copies Tensorboard logs from a local dir to a GCS location."""
+def _copy_tensorboard_logs(local_path: str, gcs_path: str):
+    """Copies Tensorboard logs from a local dir to a GCS location.
+    
+    After training, batch copy Tensorboard logs locally to a GCS location. This can result
+    in faster pipeline runtimes over streaming logs to GCS that can get network bottlenecked
+    when streaming large training log volumes.
+    
+    Args:
+      local_path: local filesystem directory uri.
+      gcs_path: cloud filesystem directory uri.
+    Returns:
+      None.
+    """
     pattern = '{}/*/events.out.tfevents.*'.format(local_path)
     local_files = tf.io.gfile.glob(pattern)
     gcs_log_files = [local_file.replace(local_path, gcs_path) for local_file in local_files]
     for local_file, gcs_file in zip(local_files, gcs_log_files):
         tf.io.gfile.copy(local_file, gcs_file)
 
+        
 # TFX Trainer will call this function.
 def run_fn(fn_args: TrainerFnArgs):
   """Train the model based on given args.
@@ -263,13 +293,7 @@ def run_fn(fn_args: TrainerFnArgs):
   with mirrored_strategy.scope():
         model = _build_keras_model(
             hparams=hparams,
-            tf_transform_output=tf_transform_output)
-        
-#   try:
-#     log_dir = fn_args.model_run_dir
-#   except KeyError:
-#     # TODO(b/158106209): use ModelRun instead of Model artifact for logging.
-#     log_dir = os.path.join(os.path.dirname(fn_args.serving_model_dir), 'logs')        
+            tf_transform_output=tf_transform_output)       
 
   tensorboard_callback = tf.keras.callbacks.TensorBoard(
       log_dir=LOCAL_LOG_DIR, update_freq='batch')
@@ -295,7 +319,3 @@ def run_fn(fn_args: TrainerFnArgs):
   
   model.save(fn_args.serving_model_dir, save_format='tf', signatures=signatures)
   _copy_tensorboard_logs(LOCAL_LOG_DIR, fn_args.serving_model_dir + '/logs')
-    
-
-  
-  

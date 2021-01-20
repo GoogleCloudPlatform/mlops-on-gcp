@@ -13,11 +13,11 @@ The below diagram represents the workflow orchestrated by the pipeline.
 5. The *ExampleValidator* component validates the generated examples against the imported schema
 6. The *Transform* component preprocess the data to the format required by the *Trainer* compoment. It also saves the preprocessing TensorFlow graph.
 7. The *Trainer* starts an AI Platform Training job. The AI Platform Training job is configured for training in a custom container. 
-8. The *Tuner* component  
+8. The *Tuner* component tunes model hyperparameters using CloudTuner (KerasTuner instance) and AI Platform Vizier as a back-end. This pipeline 
 9. The *ResolverNode* component retrieves the best performing model from the previous runs and passed it to the *Evaluator* to be used as a baseline during model validation.
 10. The *Evaluator* component evaluates the trained model against the eval split and validates against the baseline model from the *ResolverNode*. If the new model exceeds validation thresholds it is marked as "blessed".
-11. The *InfraValidator* component  
-12. If the new model is blessed by the *Evaluator*, the *Pusher* deploys the model to AI Platform Prediction.
+11. The *InfraValidator* component validates the model serving infrastructure and provides a "infra_blessing" that the model can be loaded and queried for predictions.
+12. If the new model is blessed by the *Evaluator* and *InfraValidator*, the *Pusher* deploys the model to AI Platform Prediction.
 
 The ML model utilized in the labs  is a multi-class classifier that predicts the type of  forest cover from cartographic data. The model is trained on the [Covertype Data Set](/datasets/covertype/README.md) dataset.
 
@@ -29,11 +29,10 @@ You will use the lab environment configured as on the below diagram:
 The core services in the environment are:
 - ML experimentation and development - AI Platform Notebooks 
 - Scalable, serverless model training - AI Platform Training  
-- Scalable, serverless model training - AI Platform Tuning   
+- Parallelized and distributed model hyperparameter tuning - AI Platform Vizier   
 - Scalable, serverless model serving - AI Platform Prediction 
 - Machine learning pipelines - AI Platform Pipelines
-- Distributed data processing - Cloud Dataflow  
-- Analytics data warehouse - BigQuery 
+- Distributed data processing - Cloud Dataflow
 - Artifact store - Google Cloud Storage 
 - CI/CD tooling - Cloud Build
     

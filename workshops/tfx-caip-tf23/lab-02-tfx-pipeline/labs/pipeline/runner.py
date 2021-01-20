@@ -20,6 +20,7 @@ from tfx.orchestration import data_types
 from tfx.orchestration.kubeflow import kubeflow_dag_runner
 
 from typing import Optional, Dict, List, Text
+from distutils.util import strtobool
 
 from config import Config
 from pipeline import create_pipeline
@@ -27,10 +28,10 @@ from pipeline import create_pipeline
 if __name__ == '__main__':
 
   # Set the values for the compile time parameters
-    
   ai_platform_training_args = {
       'project': Config.PROJECT_ID,
       'region': Config.GCP_REGION,
+      'serviceAccount': Config.CUSTOM_SERVICE_ACCOUNT,
       'masterConfig': {
           'imageUri': Config.TFX_IMAGE,
       }
@@ -54,8 +55,7 @@ if __name__ == '__main__':
   ]
     
   
-  # Set the default values for the pipeline runtime parameters
-    
+  # Set the default values for the pipeline runtime parameters   
   data_root_uri = data_types.RuntimeParameter(
       name='data-root-uri',
       default=Config.DATA_ROOT_URI,
@@ -79,16 +79,16 @@ if __name__ == '__main__':
       Config.PIPELINE_NAME,
       kfp.dsl.RUN_ID_PLACEHOLDER)
     
-  # Set KubeflowDagRunner settings
+  # Set KubeflowDagRunner settings.
   metadata_config = kubeflow_dag_runner.get_default_kubeflow_metadata_config()
 
   runner_config = kubeflow_dag_runner.KubeflowDagRunnerConfig(
       kubeflow_metadata_config = metadata_config,
       pipeline_operator_funcs = kubeflow_dag_runner.get_default_pipeline_operator_funcs(
-          Config.USE_KFP_SA == 'True'),
+          strtobool(Config.USE_KFP_SA)),
       tfx_image=Config.TFX_IMAGE)
 
-  # Compile the pipeline
+  # Compile the pipeline.
   kubeflow_dag_runner.KubeflowDagRunner(config=runner_config).run(
       create_pipeline(
         pipeline_name=Config.PIPELINE_NAME,
@@ -96,6 +96,7 @@ if __name__ == '__main__':
         data_root_uri=data_root_uri,
         train_steps=train_steps,
         eval_steps=eval_steps,
+        enable_tuning=strtobool(Config.ENABLE_TUNING),          
         ai_platform_training_args=ai_platform_training_args,
         ai_platform_serving_args=ai_platform_serving_args,
         beam_pipeline_args=beam_pipeline_args))

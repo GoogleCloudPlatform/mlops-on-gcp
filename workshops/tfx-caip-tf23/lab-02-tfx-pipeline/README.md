@@ -1,8 +1,9 @@
-# Orchestrating model training and deployment with TFX and Cloud AI Platform
+# Orchestrating model development and deployment with TFX and Cloud AI Platform
 
-In this lab you will develop, deploy and run a TFX pipeline that uses Kubeflow Pipelines for orchestration and Cloud Dataflow and Cloud AI Platform for data processing, training, and deployment:
-
+In this lab you will develop, deploy and run a TFX pipeline that runs on Google Cloud.
 
 ## Lab instructions
 
-The lab instructions are in the `lab-02.ipynb` notebook.
+The lab instructions are in the `/labs/lab-02.ipynb` notebook.
+
+Please reference the `/solutions` folder to reference completed exercises if you are blocked.

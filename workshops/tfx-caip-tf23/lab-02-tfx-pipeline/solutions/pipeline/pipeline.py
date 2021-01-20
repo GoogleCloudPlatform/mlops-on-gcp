@@ -67,7 +67,7 @@ def create_pipeline(pipeline_name: Text,
                       data_root_uri: data_types.RuntimeParameter,
                       train_steps: data_types.RuntimeParameter,
                       eval_steps: data_types.RuntimeParameter,
-                      enable_tuning: data_types.RuntimeParameter,                    
+                      enable_tuning: bool,                    
                       ai_platform_training_args: Dict[Text, Text],
                       ai_platform_serving_args: Dict[Text, Text],                    
                       beam_pipeline_args: List[Text],
@@ -76,17 +76,17 @@ def create_pipeline(pipeline_name: Text,
   Args:
     pipeline_name: name of the TFX pipeline being created.
     pipeline_root: root directory of the pipeline. Should be a valid GCS path.
-    data_root: uri of the dataset.
-    module_file: uri of the module files used in Trainer and Transform
-      components.
+    data_root_uri: uri of the dataset.
+    train_steps: runtime parameter for number of model training steps for the Trainer component.
+    eval_steps: runtime parameter for number of model evaluation steps for the Trainer component.
+    enable_tuning: If True, the hyperparameter tuning through CloudTuner is
+      enabled.    
     ai_platform_training_args: Args of CAIP training job. Please refer to
       https://cloud.google.com/ml-engine/reference/rest/v1/projects.jobs#Job
       for detailed description.
     ai_platform_serving_args: Args of CAIP model deployment. Please refer to
       https://cloud.google.com/ml-engine/reference/rest/v1/projects.models
       for detailed description.
-    enable_tuning: If True, the hyperparameter tuning through CloudTuner is
-      enabled.
     beam_pipeline_args: Optional list of beam pipeline options. Please refer to
       https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options.
       When this argument is not provided, the default is to use GCP
@@ -101,8 +101,6 @@ def create_pipeline(pipeline_name: Text,
 
  
   # Brings data into the pipeline and splits the data into training and eval splits
-#   examples = external_input(data_root_uri)
-    
   output_config = example_gen_pb2.Output(
     split_config=example_gen_pb2.SplitConfig(splits=[
         example_gen_pb2.SplitConfig.Split(name='train', hash_buckets=4),
@@ -139,11 +137,9 @@ def create_pipeline(pipeline_name: Text,
   # function. Note that once the hyperparameters are tuned, you can drop the
   # Tuner component from pipeline and feed Trainer with tuned hyperparameters.
   if enable_tuning:
-    # The Tuner component launches 1 AIP Training job for flock management.
+    # The Tuner component launches 1 AI Platform Training job for flock management.
     # For example, 3 workers (defined by num_parallel_trials) in the flock
-    # management AIP Training job, each runs Tuner.Executor.
-    # Then, 3 CAIP Training Jobs (defined by local_training_args) are invoked
-    # from each worker in the flock management Job for Trial execution.
+    # management AI Platform Training job, each runs Tuner.Executor.
     tuner = Tuner(
         module_file=TRAIN_MODULE_FILE,
         examples=transform.outputs.transformed_examples,
@@ -183,9 +179,6 @@ def create_pipeline(pipeline_name: Text,
                 value_threshold=tfma.GenericValueThreshold(
                     lower_bound={'value': 0.5},
                     upper_bound={'value': 0.99}),
-                change_threshold=tfma.GenericChangeThreshold(
-                    absolute={'value': 0.0001},
-                    direction=tfma.MetricDirection.HIGHER_IS_BETTER),
                 )
 
   metrics_specs = tfma.MetricsSpec(
@@ -239,7 +232,7 @@ def create_pipeline(pipeline_name: Text,
   )
   
   # Checks whether the model passed the validation steps and pushes the model
-  # to a file destination if check passed.
+  # to CAIP Prediction if checks are passed.
   pusher = Pusher(
       custom_executor_spec=executor_spec.ExecutorClassSpec(ai_platform_pusher_executor.Executor),      
       model=trainer.outputs.model,
