@@ -5,7 +5,9 @@ In this lab, you will walk through  the configuration and execution of the key T
 
 ## Lab instructions
 
-The lab instructions are in the `lab-01.ipynb` notebook.
+The lab instructions are in the `labs/lab-01.ipynb` notebook.
+
+Please refer to the completed exercises in the `/solutions` folder if you are blocked.
 
 **IMPORTANT**
 
