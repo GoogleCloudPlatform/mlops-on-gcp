@@ -16,7 +16,7 @@
 # Install KFP and TFX SDKs
 
 cat > requirements.txt << EOF
-pandas<1.0.0
+pandas>1.0.0
 tfx==0.25.0
 kfp==1.0.4
 EOF
