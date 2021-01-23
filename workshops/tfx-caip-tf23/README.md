@@ -13,7 +13,7 @@ The below diagram represents the workflow orchestrated by the pipeline.
 5. The *ExampleValidator* component validates the generated examples against the imported schema
 6. The *Transform* component preprocess the data to the format required by the *Trainer* compoment. It also saves the preprocessing TensorFlow graph.
 7. The *Trainer* starts an AI Platform Training job. The AI Platform Training job is configured for training in a custom container. 
-8. The *Tuner* component tunes model hyperparameters using CloudTuner (KerasTuner instance) and AI Platform Vizier as a back-end. This pipeline 
+8. The *Tuner* component in the example pipeline tunes model hyperparameters using CloudTuner (KerasTuner instance) and AI Platform Vizier as a back-end. It can added and removed from the pipeline using the `enable_tuning` environment variable set in the notebook or in the pipeline code. When included in the pipeline, it ouputs a "best_hyperparameter" artifact directly into the *Trainer*. When excluded hyperparameters are drawn from the defaults set in the pipeline code.
 9. The *ResolverNode* component retrieves the best performing model from the previous runs and passed it to the *Evaluator* to be used as a baseline during model validation.
 10. The *Evaluator* component evaluates the trained model against the eval split and validates against the baseline model from the *ResolverNode*. If the new model exceeds validation thresholds it is marked as "blessed".
 11. The *InfraValidator* component validates the model serving infrastructure and provides a "infra_blessing" that the model can be loaded and queried for predictions.
@@ -71,15 +71,6 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
   --role roles/editor
 ```
 
-Grant your AI Platform service account additional access permissions to the AI Platform Vizier service for pipeline hyperparameter tuning.
-```
-PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
-CAIP_SERVICE_ACCOUNT="service-${PROJECT_NUMBER}@cloud-ml.google.com.iam.gserviceaccount.com"
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member serviceAccount:$CAIP_SERVICE_ACCOUNT \
-    --role=roles/ml.admin, roles/storage.objectAdmin
-```
-
 Create custom service account to give CAIP training job access to AI Platform Vizier service for pipeline hyperparameter tuning.
 
 ```
@@ -88,6 +79,7 @@ gcloud iam service-accounts create $SERVICE_ACCOUNT_ID  \
     --description="A custom service account for CAIP training job to access AI Platform Vizier service for pipeline hyperparameter tuning." \
     --display-name="TFX Tuner CAIP Vizier"
 ```
+
 Grant it access to AI Platform Vizier role.
 ```
 gcloud projects add-iam-policy-binding $PROJECT_ID \
@@ -97,7 +89,6 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 Grant it access to Storage admin role.
 ```
-SERVICE_ACCOUNT_ID=tfx-tuner-caip-service-account
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member=serviceAccount:${SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
     --role=roles/storage.objectAdmin
@@ -120,7 +111,7 @@ The core component of the lab environment is **AI Platform Pipelines**. To creat
 
 An instance of **AI Platform Notebooks** is used as a primary experimentation/development workbench.
 
-To provision the instance follow the [Create an new notebook instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) setup guide. Use the *TensorFlow Enterprise 2.1* no-GPU image. Leave all other settings at their default values.
+To provision the instance follow the [Create an new notebook instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) setup guide. Use the *TensorFlow Enterprise 2.3* no-GPU image. Leave all other settings at their default values.
 
 After the instance is created, you can connect to [JupyterLab](https://jupyter.org/) IDE by clicking the *OPEN JUPYTERLAB* link in the [AI Platform Notebooks Console](https://console.cloud.google.com/ai-platform/notebooks/instances).
 
@@ -130,23 +121,23 @@ cd
 git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp.git
 ```
 
-From the `mlops-labs/workshops/tfx-caip-tf21` folder execute the `install.sh` script to install **TFX** and **KFP** SDKs.
+From the `mlops-labs/workshops/tfx-caip-tf23` folder execute the `install.sh` script to install **TFX** and **KFP** SDKs.
 
 ```
-cd mlops-on-gcp/workshops/tfx-caip-tf21
+cd mlops-on-gcp/workshops/tfx-caip-tf23
 ./install.sh
 ```
 
 ## Summary of lab exercises
 
 ### Lab-01 - TFX Components walk-through
-In this lab, you will step through the configuration and execution of core TFX components using TFX interactive context. The primary goal of the lab is to get a high level understanding of a function and usage of each of the components. 
+In this lab, you will walk through  the configuration and execution of the key TFX components. The primary goal of the lab is to get a high level understanding of the function and usage of each of the components. You will work in an AI Platform Notebooks instance using the components in an interactive mode.
 
 ### Lab-02 - Orchestrating model training and deployment with TFX and Cloud AI Platform
-In this lab you will develop, deploy and run a TFX pipeline that uses  Cloud Dataflow and Cloud AI Platform as execution runtimes.
+In this lab you will develop, deploy and run a TFX pipeline that runs on Google Cloud.
 
 ### Lab-03 - CI/CD for a TFX pipeline
-In this lab you will author a **Cloud Build** CI/CD workflow that automatically builds and deploys a TFX pipeline. You will also integrate your workflow with a **GitHub** code source repository to further automate the triggering of your CI/CD workflow for you pipeline code.
+In this lab you will walk through authoring of a Cloud Build CI/CD workflow that automatically builds and deploys a TFX pipeline. You will also integrate your workflow with GitHub by setting up a trigger that starts the workflow when a new tag is applied to the GitHub repo hosting the pipeline's code.
 
 ### Lab-04 - ML Metadata
-In this lab, you will explore ML metadata and ML artifacts created by TFX pipeline runs using TFX pipeline ResolverNodes.
+In this lab, you will explore ML metadata and ML artifacts created by TFX pipeline runs.
