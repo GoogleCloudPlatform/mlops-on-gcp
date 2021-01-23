@@ -37,8 +37,8 @@ To start the provisioning script:
 2. Clone this repo under your `home` folder.
 ```
 cd
-git clone https://github.com/jarokaz/mlops-labs.git
-cd mlops-labs/examples/mlops-env-on-gcp/provisioning-kfp
+git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp.git
+cd mlops-on-gcp/environments_setup/mlops-env-on-gcp/provisioning-kfp
 ```
 
 3. Start installation
