@@ -21,7 +21,7 @@ WORKDIR ${WORKDIR}
 COPY *.py ./
 COPY analyzer/*.py analyzer/
 
-RUN pip install -U  tensorflow_data_validation[visualization]==0.22.0 jinja2
+RUN pip install -U tensorflow==2.3.1 tensorflow_data_validation[visualization]==0.25.0 jinja2
 
 # Startup file. Check for more settings here: https://cloud.google.com/dataflow/docs/guides/templates/configuring-flex-templates#python
 ENV FLEX_TEMPLATE_PYTHON_PY_FILE="${WORKDIR}/run.py"

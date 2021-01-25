@@ -20,23 +20,27 @@
 import os
 import logging
 from enum import Enum
-from typing import List, Optional, Text, Union, Dict, Iterable
+from typing import Optional, Text, Union, Iterable
 
 import apache_beam as beam
 import tensorflow_data_validation as tfdv
+from jinja2 import Template
 
 from apache_beam.options.pipeline_options import PipelineOptions
 from datetime import datetime
 from datetime import timedelta
-from google.cloud import bigquery
 
 from tensorflow_metadata.proto.v0 import statistics_pb2
 from tensorflow_metadata.proto.v0 import schema_pb2
 from tensorflow_metadata.proto.v0 import anomalies_pb2
+import tensorflow_data_validation as tfdv
 
+from analyzer.bq_row_coder import InstanceCoder
 
 _STATS_FILENAME = 'stats.pb'
 _ANOMALIES_FILENAME = 'anomalies.pbtxt'
+_SLICING_COLUMN_NAME = 'time_slice'
+_SLICING_COLUMN_TYPE = schema_pb2.FeatureType.BYTES
 
 def _alert_if_anomalies(anomalies: anomalies_pb2.Anomalies, output_path: str):
     """
@@ -52,12 +56,26 @@ def _alert_if_anomalies(anomalies: anomalies_pb2.Anomalies, output_path: str):
     
     return anomalies
 
+def _generate_query(sampling_query_template: str, start_time: str, end_time: str) -> str:
+    """
+    Generates a query that extracts a time series of records between start and end time.
+    """    
+    query = Template(sampling_query_template).render( 
+        start_time=start_time, 
+        end_time=end_time)
 
-def analyze_records(
-        source_path: str,
-        output_path: str,
-        baseline_stats: Optional[statistics_pb2.DatasetFeatureStatisticsList]=None,
-        pipeline_options: Optional[PipelineOptions] = None,
+    return query
+
+def generate_statistics(
+    bq_project_id: str,
+    query: str,
+    output_path: str,
+    start_time: datetime,
+    end_time: datetime,
+    schema: schema_pb2.Schema,
+    baseline_stats: Optional[statistics_pb2.DatasetFeatureStatisticsList]=None,
+    time_window: Optional[timedelta]=None,
+    pipeline_options: Optional[PipelineOptions] = None,
 ): 
     """
     Computes statistics and detects anomalies for a time series of records..
@@ -80,9 +98,28 @@ def analyze_records(
         See https://cloud.google.com/dataflow/pipelines/specifying-exec-params for
         more details.
     """
+    end_time = end_time.replace(second=0, microsecond=0)
+    start_time = start_time.replace(second=0, microsecond=0)
+    query = _generate_query(
+        sampling_query_template = query, 
+        start_time = start_time.strftime('%Y-%m-%dT%H:%M:%S'), 
+        end_time = end_time.strftime('%Y-%m-%dT%H:%M:%S'))
+    
     # Configure slicing for statistics calculations
-    stats_options = tfdv.StatsOptions()
+    stats_options = tfdv.StatsOptions(schema=schema)
     slicing_column = None
+    if time_window:
+        time_window = timedelta(
+            days = time_window.days,
+            seconds = (time_window.seconds // 60) * 60)
+
+        if end_time - start_time > time_window:
+            slice_fn = tfdv.get_feature_value_slicer(features={_SLICING_COLUMN_NAME: None})
+            stats_options.slice_functions=[slice_fn]
+            slicing_column = _SLICING_COLUMN_NAME 
+            slicing_feature = schema.feature.add()
+            slicing_feature.name = _SLICING_COLUMN_NAME
+            slicing_feature.type = _SLICING_COLUMN_TYPE
 
     # Configure output paths 
     stats_output_path = os.path.join(output_path, _STATS_FILENAME)
@@ -90,11 +127,15 @@ def analyze_records(
 
     # Define an start the pipeline
     with beam.Pipeline(options=pipeline_options) as p:
-        stats = (p
-           | 'GenerateStatistics' >> tfdv.generate_statistics_from_csv(source_path))
-        
-        schema = (stats
-           |  tfdv.infer_schema(statistics=stats))
+        raw_examples = (p
+           | 'GetData' >> beam.io.Read(beam.io.ReadFromBigQuery(query=query, gcs_location=output_path,project=bq_project_id, use_standard_sql=True)))
+
+        examples = (raw_examples
+           | 'InstancesToBeamExamples' >> beam.ParDo(InstanceCoder(schema, end_time, time_window, slicing_column)))
+
+        stats = (examples
+           | 'BeamExamplesToArrow' >> tfdv.utils.batch_util.BatchExamplesToArrowRecordBatches()
+           | 'GenerateStatistics' >> tfdv.GenerateStatistics(options=stats_options))
         
         _ = (stats
             | 'WriteStatsOutput' >> beam.io.WriteToTFRecord(

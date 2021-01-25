@@ -251,7 +251,7 @@ This command provisions a new AI Notebooks instance.
     --image-project deeplearning-platform-release \
     --maintenance-policy TERMINATE \
     --boot-disk-device-name $DEPLOYMENT_NAME-disk \
-    --boot-disk-size 100GB \
+    --boot-disk-size 50GB \
     --boot-disk-type pd-ssd \
     --scopes cloud-platform,userinfo-email \
     --metadata proxy-mode=service_account,container=$ML_IMAGE_URI,container-env-file=$GCS_BUCKET_NAME/notebook-env.txt

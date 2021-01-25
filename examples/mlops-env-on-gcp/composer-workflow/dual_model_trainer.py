@@ -70,27 +70,7 @@ FROM `bigquery-public-data.chicago_taxi_trips.taxi_trips`
 BQ_QUERY = BQ_QUERY_FOR_TFDV + """
 WHERE
   MOD(ABS(FARM_FINGERPRINT(unique_key)), 100) {}
-LIMIT 1000
-"""
-
-BQ_TEST_QTS = """
-    SELECT FORMAT_TIMESTAMP("%G-%m-%dT%T", trip_start_timestamp) as trip_start_timestamp, 
-        unique_key, taxi_id, trip_end_timestamp, trip_seconds, trip_miles, pickup_census_tract, 
-        dropoff_census_tract, pickup_community_area, dropoff_community_area, fare, tips, tolls, extras, trip_total, 
-        payment_type, company, pickup_latitude, pickup_longitude, pickup_location, dropoff_latitude, dropoff_longitude, dropoff_location
-    FROM `bigquery-public-data.chicago_taxi_trips.taxi_trips`
-        WHERE trip_start_timestamp BETWEEN '{{ start_time }}' AND '{{ end_time }}'
-    LIMIT 1000
-"""
-
-BQ_TEST_Q = """
-    SELECT trip_start_timestamp, 
-        unique_key, taxi_id, trip_end_timestamp, trip_seconds, trip_miles, pickup_census_tract, 
-        dropoff_census_tract, pickup_community_area, dropoff_community_area, fare, tips, tolls, extras, trip_total, 
-        payment_type, company, pickup_latitude, pickup_longitude, pickup_location, dropoff_latitude, dropoff_longitude, dropoff_location
-    FROM `bigquery-public-data.chicago_taxi_trips.taxi_trips`
-    WHERE MOD(ABS(FARM_FINGERPRINT(unique_key)), 100) BETWEEN 0 and 10
-    LIMIT 100000
+LIMIT 10000
 """
 #  dropoff_latitude IS NOT NULL and
 #  dropoff_longitude IS NOT NULL and
@@ -119,33 +99,30 @@ def check_table_exists(**kwargs) -> str:
     return 'bq_data_statistics' if table_exists else 'bq_copy'
 
 def run_analyzer(job_name,containerSpecGcsPath,
-    query,output_path,start_time,end_time,
-    baseline_stats_location=None, **kwargs
+    source_path,output_path,baseline_stats_location=None,
+    **kwargs
 ) -> Dict:
     """
     Runs the log analyzer Dataflow flex template.
     https://cloud.google.com/dataflow/docs/reference/rest/v1b3/projects.locations.flexTemplates/launch
     """
-    
+
     service = googleapiclient.discovery.build('dataflow', 'v1b3')
 
     parameters = {
-        'bq_project_id': PROJECT_ID,
-        'query': query,
-        'start_time': start_time,
-        'end_time': end_time,
+        'source_path' :source_path,
         'output_path': output_path,
-        'schema_file': f'{DATASET_GCS_FOLDER}/taxi_schema.pbtxt',
     }
 
     if baseline_stats_location:
-        parameters['baseline_stats_file'] = baseline_stats_location
-    #time_window
-
+        parameters['baseline_stats_file'] = baseline_stats_location 
     body = {
         'launch_parameter': {
             'jobName': job_name,
-            'parameters' : parameters,
+            'parameters' : {
+                'source_path' :source_path,
+                'output_path': output_path,
+            },
             'containerSpecGcsPath': containerSpecGcsPath
         }}
 
@@ -160,13 +137,43 @@ def run_analyzer(job_name,containerSpecGcsPath,
 
 # [START Airflow DAG]
 with DAG("dual_trainer_with_tfdv",
-         description = "Train evaluate and validate two models on taxi fare dataset. Select the best one and register it to Mlflow v0.30",
+         description = "Train evaluate and validate two models on taxi fare dataset. Select the best one and register it to Mlflow v0.21",
          default_args = default_args,
          schedule_interval = INTERVAL,
          start_date = START_DATE,
          catchup = False,
          doc_md = __doc__
          ) as dag:
+    dag.doc_md = __doc__
+
+    copy_table_name = f"{PROJECT_ID}.{BQ_DATASET}.{BQ_TABLE}_analyzis"
+    
+    bq_check_table_exists = BranchPythonOperator(
+        task_id='bq_check_table_exists',
+        python_callable=check_table_exists,
+        op_kwargs={
+            'project_id':PROJECT_ID,
+            'dataset_id':BQ_DATASET,
+            'table_id':BQ_TABLE+'_analyzis',
+        },
+        provide_context=True)
+
+    bq_copy = BigQueryOperator(
+            task_id = "bq_copy",
+            use_legacy_sql=False,
+            destination_dataset_table = copy_table_name,
+            sql = BQ_QUERY.format("between 0 and 10"),
+            location = REGION)
+
+    # File name must contains '*' when the output file size too large (~>240MB) e.g ds_bq_data_statistics_*.csv 
+    bq_statistics_gcs_files = f"{DATASET_GCS_FOLDER}/stats_source/ds_bq_data_statistics_*.csv"
+    bq_data_statistics = BigQueryToCloudStorageOperator(
+            task_id = "bq_data_statistics",
+            source_project_dataset_table = copy_table_name, # "bigquery-public-data.chicago_taxi_trips.taxi_trips",
+            destination_cloud_storage_uris = [bq_statistics_gcs_files],
+            field_delimiter = '|',
+            # NONE_FAILED required since previous BigQueryOperator maybe SKIPped and not SUCCESS.
+            trigger_rule= TriggerRule.NONE_FAILED)
 
     # Generates statistics by TFDV
     tfdv_statistics_task = PythonOperator(
@@ -176,9 +183,7 @@ with DAG("dual_trainer_with_tfdv",
             # Note: containerSpecGcsPath points to file name created from _TEMPLATE_NAME variable in 'deploy_analyzer.sh'
             'containerSpecGcsPath' : MLFLOW_GCS_ROOT_URI+"/tfdv_csv_analyzer.json",
             'job_name' : f"{'analyzer'}-{time.strftime('%Y%m%d-%H%M%S')}",
-            'query': BQ_TEST_Q,
-            'start_time': datetime.datetime(1990,1,1).isoformat(sep='T', timespec='seconds'),
-            'end_time': datetime.datetime.today().isoformat(sep='T', timespec='seconds'),
+            'source_path': bq_statistics_gcs_files,
             'output_path': f'{DATASET_GCS_FOLDER}/stats'
         },
         provide_context = True)
@@ -225,7 +230,7 @@ with DAG("dual_trainer_with_tfdv",
 
     # Exectute tasks
     for task in tasks:
-        tfdv_statistics_task >> task["delete_table"] >> task["split_table"] >> task["extract_to_gcs"] 
+        bq_check_table_exists >> bq_copy >> bq_data_statistics >> tfdv_statistics_task >> task["delete_table"] >> task["split_table"] >> task["extract_to_gcs"] 
     
     # Train two models (two separate AI Platform Training Jobs) (PythonOperator)
     #  Input: data in GCS

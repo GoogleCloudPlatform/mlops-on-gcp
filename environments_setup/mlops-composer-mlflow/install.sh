@@ -125,7 +125,7 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
     --zone=$ZONE \
     --airflow-configs=core-dags_are_paused_at_creation=True \
     --disk-size=50GB \
-    --image-version=composer-1.13.0-airflow-1.10.12 \
+    --image-version=composer-1.13.4-airflow-1.10.12 \
     --machine-type=n1-standard-2 \
     --node-count=3 \
     --python-version=3 \

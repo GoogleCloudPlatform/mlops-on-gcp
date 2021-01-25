@@ -3,11 +3,32 @@
   "description": "TFDV data analyzer Python flex template",
   "parameters": [
     {
-      "name": "source_path",
-      "label": "Source path to CSV file",
-      "helpText": "A full path to CSV file",
+      "name": "bq_project_id",
+      "label": "Source BigQuery project ID.",
+      "helpText": "ID of the project where BigQuery dataset and table are stored",
       "regexes": [
-        "gs://[-:_./a-zA-Z0-9]+"
+        "[-_.a-zA-Z0-9]+"
+      ]
+    },
+    {
+      "name": "query",
+      "label": "BigQuery select",
+      "helpText": "BigQuery select for source data to be analyzed and validated"
+    },
+    {
+      "name": "start_time",
+      "label": "Start time.",
+      "helpText": "A time window start time in YYYY-MM-DDTHH:MM:SS format.",
+      "regexes": [
+        "[-:T0-9]+"
+      ]
+    },
+    {
+      "name": "end_time",
+      "label": "End time.",
+      "helpText": "A time window end time in YYYY-MM-DDTHH:MM:SS format.",
+      "regexes": [
+        "[-:T0-9]+"
       ]
     },
     {
@@ -16,6 +37,14 @@
       "helpText": "The output GCS path for stats and anomalies protobufs.",
       "regexes": [
         "gs://[-:_./a-zA-Z0-9]+"
+      ]
+    },    
+    {
+      "name": "schema_file",
+      "label": "Schema file.",
+      "helpText": "A GCS path to schema file.",
+      "regexes": [
+        "gs://[-_./a-zA-Z0-9]+"
       ]
     },
     {
@@ -26,6 +55,15 @@
       "regexes": [
         "gs://[-_./a-zA-Z0-9]+"
       ]
+    },
+    {
+        "name": "time_window",
+        "label": "Time window.",
+        "helpText": "A time window to use for time slice calculations. You must use the m or h suffix to designate minutes or hours.",
+        "is_optional": true,
+        "regexes": [
+          "[0-9]+[hm]"
+        ]
     }
   ]
 }
