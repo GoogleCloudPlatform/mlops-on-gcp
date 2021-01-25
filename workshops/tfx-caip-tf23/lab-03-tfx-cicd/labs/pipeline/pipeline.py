@@ -112,15 +112,15 @@ def create_pipeline(pipeline_name: Text,
   # Computes statistics over data for visualization and example validation.
   statisticsgen = StatisticsGen(examples=examplegen.outputs.examples)
 
+  # Generates schema based on statistics files. Even though, we use user-provided schema
+  # we still want to generate the schema of the newest data for tracking and comparison
+  schemagen = SchemaGen(statistics=statisticsgen.outputs.statistics)
+
   # Import a user-provided schema
   import_schema = ImporterNode(
       instance_name='import_user_schema',
       source_uri=SCHEMA_FOLDER,
       artifact_type=Schema)
-  
-  # Generates schema based on statistics files. Even though, we use user-provided schema
-  # we still want to generate the schema of the newest data for tracking and comparison
-  schemagen = SchemaGen(statistics=statisticsgen.outputs.statistics)
 
   # Performs anomaly detection based on statistics and data schema.
   examplevalidator = ExampleValidator(
@@ -242,10 +242,10 @@ def create_pipeline(pipeline_name: Text,
 
   components=[
       examplegen, 
-      statisticsgen, 
-      import_schema, 
-      schemagen, 
-      examplegen, 
+      statisticsgen,
+      schemagen,      
+      import_schema,
+      examplevalidator,
       transform,
       trainer, 
       resolver, 
