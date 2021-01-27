@@ -8,10 +8,10 @@ The below diagram represents the workflow orchestrated by the pipeline.
 
 1. Training data in the CSV format is ingested from a GCS location using *CsvExampleGen*. The URI to the data root is passed as a runtime parameter. The *CsvExampleGen* component splits the source data into training and evaluation splits and converts the data into the TFRecords format.
 2. The *StatisticsGen* component generates statistics for both splits.
-3. The *SchemaGen* component autogenerates a schema . This is done for tracking. The pipeline uses a curated schema imported by the *ImportedNode* component.
+3. The *SchemaGen* component autogenerates a schema . This is done for data validation and anomaly detection. The pipeline uses a curated schema imported by the *ImportedNode* component.
 4. The *ImporterNode* component is used to bring the curated schema file into the pipeline. The location of the schema file is passed as a runtime parameter. 
 5. The *ExampleValidator* component validates the generated examples against the imported schema
-6. The *Transform* component preprocess the data to the format required by the *Trainer* compoment. It also saves the preprocessing TensorFlow graph.
+6. The *Transform* component preprocess the data to the format required by the *Trainer* component. It also saves the preprocessing TensorFlow graph for consistent feature engineering at training and serving time.
 7. The *Trainer* starts an AI Platform Training job. The AI Platform Training job is configured for training in a custom container. 
 8. The *Tuner* component in the example pipeline tunes model hyperparameters using CloudTuner (KerasTuner instance) and AI Platform Vizier as a back-end. It can added and removed from the pipeline using the `enable_tuning` environment variable set in the notebook or in the pipeline code. When included in the pipeline, it ouputs a "best_hyperparameter" artifact directly into the *Trainer*. When excluded hyperparameters are drawn from the defaults set in the pipeline code.
 9. The *ResolverNode* component retrieves the best performing model from the previous runs and passed it to the *Evaluator* to be used as a baseline during model validation.
@@ -41,13 +41,16 @@ In this environment, all services are provisioned in the same [Google Cloud Proj
 ### Enabling Cloud Services
 
 To enable Cloud Services utilized in the lab environment:
+
 1. Launch [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell)
+t
 2. Set your project ID
 ```
 PROJECT_ID=[YOUR PROJECT ID]
 
 gcloud config set project $PROJECT_ID
 ```
+
 3. Use `gcloud` to enable the services
 ```
 gcloud services enable \
@@ -61,8 +64,7 @@ ml.googleapis.com \
 dataflow.googleapis.com 
 ```
 
-The **Cloud Build** service account needs the Editor permissions in your GCP project to upload the pipeline package to an **AI Platform Pipelines** instance.
-
+4. The **Cloud Build** service account needs the Editor permissions in your GCP project to upload the pipeline package to an **AI Platform Pipelines** instance.
 ```
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
 CLOUD_BUILD_SERVICE_ACCOUNT="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
@@ -71,30 +73,29 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
   --role roles/editor
 ```
 
-Create custom service account to give CAIP training job access to AI Platform Vizier service for pipeline hyperparameter tuning.
-
+5. Create a custom service account to give CAIP training job access to AI Platform Vizier service for pipeline hyperparameter tuning.
 ```
 SERVICE_ACCOUNT_ID=tfx-tuner-caip-service-account
 gcloud iam service-accounts create $SERVICE_ACCOUNT_ID  \
-    --description="A custom service account for CAIP training job to access AI Platform Vizier service for pipeline hyperparameter tuning." \
+    --description="A custom service account for CAIP training job to access AI Platform Vizier service for pipeline hyperparameter tuning" \
     --display-name="TFX Tuner CAIP Vizier"
 ```
 
-Grant it access to AI Platform Vizier role.
+6. Grant your custom service account access to the `ml.admin` role to create and manage AI Platform Vizier studies.
 ```
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member=serviceAccount:${SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
     --role=roles/ml.admin
 ```
 
-Grant it access to Storage admin role.
+7. Grant your custom service account access to the `storage.objectAdmin` role for artifact access and temporary tuning file storage.
 ```
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member=serviceAccount:${SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
     --role=roles/storage.objectAdmin
 ```
 
-Grant your project's AI Platform Google-managed service account the Service Account Admin role (roles/iam.serviceAccountAdmin) for your new custom service account. To do so, use the gcloud tool to run the following command:
+8. Grant your project's AI Platform Google-managed service account the `iam.serviceAccountAdmin` role for your new custom service account. To do so, use the gcloud tool to run the following command:
 ```
 gcloud iam service-accounts add-iam-policy-binding \
   --role=roles/iam.serviceAccountAdmin \
