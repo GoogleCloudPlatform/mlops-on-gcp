@@ -35,7 +35,6 @@ from tfx.components.trainer.fn_args_utils import DataAccessor
 from tfx.components.tuner.component import TunerFnResult
 from tfx_bsl.tfxio import dataset_options
 
-from config import Config
 import features
 
 # Model training constants.
@@ -185,14 +184,8 @@ def _build_keras_model(hparams: kerastuner.HyperParameters,
 def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
   """Build the tuner using CloudTuner (KerasTuner instance).
   Args:
-    fn_args: Holds args as name/value pairs.
-      - working_dir: working dir for tuning.
-      - train_files: List of file paths containing training tf.Example data.
-      - eval_files: List of file paths containing eval tf.Example data.
-      - train_steps: number of train steps.
-      - eval_steps: number of eval steps.
-      - schema_path: optional schema of the input data.
-      - transform_graph_path: optional transform graph produced by TFT.
+    fn_args: Holds args used to train and tune the model as name/value pairs. See 
+      https://www.tensorflow.org/tfx/api_docs/python/tfx/components/trainer/fn_args_utils/FnArgs.
   Returns:
     A namedtuple contains the following:
       - tuner: A BaseTuner that will be used for tuning.
@@ -209,8 +202,8 @@ def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
   # CloudTuner is a subclass of kerastuner.Tuner which inherits from BaseTuner.   
   tuner = CloudTuner(
       build_keras_model_fn,
-      project_id=Config.PROJECT_ID,
-      region=Config.GCP_REGION,      
+      project_id=fn_args.custom_config['ai_platform_training_args']['project'],
+      region=fn_args.custom_config['ai_platform_training_args']['region'],      
       max_trials=50,
       hyperparameters=_get_hyperparameters(),
       objective=kerastuner.Objective('val_sparse_categorical_accuracy', 'max'),
@@ -242,8 +235,8 @@ def _copy_tensorboard_logs(local_path: str, gcs_path: str):
     """Copies Tensorboard logs from a local dir to a GCS location.
     
     After training, batch copy Tensorboard logs locally to a GCS location. This can result
-    in faster pipeline runtimes over streaming logs to GCS that can get network bottlenecked
-    when streaming large training log volumes.
+    in faster pipeline runtimes over streaming logs per batch to GCS that can get bottlenecked
+    when streaming large volumes.
     
     Args:
       local_path: local filesystem directory uri.
@@ -262,7 +255,8 @@ def _copy_tensorboard_logs(local_path: str, gcs_path: str):
 def run_fn(fn_args: TrainerFnArgs):
   """Train the model based on given args.
   Args:
-    fn_args: Holds args used to train the model as name/value pairs.
+    fn_args: Holds args used to train and tune the model as name/value pairs. See 
+      https://www.tensorflow.org/tfx/api_docs/python/tfx/components/trainer/fn_args_utils/FnArgs.
   """
 
   tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
