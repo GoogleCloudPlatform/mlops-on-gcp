@@ -3,11 +3,10 @@
 This folder contains instructions that guide you through this workflow:
 
 1. Split public taxi fare estimation dataset to CSV files using Airflow BigQuery operators
-2. Visual profiling using TFDV
-3. Train two models on AI Platform Training jobs. Training process metrics are stored in Mlflow
-4. Evaluate new models on evaluation data split
-5. Validate and compare new model to previously trained models and select the best new one
-6. Register the blessed new model in Mlflow registry
+2. Train two models on AI Platform Training jobs. Training process metrics are stored in Mlflow
+3. Evaluate new models on evaluation data split
+4. Validate and compare new model to previously trained models and select the best new one
+5. Register the blessed new model in Mlflow registry
 
 ![Workflow topology](/images/!!! TODO !!!)
 
