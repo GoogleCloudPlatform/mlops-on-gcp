@@ -28,7 +28,7 @@ trap 'err_handler "$LINENO" "$BASH_COMMAND" "$?"' ERR
 
 # Check command line parameters
 if [[ $# < 2 ]]; then
-  echo 'USAGE:  ./deploy_flex_template.sh PROJECT_ID TEMPLATE_LOCATION'
+  echo 'USAGE:  ./deploy_log_analyzer.sh PROJECT_ID TEMPLATE_LOCATION'
   exit 1
 fi
 

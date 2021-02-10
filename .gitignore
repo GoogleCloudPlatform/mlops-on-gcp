@@ -110,3 +110,7 @@ venv.bak/
 
 *.tar.gz
 .idea
+
+# Generated during the Composer deployment
+environments_setup/mlops-composer-mlflow/mlflow-helm/sql-access.json
+environments_setup/mlops-composer-mlflow/custom-ml-image/sql-access.json
