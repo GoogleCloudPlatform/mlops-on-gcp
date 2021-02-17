@@ -13,7 +13,7 @@ In general, both versions are go through this workflow:
 4. Test model on eval set 
 
 In order to use this examples you need to provision a Cloud Composer orchestrated and MLflow integrated
-environment described in this [README.md](../../../environments_setup/mlops-composer-mlflow/README.md)
+environment described in this [README.md](../../environments_setup/mlops-composer-mlflow/README.md)
 
 The core services in the environment are:
 - [AI Platform Notebooks](https://cloud.google.com/ai-platform/notebooks/docs/): ML experimentation and development
