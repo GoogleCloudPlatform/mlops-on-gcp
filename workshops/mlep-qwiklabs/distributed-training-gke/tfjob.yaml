@@ -1,0 +1,20 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  name: multi-worker
+spec:
+  cleanPodPolicy: None
+  tfReplicaSpecs:
+    Worker:
+      replicas: 3
+      template:
+        spec:
+          containers:
+            - name: tensorflow
+              image: mnist
+              args:
+                - --epochs=5
+                - --steps_per_epoch=100
+                - --per_worker_batch=64
+                - --saved_model_path=gs://bucket/saved_model_dir
+                - --checkpoint_path=gs://bucket/checkpoints
