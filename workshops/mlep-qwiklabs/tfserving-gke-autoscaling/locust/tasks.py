@@ -15,7 +15,7 @@
 # limitations under the License.
 """
 An example locustfile demonstrating how to load test 
-an AI Platform Prediction predict endpoint.
+an TF Serving endpoint.
 """
 
 import json
