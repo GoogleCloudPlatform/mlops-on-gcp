@@ -1,6 +1,6 @@
-# Implementing cntinuous training pipeline with KFP and Cloud AI Platform
+# Implementing cntinuous training pipeline with Kubeflow Pipeline and AI Platform
 
-In this lab, you will build, deploy, and run a KFP pipeline that orchestrates **BigQuery** and **Cloud AI Platform** services to train a **scikit-learn** model.
+In this lab, you will build, deploy, and run a Kubeflow Pipeline (KFP) that orchestrates **BigQuery** and **AI Platform** services to train a **scikit-learn** model.
 
 
 ## Lab instructions
