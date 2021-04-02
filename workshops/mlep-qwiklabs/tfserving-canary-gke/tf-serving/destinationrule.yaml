@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: image-classifier
+spec:
+  host: image-classifier
+  subsets:
+  - name: resnet101
+    labels:
+      version: resnet101
+  - name: resnet50
+    labels:
+      version: resnet50
