@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2021 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # Install KFP and TFX SDKs
+
+cat > requirements.txt << EOF
+pandas>1.0.0
+tfx==0.25.0
+kfp==1.0.4
+EOF
+
 python -m pip install -U --user -r requirements.txt
 
 # Install Skaffold
@@ -23,4 +29,6 @@ chmod +x skaffold
 mv skaffold /home/jupyter/.local/bin
 
 jupyter nbextension enable --py tensorflow_model_analysis
+
+
 
