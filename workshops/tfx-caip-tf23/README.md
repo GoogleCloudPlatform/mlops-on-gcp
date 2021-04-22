@@ -43,7 +43,6 @@ In this environment, all services are provisioned in the same [Google Cloud Proj
 To enable Cloud Services utilized in the lab environment:
 
 1. Launch [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell)
-t
 2. Set your project ID
 ```
 PROJECT_ID=[YOUR PROJECT ID]
