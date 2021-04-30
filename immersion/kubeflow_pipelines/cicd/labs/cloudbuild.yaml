@@ -6,9 +6,9 @@ steps:
   dir: $_PIPELINE_FOLDER/trainer_image
   
 # TODO: Build the base image for lightweight components
-- name: # TODO
-  args: # TODO
-  dir: # TODO
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_BASE_IMAGE_NAME:$TAG_NAME', '.']
+  dir: $_PIPELINE_FOLDER/base_image
 
 # Compile the pipeline
 # TODO: Set the environment variables below for the $_PIPELINE_DSL script
@@ -19,24 +19,24 @@ steps:
   - |
     dsl-compile --py $_PIPELINE_DSL --output $_PIPELINE_PACKAGE
   env:
-  - 'BASE_IMAGE= # TODO
-  - 'TRAINER_IMAGE= # TODO
-  - 'RUNTIME_VERSION= # TODO
-  - 'PYTHON_VERSION= # TODO
-  - 'COMPONENT_URL_SEARCH_PREFIX= # TODO
-  - 'USE_KFP_SA=$_USE_KFP_SA'
+  - 'BASE_IMAGE= gcr.io/$PROJECT_ID/$_BASE_IMAGE_NAME:$TAG_NAME'
+  - 'TRAINER_IMAGE= gcr.io/$PROJECT_ID/$_TRAINER_IMAGE_NAME:$TAG_NAME'
+  - 'RUNTIME_VERSION= $_RUNTIME_VERSION'
+  - 'PYTHON_VERSION= $_PYTHON_VERSION'
+  - 'COMPONENT_URL_SEARCH_PREFIX= $_COMPONENT_URL_SEARCH_PREFIX'
+  - 'USE_KFP_SA= $_USE_KFP_SA'
   dir: $_PIPELINE_FOLDER/pipeline
   
 # Upload the pipeline
 # TODO: Use the kfp-cli Cloud Builder and write the command to upload the ktf pipeline 
-- name: # TODO
+- name: 'gcr.io/$PROJECT_ID/kfp-cli'
   args:
   - '-c'
   - |
-    # TODO
+    kfp --endpoint $_ENDPOINT pipeline upload -p ${_PIPELINE_NAME}_$TAG_NAME $_PIPELINE_PACKAGE
   dir: $_PIPELINE_FOLDER/pipeline
 
 
 # Push the images to Container Registry
 # TODO: List the images to be pushed to the project Docker registry
-images: # TODO
+images: ['gcr.io/$PROJECT_ID/$_TRAINER_IMAGE_NAME:$TAG_NAME', 'gcr.io/$PROJECT_ID/$_BASE_IMAGE_NAME:$TAG_NAME']

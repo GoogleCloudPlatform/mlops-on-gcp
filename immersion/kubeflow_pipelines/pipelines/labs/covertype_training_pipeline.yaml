@@ -1,0 +1,1197 @@
+"apiVersion": |-
+  argoproj.io/v1alpha1
+"kind": |-
+  Workflow
+"metadata":
+  "annotations":
+    "pipelines.kubeflow.org/pipeline_spec": |-
+      {"description": "The pipeline training and deploying the Covertype classifierpipeline_yaml", "inputs": [{"name": "project_id"}, {"name": "region"}, {"name": "source_table_name"}, {"name": "gcs_root"}, {"name": "dataset_id"}, {"name": "evaluation_metric_name"}, {"name": "evaluation_metric_threshold"}, {"name": "model_id"}, {"name": "version_id"}, {"name": "replace_existing_version"}, {"default": "\n{\n    \"hyperparameters\":  {\n        \"goal\": \"MAXIMIZE\",\n        \"maxTrials\": 6,\n        \"maxParallelTrials\": 3,\n        \"hyperparameterMetricTag\": \"accuracy\",\n        \"enableTrialEarlyStopping\": True,\n        \"params\": [\n            {\n                \"parameterName\": \"max_iter\",\n                \"type\": \"DISCRETE\",\n                \"discreteValues\": [500, 1000]\n            },\n            {\n                \"parameterName\": \"alpha\",\n                \"type\": \"DOUBLE\",\n                \"minValue\": 0.0001,\n                \"maxValue\": 0.001,\n                \"scaleType\": \"UNIT_LINEAR_SCALE\"\n            }\n        ]\n    }\n}\n", "name": "hypertune_settings", "optional": true}, {"default": "US", "name": "dataset_location", "optional": true}], "name": "Covertype Classifier Training"}
+  "generateName": |-
+    covertype-classifier-training-
+"spec":
+  "arguments":
+    "parameters":
+    - "name": |-
+        project_id
+    - "name": |-
+        region
+    - "name": |-
+        source_table_name
+    - "name": |-
+        gcs_root
+    - "name": |-
+        dataset_id
+    - "name": |-
+        evaluation_metric_name
+    - "name": |-
+        evaluation_metric_threshold
+    - "name": |-
+        model_id
+    - "name": |-
+        version_id
+    - "name": |-
+        replace_existing_version
+    - "name": |-
+        hypertune_settings
+      "value": |2
+
+        {
+            "hyperparameters":  {
+                "goal": "MAXIMIZE",
+                "maxTrials": 6,
+                "maxParallelTrials": 3,
+                "hyperparameterMetricTag": "accuracy",
+                "enableTrialEarlyStopping": True,
+                "params": [
+                    {
+                        "parameterName": "max_iter",
+                        "type": "DISCRETE",
+                        "discreteValues": [500, 1000]
+                    },
+                    {
+                        "parameterName": "alpha",
+                        "type": "DOUBLE",
+                        "minValue": 0.0001,
+                        "maxValue": 0.001,
+                        "scaleType": "UNIT_LINEAR_SCALE"
+                    }
+                ]
+            }
+        }
+    - "name": |-
+        dataset_location
+      "value": |-
+        US
+  "entrypoint": |-
+    covertype-classifier-training
+  "serviceAccountName": |-
+    pipeline-runner
+  "templates":
+  - "container":
+      "args":
+      - |-
+        --ui_metadata_path
+      - |-
+        /tmp/outputs/MLPipeline_UI_metadata/data
+      - |-
+        kfp_component.google.bigquery
+      - |-
+        query
+      - |-
+        --query
+      - "\n         SELECT *\n         FROM \n             `{{inputs.parameters.source_table_name}}`\
+        \ AS cover\n         WHERE \n         MOD(ABS(FARM_FINGERPRINT(TO_JSON_STRING(cover))),\
+        \ 10) IN (1, 2, 3, 4)\n         "
+      - |-
+        --project_id
+      - |-
+        {{inputs.parameters.project_id}}
+      - |-
+        --dataset_id
+      - |-
+        {{inputs.parameters.dataset_id}}
+      - |-
+        --table_id
+      - ""
+      - |-
+        --dataset_location
+      - |-
+        {{inputs.parameters.dataset_location}}
+      - |-
+        --output_gcs_path
+      - |-
+        {{inputs.parameters.gcs_root}}/datasets/training/data.csv
+      - |-
+        --job_config
+      - ""
+      "command": []
+      "env":
+      - "name": |-
+          KFP_POD_NAME
+        "value": |-
+          {{pod.name}}
+      - "name": |-
+          KFP_POD_NAME
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.name
+      - "name": |-
+          KFP_NAMESPACE
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.namespace
+      "image": |-
+        gcr.io/ml-pipeline/ml-pipeline-gcp:e66dcb18607406330f953bf99b04fe7c3ed1a4a8
+    "inputs":
+      "parameters":
+      - "name": |-
+          dataset_id
+      - "name": |-
+          dataset_location
+      - "name": |-
+          gcs_root
+      - "name": |-
+          project_id
+      - "name": |-
+          source_table_name
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "A Kubeflow Pipeline component to submit a query to Google Cloud Bigquery \nservice and dump outputs to a Google Cloud Storage blob. \n", "inputs": [{"description": "The query used by Bigquery service to fetch the results.", "name": "query", "type": "String"}, {"description": "The project to execute the query job.", "name": "project_id", "type": "GCPProjectID"}, {"default": "", "description": "The ID of the persistent dataset to keep the results of the query.", "name": "dataset_id", "type": "String"}, {"default": "", "description": "The ID of the table to keep the results of the query. If absent, the operation will generate a random id for the table.", "name": "table_id", "type": "String"}, {"default": "", "description": "The path to the Cloud Storage bucket to store the query output.", "name": "output_gcs_path", "type": "GCSPath"}, {"default": "US", "description": "The location to create the dataset. Defaults to `US`.", "name": "dataset_location", "type": "String"}, {"default": "", "description": "The full config spec for the query job.See  [QueryJobConfig](https://googleapis.github.io/google-cloud-python/latest/bigquery/generated/google.cloud.bigquery.job.QueryJobConfig.html#google.cloud.bigquery.job.QueryJobConfig)  for details.", "name": "job_config", "type": "Dict"}], "metadata": {"labels": {"add-pod-env": "true"}}, "name": "Bigquery - Query", "outputs": [{"description": "The path to the Cloud Storage bucket containing the query output in CSV format.", "name": "output_gcs_path", "type": "GCSPath"}, {"name": "MLPipeline UI metadata", "type": "UI metadata"}]}
+      "labels":
+        "add-pod-env": |-
+          true
+    "name": |-
+      bigquery-query
+    "outputs":
+      "artifacts":
+      - "name": |-
+          mlpipeline-ui-metadata
+        "path": |-
+          /tmp/outputs/MLPipeline_UI_metadata/data
+      - "name": |-
+          bigquery-query-output_gcs_path
+        "path": |-
+          /tmp/kfp/output/bigquery/query-output-path.txt
+      "parameters":
+      - "name": |-
+          bigquery-query-output_gcs_path
+        "valueFrom":
+          "path": |-
+            /tmp/kfp/output/bigquery/query-output-path.txt
+  - "container":
+      "args":
+      - |-
+        --ui_metadata_path
+      - |-
+        /tmp/outputs/MLPipeline_UI_metadata/data
+      - |-
+        kfp_component.google.bigquery
+      - |-
+        query
+      - |-
+        --query
+      - "\n         SELECT *\n         FROM \n             `{{inputs.parameters.source_table_name}}`\
+        \ AS cover\n         WHERE \n         MOD(ABS(FARM_FINGERPRINT(TO_JSON_STRING(cover))),\
+        \ 10) IN (8)\n         "
+      - |-
+        --project_id
+      - |-
+        {{inputs.parameters.project_id}}
+      - |-
+        --dataset_id
+      - |-
+        {{inputs.parameters.dataset_id}}
+      - |-
+        --table_id
+      - ""
+      - |-
+        --dataset_location
+      - |-
+        {{inputs.parameters.dataset_location}}
+      - |-
+        --output_gcs_path
+      - |-
+        {{inputs.parameters.gcs_root}}/datasets/validation/data.csv
+      - |-
+        --job_config
+      - ""
+      "command": []
+      "env":
+      - "name": |-
+          KFP_POD_NAME
+        "value": |-
+          {{pod.name}}
+      - "name": |-
+          KFP_POD_NAME
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.name
+      - "name": |-
+          KFP_NAMESPACE
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.namespace
+      "image": |-
+        gcr.io/ml-pipeline/ml-pipeline-gcp:e66dcb18607406330f953bf99b04fe7c3ed1a4a8
+    "inputs":
+      "parameters":
+      - "name": |-
+          dataset_id
+      - "name": |-
+          dataset_location
+      - "name": |-
+          gcs_root
+      - "name": |-
+          project_id
+      - "name": |-
+          source_table_name
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "A Kubeflow Pipeline component to submit a query to Google Cloud Bigquery \nservice and dump outputs to a Google Cloud Storage blob. \n", "inputs": [{"description": "The query used by Bigquery service to fetch the results.", "name": "query", "type": "String"}, {"description": "The project to execute the query job.", "name": "project_id", "type": "GCPProjectID"}, {"default": "", "description": "The ID of the persistent dataset to keep the results of the query.", "name": "dataset_id", "type": "String"}, {"default": "", "description": "The ID of the table to keep the results of the query. If absent, the operation will generate a random id for the table.", "name": "table_id", "type": "String"}, {"default": "", "description": "The path to the Cloud Storage bucket to store the query output.", "name": "output_gcs_path", "type": "GCSPath"}, {"default": "US", "description": "The location to create the dataset. Defaults to `US`.", "name": "dataset_location", "type": "String"}, {"default": "", "description": "The full config spec for the query job.See  [QueryJobConfig](https://googleapis.github.io/google-cloud-python/latest/bigquery/generated/google.cloud.bigquery.job.QueryJobConfig.html#google.cloud.bigquery.job.QueryJobConfig)  for details.", "name": "job_config", "type": "Dict"}], "metadata": {"labels": {"add-pod-env": "true"}}, "name": "Bigquery - Query", "outputs": [{"description": "The path to the Cloud Storage bucket containing the query output in CSV format.", "name": "output_gcs_path", "type": "GCSPath"}, {"name": "MLPipeline UI metadata", "type": "UI metadata"}]}
+      "labels":
+        "add-pod-env": |-
+          true
+    "name": |-
+      bigquery-query-2
+    "outputs":
+      "artifacts":
+      - "name": |-
+          mlpipeline-ui-metadata
+        "path": |-
+          /tmp/outputs/MLPipeline_UI_metadata/data
+      - "name": |-
+          bigquery-query-2-output_gcs_path
+        "path": |-
+          /tmp/kfp/output/bigquery/query-output-path.txt
+      "parameters":
+      - "name": |-
+          bigquery-query-2-output_gcs_path
+        "valueFrom":
+          "path": |-
+            /tmp/kfp/output/bigquery/query-output-path.txt
+  - "container":
+      "args":
+      - |-
+        --ui_metadata_path
+      - |-
+        /tmp/outputs/MLPipeline_UI_metadata/data
+      - |-
+        kfp_component.google.bigquery
+      - |-
+        query
+      - |-
+        --query
+      - "\n         SELECT *\n         FROM \n             `{{inputs.parameters.source_table_name}}`\
+        \ AS cover\n         WHERE \n         MOD(ABS(FARM_FINGERPRINT(TO_JSON_STRING(cover))),\
+        \ 10) IN (9)\n         "
+      - |-
+        --project_id
+      - |-
+        {{inputs.parameters.project_id}}
+      - |-
+        --dataset_id
+      - |-
+        {{inputs.parameters.dataset_id}}
+      - |-
+        --table_id
+      - ""
+      - |-
+        --dataset_location
+      - |-
+        {{inputs.parameters.dataset_location}}
+      - |-
+        --output_gcs_path
+      - |-
+        {{inputs.parameters.gcs_root}}/datasets/testing/data.csv
+      - |-
+        --job_config
+      - ""
+      "command": []
+      "env":
+      - "name": |-
+          KFP_POD_NAME
+        "value": |-
+          {{pod.name}}
+      - "name": |-
+          KFP_POD_NAME
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.name
+      - "name": |-
+          KFP_NAMESPACE
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.namespace
+      "image": |-
+        gcr.io/ml-pipeline/ml-pipeline-gcp:e66dcb18607406330f953bf99b04fe7c3ed1a4a8
+    "inputs":
+      "parameters":
+      - "name": |-
+          dataset_id
+      - "name": |-
+          dataset_location
+      - "name": |-
+          gcs_root
+      - "name": |-
+          project_id
+      - "name": |-
+          source_table_name
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "A Kubeflow Pipeline component to submit a query to Google Cloud Bigquery \nservice and dump outputs to a Google Cloud Storage blob. \n", "inputs": [{"description": "The query used by Bigquery service to fetch the results.", "name": "query", "type": "String"}, {"description": "The project to execute the query job.", "name": "project_id", "type": "GCPProjectID"}, {"default": "", "description": "The ID of the persistent dataset to keep the results of the query.", "name": "dataset_id", "type": "String"}, {"default": "", "description": "The ID of the table to keep the results of the query. If absent, the operation will generate a random id for the table.", "name": "table_id", "type": "String"}, {"default": "", "description": "The path to the Cloud Storage bucket to store the query output.", "name": "output_gcs_path", "type": "GCSPath"}, {"default": "US", "description": "The location to create the dataset. Defaults to `US`.", "name": "dataset_location", "type": "String"}, {"default": "", "description": "The full config spec for the query job.See  [QueryJobConfig](https://googleapis.github.io/google-cloud-python/latest/bigquery/generated/google.cloud.bigquery.job.QueryJobConfig.html#google.cloud.bigquery.job.QueryJobConfig)  for details.", "name": "job_config", "type": "Dict"}], "metadata": {"labels": {"add-pod-env": "true"}}, "name": "Bigquery - Query", "outputs": [{"description": "The path to the Cloud Storage bucket containing the query output in CSV format.", "name": "output_gcs_path", "type": "GCSPath"}, {"name": "MLPipeline UI metadata", "type": "UI metadata"}]}
+      "labels":
+        "add-pod-env": |-
+          true
+    "name": |-
+      bigquery-query-3
+    "outputs":
+      "artifacts":
+      - "name": |-
+          mlpipeline-ui-metadata
+        "path": |-
+          /tmp/outputs/MLPipeline_UI_metadata/data
+      - "name": |-
+          bigquery-query-3-output_gcs_path
+        "path": |-
+          /tmp/kfp/output/bigquery/query-output-path.txt
+      "parameters":
+      - "name": |-
+          bigquery-query-3-output_gcs_path
+        "valueFrom":
+          "path": |-
+            /tmp/kfp/output/bigquery/query-output-path.txt
+  - "dag":
+      "tasks":
+      - "arguments":
+          "parameters":
+          - "name": |-
+              model_id
+            "value": |-
+              {{inputs.parameters.model_id}}
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              replace_existing_version
+            "value": |-
+              {{inputs.parameters.replace_existing_version}}
+          - "name": |-
+              submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+            "value": |-
+              {{inputs.parameters.submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir}}
+          - "name": |-
+              version_id
+            "value": |-
+              {{inputs.parameters.version_id}}
+        "name": |-
+          deploying-a-trained-model-to-cloud-machine-learning-engine
+        "template": |-
+          deploying-a-trained-model-to-cloud-machine-learning-engine
+    "inputs":
+      "parameters":
+      - "name": |-
+          model_id
+      - "name": |-
+          project_id
+      - "name": |-
+          replace_existing_version
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+      - "name": |-
+          version_id
+    "name": |-
+      condition-1
+  - "dag":
+      "tasks":
+      - "arguments":
+          "parameters":
+          - "name": |-
+              dataset_id
+            "value": |-
+              {{inputs.parameters.dataset_id}}
+          - "name": |-
+              dataset_location
+            "value": |-
+              {{inputs.parameters.dataset_location}}
+          - "name": |-
+              gcs_root
+            "value": |-
+              {{inputs.parameters.gcs_root}}
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              source_table_name
+            "value": |-
+              {{inputs.parameters.source_table_name}}
+        "name": |-
+          bigquery-query
+        "template": |-
+          bigquery-query
+      - "arguments":
+          "parameters":
+          - "name": |-
+              dataset_id
+            "value": |-
+              {{inputs.parameters.dataset_id}}
+          - "name": |-
+              dataset_location
+            "value": |-
+              {{inputs.parameters.dataset_location}}
+          - "name": |-
+              gcs_root
+            "value": |-
+              {{inputs.parameters.gcs_root}}
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              source_table_name
+            "value": |-
+              {{inputs.parameters.source_table_name}}
+        "name": |-
+          bigquery-query-2
+        "template": |-
+          bigquery-query-2
+      - "arguments":
+          "parameters":
+          - "name": |-
+              dataset_id
+            "value": |-
+              {{inputs.parameters.dataset_id}}
+          - "name": |-
+              dataset_location
+            "value": |-
+              {{inputs.parameters.dataset_location}}
+          - "name": |-
+              gcs_root
+            "value": |-
+              {{inputs.parameters.gcs_root}}
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              source_table_name
+            "value": |-
+              {{inputs.parameters.source_table_name}}
+        "name": |-
+          bigquery-query-3
+        "template": |-
+          bigquery-query-3
+      - "arguments":
+          "parameters":
+          - "name": |-
+              model_id
+            "value": |-
+              {{inputs.parameters.model_id}}
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              replace_existing_version
+            "value": |-
+              {{inputs.parameters.replace_existing_version}}
+          - "name": |-
+              submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+            "value": |-
+              {{tasks.submitting-a-cloud-ml-training-job-as-a-pipeline-step-2.outputs.parameters.submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir}}
+          - "name": |-
+              version_id
+            "value": |-
+              {{inputs.parameters.version_id}}
+        "dependencies":
+        - |-
+          evaluate-model
+        - |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2
+        "name": |-
+          condition-1
+        "template": |-
+          condition-1
+        "when": |-
+          {{tasks.evaluate-model.outputs.parameters.evaluate-model-metric_value}} > {{inputs.parameters.evaluation_metric_threshold}}
+      - "arguments":
+          "parameters":
+          - "name": |-
+              bigquery-query-3-output_gcs_path
+            "value": |-
+              {{tasks.bigquery-query-3.outputs.parameters.bigquery-query-3-output_gcs_path}}
+          - "name": |-
+              evaluation_metric_name
+            "value": |-
+              {{inputs.parameters.evaluation_metric_name}}
+          - "name": |-
+              submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+            "value": |-
+              {{tasks.submitting-a-cloud-ml-training-job-as-a-pipeline-step-2.outputs.parameters.submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir}}
+        "dependencies":
+        - |-
+          bigquery-query-3
+        - |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2
+        "name": |-
+          evaluate-model
+        "template": |-
+          evaluate-model
+      - "arguments":
+          "parameters":
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              submitting-a-cloud-ml-training-job-as-a-pipeline-step-job_id
+            "value": |-
+              {{tasks.submitting-a-cloud-ml-training-job-as-a-pipeline-step.outputs.parameters.submitting-a-cloud-ml-training-job-as-a-pipeline-step-job_id}}
+        "dependencies":
+        - |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step
+        "name": |-
+          retrieve-best-run
+        "template": |-
+          retrieve-best-run
+      - "arguments":
+          "parameters":
+          - "name": |-
+              bigquery-query-2-output_gcs_path
+            "value": |-
+              {{tasks.bigquery-query-2.outputs.parameters.bigquery-query-2-output_gcs_path}}
+          - "name": |-
+              bigquery-query-output_gcs_path
+            "value": |-
+              {{tasks.bigquery-query.outputs.parameters.bigquery-query-output_gcs_path}}
+          - "name": |-
+              gcs_root
+            "value": |-
+              {{inputs.parameters.gcs_root}}
+          - "name": |-
+              hypertune_settings
+            "value": |-
+              {{inputs.parameters.hypertune_settings}}
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              region
+            "value": |-
+              {{inputs.parameters.region}}
+        "dependencies":
+        - |-
+          bigquery-query
+        - |-
+          bigquery-query-2
+        "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step
+        "template": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step
+      - "arguments":
+          "parameters":
+          - "name": |-
+              bigquery-query-2-output_gcs_path
+            "value": |-
+              {{tasks.bigquery-query-2.outputs.parameters.bigquery-query-2-output_gcs_path}}
+          - "name": |-
+              bigquery-query-output_gcs_path
+            "value": |-
+              {{tasks.bigquery-query.outputs.parameters.bigquery-query-output_gcs_path}}
+          - "name": |-
+              gcs_root
+            "value": |-
+              {{inputs.parameters.gcs_root}}
+          - "name": |-
+              project_id
+            "value": |-
+              {{inputs.parameters.project_id}}
+          - "name": |-
+              region
+            "value": |-
+              {{inputs.parameters.region}}
+          - "name": |-
+              retrieve-best-run-alpha
+            "value": |-
+              {{tasks.retrieve-best-run.outputs.parameters.retrieve-best-run-alpha}}
+          - "name": |-
+              retrieve-best-run-max_iter
+            "value": |-
+              {{tasks.retrieve-best-run.outputs.parameters.retrieve-best-run-max_iter}}
+        "dependencies":
+        - |-
+          bigquery-query
+        - |-
+          bigquery-query-2
+        - |-
+          retrieve-best-run
+        "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2
+        "template": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2
+    "inputs":
+      "parameters":
+      - "name": |-
+          dataset_id
+      - "name": |-
+          dataset_location
+      - "name": |-
+          evaluation_metric_name
+      - "name": |-
+          evaluation_metric_threshold
+      - "name": |-
+          gcs_root
+      - "name": |-
+          hypertune_settings
+      - "name": |-
+          model_id
+      - "name": |-
+          project_id
+      - "name": |-
+          region
+      - "name": |-
+          replace_existing_version
+      - "name": |-
+          source_table_name
+      - "name": |-
+          version_id
+    "name": |-
+      covertype-classifier-training
+  - "container":
+      "args":
+      - |-
+        --ui_metadata_path
+      - |-
+        /tmp/outputs/MLPipeline_UI_metadata/data
+      - |-
+        kfp_component.google.ml_engine
+      - |-
+        deploy
+      - |-
+        --model_uri
+      - |-
+        {{inputs.parameters.submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir}}
+      - |-
+        --project_id
+      - |-
+        {{inputs.parameters.project_id}}
+      - |-
+        --model_id
+      - |-
+        {{inputs.parameters.model_id}}
+      - |-
+        --version_id
+      - |-
+        {{inputs.parameters.version_id}}
+      - |-
+        --runtime_version
+      - |-
+        1.15
+      - |-
+        --python_version
+      - |-
+        3.7
+      - |-
+        --model
+      - ""
+      - |-
+        --version
+      - ""
+      - |-
+        --replace_existing_version
+      - |-
+        {{inputs.parameters.replace_existing_version}}
+      - |-
+        --set_default
+      - |-
+        False
+      - |-
+        --wait_interval
+      - |-
+        30
+      "command": []
+      "env":
+      - "name": |-
+          KFP_POD_NAME
+        "value": |-
+          {{pod.name}}
+      - "name": |-
+          KFP_POD_NAME
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.name
+      - "name": |-
+          KFP_NAMESPACE
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.namespace
+      "image": |-
+        gcr.io/ml-pipeline/ml-pipeline-gcp:e66dcb18607406330f953bf99b04fe7c3ed1a4a8
+    "inputs":
+      "parameters":
+      - "name": |-
+          model_id
+      - "name": |-
+          project_id
+      - "name": |-
+          replace_existing_version
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+      - "name": |-
+          version_id
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "A Kubeflow Pipeline component to deploy a trained model from a Cloud Storage\npath to a Cloud Machine Learning Engine service.\n", "inputs": [{"description": "Required. The Cloud Storage URI which contains a model file. Commonly  used TF model search paths (export/exporter) will be used if they exist.", "name": "model_uri", "type": "GCSPath"}, {"description": "Required.The ID of the parent project of the serving model.", "name": "project_id", "type": "GCPProjectID"}, {"default": "", "description": "Optional. The user-specified name of the model. If it is not provided,  the operation uses a random name.", "name": "model_id", "type": "String"}, {"default": "", "description": "Optional. The user-specified name of the version. If it is not provided,  the operation uses a random name.", "name": "version_id", "type": "String"}, {"default": "", "description": "Optional. The [Cloud ML Engine runtime version](https://cloud.google.com/ml-engine/docs/tensorflow/runtime-version-list) to use for  this deployment. If it is not set, the Cloud ML Engine uses the default  stable version, 1.0.", "name": "runtime_version", "type": "String"}, {"default": "", "description": "Optional. The version of Python used in the prediction. If it is not set,  the default version is `2.7`. Python `3.5` is available when the  runtime_version is set to `1.4` and above. Python `2.7` works with all  supported runtime versions.", "name": "python_version", "type": "String"}, {"default": "", "description": "Optional. The JSON payload of the new  [Model](https://cloud.google.com/ml-engine/reference/rest/v1/projects.models), if it does not exist.", "name": "model", "type": "Dict"}, {"default": "", "description": "Optional. The JSON payload of the new  [Version](https://cloud.google.com/ml-engine/reference/rest/v1/projects.models.versions).", "name": "version", "type": "Dict"}, {"default": "Fasle", "description": "A Boolean flag that indicates whether to replace existing version in case of conflict.", "name": "replace_existing_version", "type": "Bool"}, {"default": "False", "description": "A Boolean flag that indicates whether to set the new version as default version in the model.", "name": "set_default", "type": "Bool"}, {"default": "30", "description": "A time-interval to wait for in case the operation has a long run time.", "name": "wait_interval", "type": "Integer"}], "metadata": {"labels": {"add-pod-env": "true"}}, "name": "Deploying a trained model to Cloud Machine Learning Engine", "outputs": [{"description": "The Cloud Storage URI of the trained model.", "name": "model_uri", "type": "GCSPath"}, {"description": "The name of the deployed model.", "name": "model_name", "type": "String"}, {"description": "The name of the deployed version.", "name": "version_name", "type": "String"}, {"name": "MLPipeline UI metadata", "type": "UI metadata"}]}
+      "labels":
+        "add-pod-env": |-
+          true
+    "name": |-
+      deploying-a-trained-model-to-cloud-machine-learning-engine
+    "outputs":
+      "artifacts":
+      - "name": |-
+          mlpipeline-ui-metadata
+        "path": |-
+          /tmp/outputs/MLPipeline_UI_metadata/data
+      - "name": |-
+          deploying-a-trained-model-to-cloud-machine-learning-engine-model_name
+        "path": |-
+          /tmp/kfp/output/ml_engine/model_name.txt
+      - "name": |-
+          deploying-a-trained-model-to-cloud-machine-learning-engine-model_uri
+        "path": |-
+          /tmp/kfp/output/ml_engine/model_uri.txt
+      - "name": |-
+          deploying-a-trained-model-to-cloud-machine-learning-engine-version_name
+        "path": |-
+          /tmp/kfp/output/ml_engine/version_name.txt
+  - "container":
+      "args":
+      - |-
+        --dataset-path
+      - |-
+        {{inputs.parameters.bigquery-query-3-output_gcs_path}}
+      - |-
+        --model-path
+      - |-
+        {{inputs.parameters.submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir}}
+      - |-
+        --metric-name
+      - |-
+        {{inputs.parameters.evaluation_metric_name}}
+      - |-
+        ----output-paths
+      - |-
+        /tmp/outputs/metric_name/data
+      - |-
+        /tmp/outputs/metric_value/data
+      - |-
+        /tmp/outputs/mlpipeline_metrics/data
+      "command":
+      - |-
+        python3
+      - |-
+        -u
+      - |-
+        -c
+      - "def evaluate_model(\n    dataset_path , model_path , metric_name \n):   \
+        \   \n                             \n  \"\"\"Evaluates a trained sklearn model.\"\
+        \"\"\n  #import joblib\n  import pickle\n  import json\n  import pandas as\
+        \ pd\n  import subprocess\n  import sys\n\n  from sklearn.metrics import accuracy_score,\
+        \ recall_score\n\n  df_test = pd.read_csv(dataset_path)\n\n  X_test = df_test.drop('Cover_Type',\
+        \ axis=1)\n  y_test = df_test['Cover_Type']\n\n  # Copy the model from GCS\n\
+        \  model_filename = 'model.pkl'\n  gcs_model_filepath = '{}/{}'.format(model_path,\
+        \ model_filename)\n  print(gcs_model_filepath)\n  subprocess.check_call(['gsutil',\
+        \ 'cp', gcs_model_filepath, model_filename],\n                        stderr=sys.stdout)\n\
+        \n  with open(model_filename, 'rb') as model_file:\n    model = pickle.load(model_file)\n\
+        \n  y_hat = model.predict(X_test)\n\n  if metric_name == 'accuracy':\n   \
+        \ metric_value = accuracy_score(y_test, y_hat)\n  elif metric_name == 'recall':\n\
+        \    metric_value = recall_score(y_test, y_hat)\n  else:\n    metric_name\
+        \ = 'N/A'\n    metric_value = 0\n\n  # Export the metric\n  metrics = {\n\
+        \      'metrics': [{\n          'name': metric_name,\n          'numberValue':\
+        \ float(metric_value)\n      }]\n  }\n\n  return (metric_name, metric_value,\
+        \ json.dumps(metrics))\n\ndef _serialize_float(float_value: float) -> str:\n\
+        \    if isinstance(float_value, str):\n        return float_value\n    if\
+        \ not isinstance(float_value, (float, int)):\n        raise TypeError('Value\
+        \ \"{}\" has type \"{}\" instead of float.'.format(str(float_value), str(type(float_value))))\n\
+        \    return str(float_value)\n\ndef _serialize_str(str_value: str) -> str:\n\
+        \    if not isinstance(str_value, str):\n        raise TypeError('Value \"\
+        {}\" has type \"{}\" instead of str.'.format(str(str_value), str(type(str_value))))\n\
+        \    return str_value\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Evaluate\
+        \ model', description='Evaluates a trained sklearn model.')\n_parser.add_argument(\"\
+        --dataset-path\", dest=\"dataset_path\", type=str, required=True, default=argparse.SUPPRESS)\n\
+        _parser.add_argument(\"--model-path\", dest=\"model_path\", type=str, required=True,\
+        \ default=argparse.SUPPRESS)\n_parser.add_argument(\"--metric-name\", dest=\"\
+        metric_name\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+        ----output-paths\", dest=\"_output_paths\", type=str, nargs=3)\n_parsed_args\
+        \ = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\"\
+        , [])\n\n_outputs = evaluate_model(**_parsed_args)\n\nif not hasattr(_outputs,\
+        \ '__getitem__') or isinstance(_outputs, str):\n    _outputs = [_outputs]\n\
+        \n_output_serializers = [\n    _serialize_str,\n    _serialize_float,\n  \
+        \  str,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n\
+        \    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n\
+        \        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+      "image": |-
+        gcr.io/qwiklabs-gcp-01-40709a63be77/base_image:latest
+    "inputs":
+      "parameters":
+      - "name": |-
+          bigquery-query-3-output_gcs_path
+      - "name": |-
+          evaluation_metric_name
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "Evaluates a trained sklearn model.", "inputs": [{"name": "dataset_path", "type": "String"}, {"name": "model_path", "type": "String"}, {"name": "metric_name", "type": "String"}], "name": "Evaluate model", "outputs": [{"name": "metric_name", "type": "String"}, {"name": "metric_value", "type": "Float"}, {"name": "mlpipeline_metrics", "type": "Metrics"}]}
+    "name": |-
+      evaluate-model
+    "outputs":
+      "artifacts":
+      - "name": |-
+          mlpipeline-metrics
+        "path": |-
+          /tmp/outputs/mlpipeline_metrics/data
+      - "name": |-
+          evaluate-model-metric_name
+        "path": |-
+          /tmp/outputs/metric_name/data
+      - "name": |-
+          evaluate-model-metric_value
+        "path": |-
+          /tmp/outputs/metric_value/data
+      "parameters":
+      - "name": |-
+          evaluate-model-metric_value
+        "valueFrom":
+          "path": |-
+            /tmp/outputs/metric_value/data
+  - "container":
+      "args":
+      - |-
+        --project-id
+      - |-
+        {{inputs.parameters.project_id}}
+      - |-
+        --job-id
+      - |-
+        {{inputs.parameters.submitting-a-cloud-ml-training-job-as-a-pipeline-step-job_id}}
+      - |-
+        ----output-paths
+      - |-
+        /tmp/outputs/metric_value/data
+      - |-
+        /tmp/outputs/alpha/data
+      - |-
+        /tmp/outputs/max_iter/data
+      "command":
+      - |-
+        python3
+      - |-
+        -u
+      - |-
+        -c
+      - "def retrieve_best_run(\n    project_id , job_id \n):      \n            \
+        \                 \n  \"\"\"Retrieves the parameters of the best Hypertune\
+        \ run.\"\"\"\n\n  from googleapiclient import discovery\n  from googleapiclient\
+        \ import errors\n\n  ml = discovery.build('ml', 'v1')\n\n  job_name = 'projects/{}/jobs/{}'.format(project_id,\
+        \ job_id)\n  request = ml.projects().jobs().get(name=job_name)\n\n  try:\n\
+        \    response = request.execute()\n  except errors.HttpError as err:\n   \
+        \ print(err)\n  except:\n    print('Unexpected error')\n\n  print(response)\n\
+        \n  best_trial = response['trainingOutput']['trials'][0]\n\n  metric_value\
+        \ = best_trial['finalMetric']['objectiveValue']\n  alpha = float(best_trial['hyperparameters']['alpha'])\n\
+        \  max_iter = int(best_trial['hyperparameters']['max_iter'])\n\n  return (metric_value,\
+        \ alpha, max_iter)\n\ndef _serialize_float(float_value: float) -> str:\n \
+        \   if isinstance(float_value, str):\n        return float_value\n    if not\
+        \ isinstance(float_value, (float, int)):\n        raise TypeError('Value \"\
+        {}\" has type \"{}\" instead of float.'.format(str(float_value), str(type(float_value))))\n\
+        \    return str(float_value)\n\ndef _serialize_int(int_value: int) -> str:\n\
+        \    if isinstance(int_value, str):\n        return int_value\n    if not\
+        \ isinstance(int_value, int):\n        raise TypeError('Value \"{}\" has type\
+        \ \"{}\" instead of int.'.format(str(int_value), str(type(int_value))))\n\
+        \    return str(int_value)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Retrieve\
+        \ best run', description='Retrieves the parameters of the best Hypertune run.')\n\
+        _parser.add_argument(\"--project-id\", dest=\"project_id\", type=str, required=True,\
+        \ default=argparse.SUPPRESS)\n_parser.add_argument(\"--job-id\", dest=\"job_id\"\
+        , type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+        ----output-paths\", dest=\"_output_paths\", type=str, nargs=3)\n_parsed_args\
+        \ = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\"\
+        , [])\n\n_outputs = retrieve_best_run(**_parsed_args)\n\nif not hasattr(_outputs,\
+        \ '__getitem__') or isinstance(_outputs, str):\n    _outputs = [_outputs]\n\
+        \n_output_serializers = [\n    _serialize_float,\n    _serialize_float,\n\
+        \    _serialize_int,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n\
+        \    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n\
+        \        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+      "image": |-
+        gcr.io/qwiklabs-gcp-01-40709a63be77/base_image:latest
+    "inputs":
+      "parameters":
+      - "name": |-
+          project_id
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-job_id
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "Retrieves the parameters of the best Hypertune run.", "inputs": [{"name": "project_id", "type": "String"}, {"name": "job_id", "type": "String"}], "name": "Retrieve best run", "outputs": [{"name": "metric_value", "type": "Float"}, {"name": "alpha", "type": "Float"}, {"name": "max_iter", "type": "Integer"}]}
+    "name": |-
+      retrieve-best-run
+    "outputs":
+      "artifacts":
+      - "name": |-
+          retrieve-best-run-alpha
+        "path": |-
+          /tmp/outputs/alpha/data
+      - "name": |-
+          retrieve-best-run-max_iter
+        "path": |-
+          /tmp/outputs/max_iter/data
+      - "name": |-
+          retrieve-best-run-metric_value
+        "path": |-
+          /tmp/outputs/metric_value/data
+      "parameters":
+      - "name": |-
+          retrieve-best-run-alpha
+        "valueFrom":
+          "path": |-
+            /tmp/outputs/alpha/data
+      - "name": |-
+          retrieve-best-run-max_iter
+        "valueFrom":
+          "path": |-
+            /tmp/outputs/max_iter/data
+  - "container":
+      "args":
+      - |-
+        --ui_metadata_path
+      - |-
+        /tmp/outputs/MLPipeline_UI_metadata/data
+      - |-
+        kfp_component.google.ml_engine
+      - |-
+        train
+      - |-
+        --project_id
+      - |-
+        {{inputs.parameters.project_id}}
+      - |-
+        --python_module
+      - ""
+      - |-
+        --package_uris
+      - ""
+      - |-
+        --region
+      - |-
+        {{inputs.parameters.region}}
+      - |-
+        --args
+      - |-
+        ["--training_dataset_path", "{{inputs.parameters.bigquery-query-output_gcs_path}}", "--validation_dataset_path", "{{inputs.parameters.bigquery-query-2-output_gcs_path}}", "--hptune", "True"]
+      - |-
+        --job_dir
+      - |-
+        {{inputs.parameters.gcs_root}}/jobdir/hypertune/{{workflow.uid}}
+      - |-
+        --python_version
+      - ""
+      - |-
+        --runtime_version
+      - ""
+      - |-
+        --master_image_uri
+      - |-
+        gcr.io/qwiklabs-gcp-01-40709a63be77/trainer_image:latest
+      - |-
+        --worker_image_uri
+      - ""
+      - |-
+        --training_input
+      - |-
+        {{inputs.parameters.hypertune_settings}}
+      - |-
+        --job_id_prefix
+      - ""
+      - |-
+        --wait_interval
+      - |-
+        30
+      "command": []
+      "env":
+      - "name": |-
+          KFP_POD_NAME
+        "value": |-
+          {{pod.name}}
+      - "name": |-
+          KFP_POD_NAME
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.name
+      - "name": |-
+          KFP_NAMESPACE
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.namespace
+      "image": |-
+        gcr.io/ml-pipeline/ml-pipeline-gcp:e66dcb18607406330f953bf99b04fe7c3ed1a4a8
+    "inputs":
+      "parameters":
+      - "name": |-
+          bigquery-query-2-output_gcs_path
+      - "name": |-
+          bigquery-query-output_gcs_path
+      - "name": |-
+          gcs_root
+      - "name": |-
+          hypertune_settings
+      - "name": |-
+          project_id
+      - "name": |-
+          region
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "A Kubeflow Pipeline component to submit a Cloud Machine Learning (Cloud ML) \nEngine training job as a step in a pipeline.\n", "inputs": [{"description": "Required. The ID of the parent project of the job.", "name": "project_id", "type": "GCPProjectID"}, {"default": "", "description": "The Python module name to run after installing the packages.", "name": "python_module", "type": "String"}, {"default": "", "description": "The Cloud Storage location of the packages (that contain the training program  and any additional dependencies). The maximum number of package URIs is 100.", "name": "package_uris", "type": "List"}, {"default": "", "description": "The Compute Engine region in which the training job is run.", "name": "region", "type": "GCPRegion"}, {"default": "", "description": "The command line arguments to pass to the program.", "name": "args", "type": "List"}, {"default": "", "description": "A Cloud Storage path in which to store the training outputs and other data  needed for training. This path is passed to your TensorFlow program as the  `job-dir` command-line argument. The benefit of specifying this field is  that Cloud ML validates the path for use in training.", "name": "job_dir", "type": "GCSPath"}, {"default": "", "description": "The version of Python used in training. If not set, the default version is `2.7`. Python `3.5` is available when runtimeVersion is set to `1.4` and above.", "name": "python_version", "type": "String"}, {"default": "", "description": "The Cloud ML Engine runtime version to use for training. If not set, Cloud ML Engine uses the default stable version, 1.0.", "name": "runtime_version", "type": "String"}, {"default": "", "description": "The Docker image to run on the master replica. This image must be in Container Registry.", "name": "master_image_uri", "type": "GCRPath"}, {"default": "", "description": "The Docker image to run on the worker replica. This image must be in Container Registry.", "name": "worker_image_uri", "type": "GCRPath"}, {"default": "", "description": "The input parameters to create a training job. It is the JSON payload  of a [TrainingInput](https://cloud.google.com/ml-engine/reference/rest/v1/projects.jobs#TrainingInput)", "name": "training_input", "type": "Dict"}, {"default": "", "description": "The prefix of the generated job id.", "name": "job_id_prefix", "type": "String"}, {"default": "30", "description": "Optional. A time-interval to wait for between calls to get the job status.  Defaults to 30.'", "name": "wait_interval", "type": "Integer"}], "metadata": {"labels": {"add-pod-env": "true"}}, "name": "Submitting a Cloud ML training job as a pipeline step", "outputs": [{"description": "The ID of the created job.", "name": "job_id", "type": "String"}, {"description": "The output path in Cloud Storage of the trainning job, which contains  the trained model files.", "name": "job_dir", "type": "GCSPath"}, {"name": "MLPipeline UI metadata", "type": "UI metadata"}]}
+      "labels":
+        "add-pod-env": |-
+          true
+    "name": |-
+      submitting-a-cloud-ml-training-job-as-a-pipeline-step
+    "outputs":
+      "artifacts":
+      - "name": |-
+          mlpipeline-ui-metadata
+        "path": |-
+          /tmp/outputs/MLPipeline_UI_metadata/data
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-job_dir
+        "path": |-
+          /tmp/kfp/output/ml_engine/job_dir.txt
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-job_id
+        "path": |-
+          /tmp/kfp/output/ml_engine/job_id.txt
+      "parameters":
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-job_id
+        "valueFrom":
+          "path": |-
+            /tmp/kfp/output/ml_engine/job_id.txt
+  - "container":
+      "args":
+      - |-
+        --ui_metadata_path
+      - |-
+        /tmp/outputs/MLPipeline_UI_metadata/data
+      - |-
+        kfp_component.google.ml_engine
+      - |-
+        train
+      - |-
+        --project_id
+      - |-
+        {{inputs.parameters.project_id}}
+      - |-
+        --python_module
+      - ""
+      - |-
+        --package_uris
+      - ""
+      - |-
+        --region
+      - |-
+        {{inputs.parameters.region}}
+      - |-
+        --args
+      - |-
+        ["--training_dataset_path", "{{inputs.parameters.bigquery-query-output_gcs_path}}", "--validation_dataset_path", "{{inputs.parameters.bigquery-query-2-output_gcs_path}}", "--alpha", "{{inputs.parameters.retrieve-best-run-alpha}}", "--max_iter", "{{inputs.parameters.retrieve-best-run-max_iter}}", "--hptune", "False"]
+      - |-
+        --job_dir
+      - |-
+        {{inputs.parameters.gcs_root}}/jobdir/{{workflow.uid}}
+      - |-
+        --python_version
+      - ""
+      - |-
+        --runtime_version
+      - ""
+      - |-
+        --master_image_uri
+      - |-
+        gcr.io/qwiklabs-gcp-01-40709a63be77/trainer_image:latest
+      - |-
+        --worker_image_uri
+      - ""
+      - |-
+        --training_input
+      - ""
+      - |-
+        --job_id_prefix
+      - ""
+      - |-
+        --wait_interval
+      - |-
+        30
+      "command": []
+      "env":
+      - "name": |-
+          KFP_POD_NAME
+        "value": |-
+          {{pod.name}}
+      - "name": |-
+          KFP_POD_NAME
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.name
+      - "name": |-
+          KFP_NAMESPACE
+        "valueFrom":
+          "fieldRef":
+            "fieldPath": |-
+              metadata.namespace
+      "image": |-
+        gcr.io/ml-pipeline/ml-pipeline-gcp:e66dcb18607406330f953bf99b04fe7c3ed1a4a8
+    "inputs":
+      "parameters":
+      - "name": |-
+          bigquery-query-2-output_gcs_path
+      - "name": |-
+          bigquery-query-output_gcs_path
+      - "name": |-
+          gcs_root
+      - "name": |-
+          project_id
+      - "name": |-
+          region
+      - "name": |-
+          retrieve-best-run-alpha
+      - "name": |-
+          retrieve-best-run-max_iter
+    "metadata":
+      "annotations":
+        "pipelines.kubeflow.org/component_spec": |-
+          {"description": "A Kubeflow Pipeline component to submit a Cloud Machine Learning (Cloud ML) \nEngine training job as a step in a pipeline.\n", "inputs": [{"description": "Required. The ID of the parent project of the job.", "name": "project_id", "type": "GCPProjectID"}, {"default": "", "description": "The Python module name to run after installing the packages.", "name": "python_module", "type": "String"}, {"default": "", "description": "The Cloud Storage location of the packages (that contain the training program  and any additional dependencies). The maximum number of package URIs is 100.", "name": "package_uris", "type": "List"}, {"default": "", "description": "The Compute Engine region in which the training job is run.", "name": "region", "type": "GCPRegion"}, {"default": "", "description": "The command line arguments to pass to the program.", "name": "args", "type": "List"}, {"default": "", "description": "A Cloud Storage path in which to store the training outputs and other data  needed for training. This path is passed to your TensorFlow program as the  `job-dir` command-line argument. The benefit of specifying this field is  that Cloud ML validates the path for use in training.", "name": "job_dir", "type": "GCSPath"}, {"default": "", "description": "The version of Python used in training. If not set, the default version is `2.7`. Python `3.5` is available when runtimeVersion is set to `1.4` and above.", "name": "python_version", "type": "String"}, {"default": "", "description": "The Cloud ML Engine runtime version to use for training. If not set, Cloud ML Engine uses the default stable version, 1.0.", "name": "runtime_version", "type": "String"}, {"default": "", "description": "The Docker image to run on the master replica. This image must be in Container Registry.", "name": "master_image_uri", "type": "GCRPath"}, {"default": "", "description": "The Docker image to run on the worker replica. This image must be in Container Registry.", "name": "worker_image_uri", "type": "GCRPath"}, {"default": "", "description": "The input parameters to create a training job. It is the JSON payload  of a [TrainingInput](https://cloud.google.com/ml-engine/reference/rest/v1/projects.jobs#TrainingInput)", "name": "training_input", "type": "Dict"}, {"default": "", "description": "The prefix of the generated job id.", "name": "job_id_prefix", "type": "String"}, {"default": "30", "description": "Optional. A time-interval to wait for between calls to get the job status.  Defaults to 30.'", "name": "wait_interval", "type": "Integer"}], "metadata": {"labels": {"add-pod-env": "true"}}, "name": "Submitting a Cloud ML training job as a pipeline step", "outputs": [{"description": "The ID of the created job.", "name": "job_id", "type": "String"}, {"description": "The output path in Cloud Storage of the trainning job, which contains  the trained model files.", "name": "job_dir", "type": "GCSPath"}, {"name": "MLPipeline UI metadata", "type": "UI metadata"}]}
+      "labels":
+        "add-pod-env": |-
+          true
+    "name": |-
+      submitting-a-cloud-ml-training-job-as-a-pipeline-step-2
+    "outputs":
+      "artifacts":
+      - "name": |-
+          mlpipeline-ui-metadata
+        "path": |-
+          /tmp/outputs/MLPipeline_UI_metadata/data
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+        "path": |-
+          /tmp/kfp/output/ml_engine/job_dir.txt
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_id
+        "path": |-
+          /tmp/kfp/output/ml_engine/job_id.txt
+      "parameters":
+      - "name": |-
+          submitting-a-cloud-ml-training-job-as-a-pipeline-step-2-job_dir
+        "valueFrom":
+          "path": |-
+            /tmp/kfp/output/ml_engine/job_dir.txt
