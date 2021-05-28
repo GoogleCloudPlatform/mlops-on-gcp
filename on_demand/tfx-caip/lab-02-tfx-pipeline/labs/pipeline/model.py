@@ -107,7 +107,7 @@ def _get_hyperparameters() -> kerastuner.HyperParameters:
   """
   hp = kerastuner.HyperParameters()
   # Defines hyperparameter search space.
-  hp.Float('learning_rate', min_value=1e-4, max_value=1e-2, sampling='log', default=1e-3)
+  hp.Float('learning_rate', min_value=1e-4, max_value=1e-1, sampling='log', default=1e-3)
   hp.Int('n_layers', 1, 2, default=1)
   # Based on n_layers, search for the optimal number of hidden units in each layer.
   with hp.conditional_scope('n_layers', 1):
@@ -204,7 +204,7 @@ def tuner_fn(fn_args: TrainerFnArgs) -> TunerFnResult:
       build_keras_model_fn,
       project_id=fn_args.custom_config['ai_platform_training_args']['project'],
       region=fn_args.custom_config['ai_platform_training_args']['region'],      
-      max_trials=50,
+      max_trials=20,
       hyperparameters=_get_hyperparameters(),
       objective=kerastuner.Objective('val_sparse_categorical_accuracy', 'max'),
       directory=fn_args.working_dir)
@@ -292,14 +292,26 @@ def run_fn(fn_args: TrainerFnArgs):
   tensorboard_callback = tf.keras.callbacks.TensorBoard(
       log_dir=LOCAL_LOG_DIR, update_freq='batch')
 
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=fn_args.model_run_dir + '/checkpoints',
+        save_weights_only=True,
+        monitor='val_sparse_categorical_accuracy',
+        mode='max')
+    
+    early_stopping_callback = tf.keras.callbacks.EarlyStopping(
+        monitor='val_sparse_categorical_accuracy', patience=2)    
+
   model.fit(
       train_dataset,
       epochs=EPOCHS,
       steps_per_epoch=fn_args.train_steps,
       validation_data=eval_dataset,
       validation_steps=fn_args.eval_steps,
-      verbose=2,      
-      callbacks=[tensorboard_callback])
+      verbose=2,
+      callbacks=[
+          tensorboard_callback, checkpoint_callback,
+          early_stopping_callback
+      ])
     
   signatures = {
       'serving_default':
