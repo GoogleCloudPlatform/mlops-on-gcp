@@ -66,7 +66,7 @@ def create_pipeline(pipeline_name: Text,
     train_steps: runtime parameter for number of model training steps for the Trainer component.
     eval_steps: runtime parameter for number of model evaluation steps for the Trainer component.
     enable_tuning: If True, the hyperparameter tuning through CloudTuner is
-      enabled.    
+      enabled.
     ai_platform_training_args: Args of CAIP training job. Please refer to
       https://cloud.google.com/ml-engine/reference/rest/v1/projects.jobs#Job
       for detailed description.
@@ -130,8 +130,8 @@ def create_pipeline(pipeline_name: Text,
             train_args={'num_steps': train_steps},
             eval_args={'num_steps': eval_steps},
             tune_args=tuner_pb2.TuneArgs(
-                # num_parallel_trials=3 means that 3 search loops are running in parallel.
-                num_parallel_trials=3),
+                # num_parallel_trials=2 means that 2 search loops are running in parallel.
+                num_parallel_trials=2),
             custom_config={
                 # Configures Cloud AI Platform-specific configs. For details, see
                 # https://cloud.google.com/ai-platform/training/docs/reference/rest/v1/projects.jobs#traininginput.
