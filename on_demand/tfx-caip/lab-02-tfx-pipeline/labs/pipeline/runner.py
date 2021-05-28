@@ -1,5 +1,4 @@
-# Lint as: python2, python3
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2021 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,6 +51,9 @@ if __name__ == '__main__':
       '--project=' + Config.PROJECT_ID,
       '--temp_location=' + beam_tmp_folder,
       '--region=' + Config.GCP_REGION,
+        # Temporary overrides of defaults and cap autoscaling.
+        '--disk_size_gb=50',
+        '--max_num_workers=1'      
   ]
     
   
@@ -64,13 +66,13 @@ if __name__ == '__main__':
 
   train_steps = data_types.RuntimeParameter(
       name='train-steps',
-      default=5000,
+      default=1250,
       ptype=int
   )
     
   eval_steps = data_types.RuntimeParameter(
       name='eval-steps',
-      default=500,
+      default=350,
       ptype=int
   )
 
