@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Covertype model  taxi model features."""
-import tensorflow as tf
-import tensorflow_model_analysis as tfma
-import tensorflow_transform as tft
-from tensorflow_transform.tf_metadata import schema_utils
 
 NUMERIC_FEATURE_KEYS = [
     'Elevation', 'Aspect', 'Slope', 'Horizontal_Distance_To_Hydrology',
@@ -29,7 +25,7 @@ CATEGORICAL_FEATURE_KEYS = ['Wilderness_Area', 'Soil_Type']
 LABEL_KEY = 'Cover_Type'
 NUM_CLASSES = 7
 
+
 def transformed_name(key):
-  return key + '_xf'
-
-
+    """Add post-fix to feature keys after transformations applied."""
+    return key + '_xf'
