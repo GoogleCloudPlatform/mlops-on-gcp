@@ -1,0 +1,45 @@
+platform: "tensorrt_plan"
+max_batch_size: 16
+dynamic_batching {
+  preferred_batch_size: [ 16 ]
+  max_queue_delay_microseconds: 1000000
+  default_queue_policy {
+     timeout_action: DELAY
+     default_timeout_microseconds: 1000000000
+  }
+}
+input {
+  name: "input_ids"
+  data_type: TYPE_INT32
+  dims: 384
+}
+input {
+  name: "segment_ids"
+  data_type: TYPE_INT32
+  dims: 384
+}
+input {
+  name: "input_mask"
+  data_type: TYPE_INT32
+  dims: 384
+}
+output {
+  name: "cls_squad_logits"
+  data_type: TYPE_FP32
+  dims: 384
+  dims: 2
+  dims: 1
+  dims: 1
+}
+optimization {
+  priority: PRIORITY_MIN
+}
+instance_group [
+  {
+    count: 2
+    kind: KIND_GPU
+    gpus: [ 0 ]
+  }
+]
+default_model_filename: "model.plan"
+
