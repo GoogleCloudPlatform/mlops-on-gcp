@@ -87,7 +87,7 @@ def create_pipeline(
   # Generates schema based on statistics files.
   schema_gen = SchemaGen(
       statistics=statistics_gen.outputs['statistics'],
-      infer_feature_shape=True)
+      infer_feature_shape=False)
   # TODO(step 5): Uncomment here to add SchemaGen to the pipeline.
   components.append(schema_gen)
 
@@ -104,7 +104,7 @@ def create_pipeline(
       schema=schema_gen.outputs['schema'],
       preprocessing_fn=preprocessing_fn)
   # TODO(step 6): Uncomment here to add Transform to the pipeline.
-  # components.append(transform)
+  components.append(transform)
 
   # Uses user-provided Python function that implements a model using TF-Learn.
   trainer_args = {
@@ -130,7 +130,7 @@ def create_pipeline(
     })
   trainer = Trainer(**trainer_args)
   # TODO(step 6): Uncomment here to add Trainer to the pipeline.
-  # components.append(trainer)
+  components.append(trainer)
 
   # Get the latest blessed model for model validation.
   model_resolver = ResolverNode(
@@ -139,12 +139,12 @@ def create_pipeline(
       model=Channel(type=Model),
       model_blessing=Channel(type=ModelBlessing))
   # TODO(step 6): Uncomment here to add ResolverNode to the pipeline.
-  # components.append(model_resolver)
+  components.append(model_resolver)
 
   # Uses TFMA to compute a evaluation statistics over features of a model and
   # perform quality validation of a candidate model (compared to a baseline).
   eval_config = tfma.EvalConfig(
-      model_specs=[tfma.ModelSpec(label_key='big_tipper')],
+      model_specs=[tfma.ModelSpec(label_key='Cover_Type')],
       slicing_specs=[tfma.SlicingSpec()],
       metrics_specs=[
           tfma.MetricsSpec(metrics=[
@@ -165,7 +165,7 @@ def create_pipeline(
       # Change threshold will be ignored if there is no baseline (first run).
       eval_config=eval_config)
   # TODO(step 6): Uncomment here to add Evaluator to the pipeline.
-  # components.append(evaluator)
+  components.append(evaluator)
 
   # Checks whether the model passed the validation steps and pushes the model
   # to a file destination if check passed.
@@ -191,7 +191,7 @@ def create_pipeline(
     })
   pusher = Pusher(**pusher_args)  # pylint: disable=unused-variable
   # TODO(step 6): Uncomment here to add Pusher to the pipeline.
-  # components.append(pusher)
+  components.append(pusher)
 
   return pipeline.Pipeline(
       pipeline_name=pipeline_name,

@@ -36,12 +36,13 @@ from tfx.components.tuner.component import TunerFnResult
 from tfx_bsl.tfxio import dataset_options
 
 from models import features
+from models.keras.constants import (
+  EPOCHS,
+  TRAIN_BATCH_SIZE,
+  EVAL_BATCH_SIZE,
+  LOCAL_LOG_DIR,
+)
 
-# Model training constants.
-EPOCHS = 1
-TRAIN_BATCH_SIZE = 64
-EVAL_BATCH_SIZE = 64
-LOCAL_LOG_DIR = '/tmp/logs'
 
 
 def _gzip_reader_fn(filenames):
