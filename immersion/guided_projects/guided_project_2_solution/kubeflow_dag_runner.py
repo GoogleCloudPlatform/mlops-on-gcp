@@ -50,7 +50,7 @@ SERVING_MODEL_DIR = os.path.join(PIPELINE_ROOT, 'serving_model')
 # dependency currently, so this means CsvExampleGen cannot be used with Dataflow
 # (step 8 in the template notebook).
 
-DATA_PATH = 'gs://workshopdatasets/covertype/small'
+DATA_PATH = 'gs://workshop-datasets/covertype/small'
 
 
 def run():

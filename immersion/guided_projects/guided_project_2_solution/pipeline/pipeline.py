@@ -82,21 +82,21 @@ def create_pipeline(
   # Computes statistics over data for visualization and example validation.
   statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
   # TODO(step 5): Uncomment here to add StatisticsGen to the pipeline.
-  # components.append(statistics_gen)
+  components.append(statistics_gen)
 
   # Generates schema based on statistics files.
   schema_gen = SchemaGen(
       statistics=statistics_gen.outputs['statistics'],
       infer_feature_shape=True)
   # TODO(step 5): Uncomment here to add SchemaGen to the pipeline.
-  # components.append(schema_gen)
+  components.append(schema_gen)
 
   # Performs anomaly detection based on statistics and data schema.
   example_validator = ExampleValidator(  # pylint: disable=unused-variable
       statistics=statistics_gen.outputs['statistics'],
       schema=schema_gen.outputs['schema'])
   # TODO(step 5): Uncomment here to add ExampleValidator to the pipeline.
-  # components.append(example_validator)
+  components.append(example_validator)
 
   # Performs transformations and feature engineering in training and serving.
   transform = Transform(
