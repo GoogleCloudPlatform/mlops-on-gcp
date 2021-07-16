@@ -114,11 +114,10 @@ bucket_name=$BUCKET_NAME
 EOF
 
 # Deploy KFP to the cluster
-export PIPELINE_VERSION=0.2.5
-kustomize build \
-    github.com/kubeflow/pipelines/manifests/kustomize/base/crds/?ref=$PIPELINE_VERSION | kubectl apply -f -
+export PIPELINE_VERSION=1.3.0
+kubectl apply -k "github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=$PIPELINE_VERSION"
 kubectl wait --for condition=established --timeout=60s crd/applications.app.k8s.io
-kustomize build . | kubectl apply -f -
+kubectl apply -k "github.com/kubeflow/pipelines/manifests/kustomize/env/dev?ref=$PIPELINE_VERSION"
 
 popd
 
