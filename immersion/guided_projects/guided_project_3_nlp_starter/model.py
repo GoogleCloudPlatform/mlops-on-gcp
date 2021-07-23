@@ -55,7 +55,7 @@ def _input_fn(file_pattern, data_accessor, tf_transform_output, batch_size=200):
 
 def _load_hub_module_layer():
     hub_module = KerasLayer(
-        HUB_URL, output_shape=[HUB_DIM], input_shape=[], dtype=tf.string, trainable=True)
+        HUB_URL, output_shape=[HUB_DIM], input_shape=[], dtype=tf.string, trainable=True, name='embedding_layer')
     return hub_module
     
 
@@ -63,8 +63,8 @@ def _build_keras_model():
     hub_module = _load_hub_module_layer()
     model = Sequential([
         hub_module,
-        Dense(N_NEURONS, activation='relu'),
-        Dense(N_CLASSES, activation='softmax')
+        Dense(N_NEURONS, activation='relu', name='hidden_layer'),
+        Dense(N_CLASSES, activation='softmax', name='classification_layer')
     ], name=MODEL_NAME)
 
     model.compile(
