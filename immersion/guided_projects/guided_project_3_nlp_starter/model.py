@@ -1,15 +1,9 @@
-from __future__ import division
-from __future__ import print_function
-
-from absl import logging
 import tensorflow as tf
 import tensorflow_transform as tft
-
-from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
+from tensorflow.keras.callbacks import TensorBoard
 from tensorflow_hub import KerasLayer
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
-
 from tfx_bsl.tfxio import dataset_options
 
 
@@ -53,7 +47,8 @@ def _input_fn(file_pattern, data_accessor, tf_transform_output, batch_size=200):
 
 def _load_hub_module_layer():
     hub_module = KerasLayer(
-        HUB_URL, output_shape=[HUB_DIM], input_shape=[], dtype=tf.string, trainable=True)
+        HUB_URL, output_shape=[HUB_DIM], 
+        input_shape=[], dtype=tf.string, trainable=True)
     return hub_module
     
 

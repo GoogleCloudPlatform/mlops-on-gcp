@@ -1,4 +1,3 @@
-
 FEATURE_KEY = 'title'
 LABEL_KEY = 'source'
 N_CLASSES = 3
