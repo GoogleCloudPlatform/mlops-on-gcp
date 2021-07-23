@@ -1,6 +1,4 @@
-
 import tensorflow as tf
-import tensorflow_transform as tft
 
 from config import (
     LABEL_KEY,
@@ -18,18 +16,9 @@ def _fill_in_missing(x):
         axis=1)
 
 
-def process_labels(raw_labels):
-    integerized_labels = tft.compute_and_apply_vocabulary(
-        raw_labels, num_oov_buckets=0, vocab_filename=LABEL_KEY)
-    one_hot_labels = tf.one_hot(integerized_labels, depth=N_CLASSES)
-    return one_hot_labels
-
-
 def preprocessing_fn(inputs):
     features = _fill_in_missing(inputs[FEATURE_KEY])
-    raw_labels =  _fill_in_missing(inputs[LABEL_KEY])
-    labels = process_labels(raw_labels)
-
+    labels =  _fill_in_missing(inputs[LABEL_KEY])
     return {
         transformed_name(FEATURE_KEY): features,
         transformed_name(LABEL_KEY): labels
