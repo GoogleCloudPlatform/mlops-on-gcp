@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2021 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Covertype Classifier trainer script."""
-
+import os
 import pickle
 import subprocess
 import sys
@@ -83,6 +82,11 @@ def train_evaluate(job_dir, training_dataset_path, validation_dataset_path,
     gcs_model_path = '{}/{}'.format(job_dir, model_filename)
     subprocess.check_call(['gsutil', 'cp', model_filename, gcs_model_path],
                           stderr=sys.stdout)
+    # Also saving the model where Vertex AI expects it for serving
+    aip_model_dir = os.environ.get("AIP_MODEL_DIR", None)
+    if aip_model_dir:
+      subprocess.check_call(['gsutil', 'cp', model_filename, aip_model_dir],
+                            stderr=sys.stdout)     
     print('Saved model in: {}'.format(gcs_model_path))
 
 
