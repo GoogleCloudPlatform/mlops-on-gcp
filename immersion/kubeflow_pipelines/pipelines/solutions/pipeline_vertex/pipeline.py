@@ -23,15 +23,19 @@ from training_lightweight_component import train_and_deploy
 PIPELINE_ROOT = os.getenv('PIPELINE_ROOT')
 PROJECT_ID = os.getenv('PROJECT_ID')
 REGION = os.getenv('REGION')
+
 TRAINING_CONTAINER_IMAGE_URI = os.getenv('TRAINING_CONTAINER_IMAGE_URI')
+SERVING_CONTAINER_IMAGE_URI = os.getenv('SERVING_CONTAINER_IMAGE_URI')
+
 TRAINING_FILE_PATH = os.getenv('TRAINING_FILE_PATH')
 VALIDATION_FILE_PATH = os.getenv('VALIDATION_FILE_PATH')
-STAGING_BUCKET = os.getenv('STAGING_BUCKET')
-JOB_DIR = os.getenv('JOB_DIR')
+#STAGING_BUCKET = os.getenv('STAGING_BUCKET')
+#JOB_DIR = os.getenv('JOB_DIR')
 
 MAX_TRIAL_COUNT = os.getenv('MAX_TRIAL_COUNT', 5)
 PARALLEL_TRIAL_COUNT = os.getenv('PARALLEL_TRIAL_COUNT', 5)
 THRESHOLD = os.getenv('THRESHOLD', 0.6)
+
 
 
 tune_hpyerparameters_component = create_component_from_func_v2(
@@ -57,34 +61,43 @@ train_and_deploy_component = create_component_from_func_v2(
     pipeline_root=PIPELINE_ROOT,
 )
 def covertype_train(
-    threshold: float =THRESHOLD,
-    max_trial_count: int =MAX_TRIAL_COUNT,
-    parallel_trial_count: int = PARALLEL_TRIAL_COUNT,
+    training_container_uri: str=TRAINING_CONTAINER_IMAGE_URI,
+    serving_container_uri: str=SERVING_CONTAINER_IMAGE_URI,
+    training_file_path: str=TRAINING_FILE_PATH,
+    validation_file_path: str=VALIDATION_FILE_PATH,
+    #staging_bucket: str=STAGING_BUCKET,
+    accuracy_deployment_threshold: float=THRESHOLD,
+    max_trial_count: int=MAX_TRIAL_COUNT,
+    parallel_trial_count: int=PARALLEL_TRIAL_COUNT,
+    pipeline_root: str=PIPELINE_ROOT,
+    #job_dir: str=JOB_DIR,
 ):
+    staging_bucket = f'{pipeline_root}/staging'
     
     tuning_op = tune_hpyerparameters_component(
         project=PROJECT_ID,
         location=REGION,
-        container_uri=TRAINING_CONTAINER_IMAGE_URI,
-        training_file_path=TRAINING_FILE_PATH,
+        container_uri=training_container_uri,
+        training_file_path=training_file_path,
         validation_file_path=VALIDATION_FILE_PATH,
-        staging_bucket=STAGING_BUCKET,
-        job_dir=JOB_DIR,
+        staging_bucket=staging_bucket,
+        #job_dir=job_dir,
         max_trial_count=max_trial_count,
         parallel_trial_count=parallel_trial_count,
     )
     
     accuracy = tuning_op.outputs['best_acuracy']
     
-    with dsl.Condition(accuracy >= threshold, name="deploy_decision"):    
+    with dsl.Condition(accuracy >= accuracy_deployment_threshold, name="deploy_decision"):    
         train_and_deploy_op = train_and_deploy_component(
             project=PROJECT_ID,
             location=REGION,
-            container_uri=TRAINING_CONTAINER_IMAGE_URI,
-            training_file_path=TRAINING_FILE_PATH,
-            validation_file_path=VALIDATION_FILE_PATH,
-            staging_bucket=STAGING_BUCKET,
-            job_dir=JOB_DIR,
+            container_uri=training_container_uri,
+            serving_container_uri=serving_container_uri,
+            training_file_path=training_file_path,
+            validation_file_path=validation_file_path,
+            staging_bucket=staging_bucket,
+            #job_dir=job_dir,
             alpha=tuning_op.outputs['best_alpha'], 
             max_iter=tuning_op.outputs['best_max_iter'],            
         )

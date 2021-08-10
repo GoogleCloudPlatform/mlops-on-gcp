@@ -10,7 +10,7 @@
 # BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
 # express or implied. See the License for the specific language governing 
 # permissions and limitations under the License.
-"""Pipeline training light-weight component function."""
+"""Lightweight component training function."""
 
 
 
@@ -18,17 +18,14 @@ def train_and_deploy(
         project: str,
         location: str,
         container_uri: str,
+        serving_container_uri: str,
         training_file_path: str,
         validation_file_path: str,
         staging_bucket: str,
-        job_dir: str,
         alpha: float, 
         max_iter: int,
     ):
     from google.cloud import aiplatform
-    
-    
-    SERVING_CONTAINER_IMAGE_URI = 'us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.0-20:latest'
 
     aiplatform.init(project=project, location=location,
                     staging_bucket=staging_bucket)
@@ -38,7 +35,6 @@ def train_and_deploy(
         command=[
             "python", 
             "train.py",
-            f"--job_dir={job_dir}",
             f"--training_dataset_path={training_file_path}",
             f"--validation_dataset_path={validation_file_path}",
             f"--alpha={alpha}",
@@ -46,7 +42,7 @@ def train_and_deploy(
             "--nohptune"
         ],
         staging_bucket=staging_bucket,
-        model_serving_container_image_uri=SERVING_CONTAINER_IMAGE_URI,
+        model_serving_container_image_uri=serving_container_uri,
     )
     model = job.run(replica_count=1, model_display_name='covertype_kfp_model')
     endpoint = model.deploy(

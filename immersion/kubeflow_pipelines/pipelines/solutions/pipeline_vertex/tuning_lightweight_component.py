@@ -10,7 +10,7 @@
 # BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
 # express or implied. See the License for the specific language governing 
 # permissions and limitations under the License.
-"""Pipeline tuning light-weight component function."""
+"""Lightweight component tuning function."""
 from typing import NamedTuple
 
 
@@ -21,7 +21,6 @@ def tune_hyperparameters(
         training_file_path: str,
         validation_file_path: str,
         staging_bucket: str,
-        job_dir: str,
         max_trial_count: int,
         parallel_trial_count: int
         
@@ -46,7 +45,6 @@ def tune_hyperparameters(
             "container_spec": {
                 "image_uri": container_uri,
                 "args": [
-                    f"--job_dir={job_dir}",
                     f"--training_dataset_path={training_file_path}",
                     f"--validation_dataset_path={validation_file_path}",
                     "--hptune"                    

@@ -27,68 +27,64 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
 
-def train_evaluate(job_dir, training_dataset_path, validation_dataset_path,
-                   alpha, max_iter, hptune):
-  """Trains the Covertype Classifier model."""
+AIP_MODEL_DIR = os.environ["AIP_MODEL_DIR"]
+MODEL_FILENAME = 'model.pkl'
 
-  df_train = pd.read_csv(training_dataset_path)
-  df_validation = pd.read_csv(validation_dataset_path)
 
-  if not hptune:
-    df_train = pd.concat([df_train, df_validation])
+def train_evaluate(training_dataset_path, validation_dataset_path, alpha, max_iter, hptune):
+    """Trains the Covertype Classifier model."""
 
-  numeric_features = [
-      'Elevation', 'Aspect', 'Slope', 'Horizontal_Distance_To_Hydrology',
-      'Vertical_Distance_To_Hydrology', 'Horizontal_Distance_To_Roadways',
-      'Hillshade_9am', 'Hillshade_Noon', 'Hillshade_3pm',
-      'Horizontal_Distance_To_Fire_Points'
-  ]
+    df_train = pd.read_csv(training_dataset_path)
+    df_validation = pd.read_csv(validation_dataset_path)
 
-  categorical_features = ['Wilderness_Area', 'Soil_Type']
+    if not hptune:
+        df_train = pd.concat([df_train, df_validation])
 
-  preprocessor = ColumnTransformer(transformers=[(
-      'num', StandardScaler(),
-      numeric_features), ('cat', OneHotEncoder(), categorical_features)])
+    numeric_features = [
+        'Elevation', 'Aspect', 'Slope', 'Horizontal_Distance_To_Hydrology',
+        'Vertical_Distance_To_Hydrology', 'Horizontal_Distance_To_Roadways',
+        'Hillshade_9am', 'Hillshade_Noon', 'Hillshade_3pm',
+        'Horizontal_Distance_To_Fire_Points'
+    ]
 
-  pipeline = Pipeline([('preprocessor', preprocessor),
-                       ('classifier', SGDClassifier(loss='log'))])
+    categorical_features = ['Wilderness_Area', 'Soil_Type']
 
-  num_features_type_map = {feature: 'float64' for feature in numeric_features}
-  df_train = df_train.astype(num_features_type_map)
-  df_validation = df_validation.astype(num_features_type_map)
+    preprocessor = ColumnTransformer(transformers=[
+        ('num', StandardScaler(), numeric_features), 
+        ('cat', OneHotEncoder(), categorical_features)])
 
-  print('Starting training: alpha={}, max_iter={}'.format(alpha, max_iter))
-  X_train = df_train.drop('Cover_Type', axis=1)
-  y_train = df_train['Cover_Type']
+    pipeline = Pipeline([('preprocessor', preprocessor),
+                         ('classifier', SGDClassifier(loss='log'))])
 
-  pipeline.set_params(classifier__alpha=alpha, classifier__max_iter=max_iter)
-  pipeline.fit(X_train, y_train)
+    num_features_type_map = {feature: 'float64' for feature in numeric_features}
+    df_train = df_train.astype(num_features_type_map)
+    df_validation = df_validation.astype(num_features_type_map)
 
-  if hptune:
-    X_validation = df_validation.drop('Cover_Type', axis=1)
-    y_validation = df_validation['Cover_Type']
-    accuracy = pipeline.score(X_validation, y_validation)
-    print('Model accuracy: {}'.format(accuracy))
-    # Log it with hypertune
-    hpt = hypertune.HyperTune()
-    hpt.report_hyperparameter_tuning_metric(
-        hyperparameter_metric_tag='accuracy', metric_value=accuracy)
+    print('Starting training: alpha={}, max_iter={}'.format(alpha, max_iter))
+    X_train = df_train.drop('Cover_Type', axis=1)
+    y_train = df_train['Cover_Type']
 
-  # Save the model
-  if not hptune:
-    model_filename = 'model.pkl'
-    with open(model_filename, 'wb') as model_file:
-      pickle.dump(pipeline, model_file)
-    gcs_model_path = '{}/{}'.format(job_dir, model_filename)
-    subprocess.check_call(['gsutil', 'cp', model_filename, gcs_model_path],
-                          stderr=sys.stdout)
-    # Also saving the model where Vertex AI expects it for serving
-    aip_model_dir = os.environ.get("AIP_MODEL_DIR", None)
-    if aip_model_dir:
-      subprocess.check_call(['gsutil', 'cp', model_filename, aip_model_dir],
-                            stderr=sys.stdout)     
-    print('Saved model in: {}'.format(gcs_model_path))
+    pipeline.set_params(classifier__alpha=alpha, classifier__max_iter=max_iter)
+    pipeline.fit(X_train, y_train)
+
+    if hptune:
+        X_validation = df_validation.drop('Cover_Type', axis=1)
+        y_validation = df_validation['Cover_Type']
+        accuracy = pipeline.score(X_validation, y_validation)
+        print('Model accuracy: {}'.format(accuracy))
+        # Log it with hypertune
+        hpt = hypertune.HyperTune()
+        hpt.report_hyperparameter_tuning_metric(
+            hyperparameter_metric_tag='accuracy', metric_value=accuracy)
+
+    # Save the model
+    if not hptune:
+        with open(MODEL_FILENAME, 'wb') as model_file:
+            pickle.dump(pipeline, model_file)
+        subprocess.check_call(['gsutil', 'cp', MODEL_FILENAME, AIP_MODEL_DIR],
+                              stderr=sys.stdout)     
+        print(f'Saved model in: {AIP_MODEL_DIR}')
 
 
 if __name__ == '__main__':
-  fire.Fire(train_evaluate)
+    fire.Fire(train_evaluate)
