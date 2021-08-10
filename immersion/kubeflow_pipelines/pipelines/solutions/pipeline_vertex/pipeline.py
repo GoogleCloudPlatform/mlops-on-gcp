@@ -74,7 +74,7 @@ def covertype_train(
         location=REGION,
         container_uri=training_container_uri,
         training_file_path=training_file_path,
-        validation_file_path=VALIDATION_FILE_PATH,
+        validation_file_path=validation_file_path,
         staging_bucket=staging_bucket,
         max_trial_count=max_trial_count,
         parallel_trial_count=parallel_trial_count,
