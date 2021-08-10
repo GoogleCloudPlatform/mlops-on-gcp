@@ -29,13 +29,10 @@ SERVING_CONTAINER_IMAGE_URI = os.getenv('SERVING_CONTAINER_IMAGE_URI')
 
 TRAINING_FILE_PATH = os.getenv('TRAINING_FILE_PATH')
 VALIDATION_FILE_PATH = os.getenv('VALIDATION_FILE_PATH')
-#STAGING_BUCKET = os.getenv('STAGING_BUCKET')
-#JOB_DIR = os.getenv('JOB_DIR')
 
 MAX_TRIAL_COUNT = os.getenv('MAX_TRIAL_COUNT', 5)
 PARALLEL_TRIAL_COUNT = os.getenv('PARALLEL_TRIAL_COUNT', 5)
 THRESHOLD = os.getenv('THRESHOLD', 0.6)
-
 
 
 tune_hpyerparameters_component = create_component_from_func_v2(
@@ -65,12 +62,10 @@ def covertype_train(
     serving_container_uri: str=SERVING_CONTAINER_IMAGE_URI,
     training_file_path: str=TRAINING_FILE_PATH,
     validation_file_path: str=VALIDATION_FILE_PATH,
-    #staging_bucket: str=STAGING_BUCKET,
     accuracy_deployment_threshold: float=THRESHOLD,
     max_trial_count: int=MAX_TRIAL_COUNT,
     parallel_trial_count: int=PARALLEL_TRIAL_COUNT,
     pipeline_root: str=PIPELINE_ROOT,
-    #job_dir: str=JOB_DIR,
 ):
     staging_bucket = f'{pipeline_root}/staging'
     
@@ -81,7 +76,6 @@ def covertype_train(
         training_file_path=training_file_path,
         validation_file_path=VALIDATION_FILE_PATH,
         staging_bucket=staging_bucket,
-        #job_dir=job_dir,
         max_trial_count=max_trial_count,
         parallel_trial_count=parallel_trial_count,
     )
@@ -97,7 +91,6 @@ def covertype_train(
             training_file_path=training_file_path,
             validation_file_path=validation_file_path,
             staging_bucket=staging_bucket,
-            #job_dir=job_dir,
             alpha=tuning_op.outputs['best_alpha'], 
             max_iter=tuning_op.outputs['best_max_iter'],            
         )
