@@ -34,6 +34,12 @@ steps:
   - 'VALIDATION_FILE_PATH=gs://$PROJECT_ID-vertex/data/validation/dataset.csv'
   dir: pipeline_vertex
   
-
+# Run the pipeline
+- name: 'gcr.io/$PROJECT_ID/kfp-cli-vertex'
+  args:
+  - '-c'
+  - |
+    python kfp-cli_vertex/run_pipeline.py --project_id=$PROJECT_ID --template_path=covertype_kfp_pipeline.json --display_name=coverype_kfp_pipeline --region=$_REGION
+    
 # Push the images to Container Registry 
 images: ['gcr.io/$PROJECT_ID/trainer_image_covertype_vertex:latest']
