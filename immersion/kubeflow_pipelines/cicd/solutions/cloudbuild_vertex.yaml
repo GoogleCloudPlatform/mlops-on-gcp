@@ -43,3 +43,6 @@ steps:
     
 # Push the images to Container Registry 
 images: ['gcr.io/$PROJECT_ID/trainer_image_covertype_vertex:latest']
+
+# This is required since the pipeline run overflows the default timeout
+timeout: 10800s
