@@ -35,7 +35,7 @@ PARALLEL_TRIAL_COUNT = os.getenv('PARALLEL_TRIAL_COUNT', 5)
 THRESHOLD = os.getenv('THRESHOLD', 0.6)
 
 
-tune_hpyerparameters_component = create_component_from_func_v2(
+tune_hyperparameters_component = create_component_from_func_v2(
     tune_hyperparameters,
     base_image='python:3.8',
     output_component_file='covertype_kfp_tune_hyperparameters.yaml',
@@ -58,18 +58,18 @@ train_and_deploy_component = create_component_from_func_v2(
     pipeline_root=PIPELINE_ROOT,
 )
 def covertype_train(
-    training_container_uri: str=TRAINING_CONTAINER_IMAGE_URI,
-    serving_container_uri: str=SERVING_CONTAINER_IMAGE_URI,
-    training_file_path: str=TRAINING_FILE_PATH,
-    validation_file_path: str=VALIDATION_FILE_PATH,
-    accuracy_deployment_threshold: float=THRESHOLD,
-    max_trial_count: int=MAX_TRIAL_COUNT,
-    parallel_trial_count: int=PARALLEL_TRIAL_COUNT,
-    pipeline_root: str=PIPELINE_ROOT,
+    training_container_uri: str = TRAINING_CONTAINER_IMAGE_URI,
+    serving_container_uri: str = SERVING_CONTAINER_IMAGE_URI,
+    training_file_path: str = TRAINING_FILE_PATH,
+    validation_file_path: str = VALIDATION_FILE_PATH,
+    accuracy_deployment_threshold: float = THRESHOLD,
+    max_trial_count: int = MAX_TRIAL_COUNT,
+    parallel_trial_count: int = PARALLEL_TRIAL_COUNT,
+    pipeline_root: str = PIPELINE_ROOT,
 ):
     staging_bucket = f'{pipeline_root}/staging'
     
-    tuning_op = tune_hpyerparameters_component(
+    tuning_op = tune_hyperparameters_component(
         project=PROJECT_ID,
         location=REGION,
         container_uri=training_container_uri,
@@ -80,7 +80,7 @@ def covertype_train(
         parallel_trial_count=parallel_trial_count,
     )
     
-    accuracy = tuning_op.outputs['best_acuracy']
+    accuracy = tuning_op.outputs['best_accuracy']
     
     with dsl.Condition(accuracy >= accuracy_deployment_threshold, name="deploy_decision"):    
         train_and_deploy_op = train_and_deploy_component(

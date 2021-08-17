@@ -25,7 +25,7 @@ def tune_hyperparameters(
         parallel_trial_count: int
         
 ) -> NamedTuple('Outputs', [
-    ("best_acuracy", float),
+    ("best_accuracy", float),
     ("best_alpha", float),
     ("best_max_iter", int)
 ]):

@@ -24,7 +24,7 @@ def train_and_deploy(
         staging_bucket: str,
         alpha: float, 
         max_iter: int,
-    ):
+):
     from google.cloud import aiplatform
 
     aiplatform.init(project=project, location=location,
