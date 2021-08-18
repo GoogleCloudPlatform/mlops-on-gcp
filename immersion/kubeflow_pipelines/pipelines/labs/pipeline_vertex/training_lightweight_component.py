@@ -29,21 +29,9 @@ def train_and_deploy(
 
     aiplatform.init(project=project, location=location,
                     staging_bucket=staging_bucket)
-    job = aiplatform.CustomContainerTrainingJob(
-        display_name='covertype_kfp_training',
-        container_uri=container_uri,
-        command=[
-            "python", 
-            "train.py",
-            f"--training_dataset_path={training_file_path}",
-            f"--validation_dataset_path={validation_file_path}",
-            f"--alpha={alpha}",
-            f"--max_iter={max_iter}",
-            "--nohptune"
-        ],
-        staging_bucket=staging_bucket,
-        model_serving_container_image_uri=serving_container_uri,
-    )
+    
+    # TODO: Launch the training using aiplatform.CustomContainerTrainingJob
+    
     model = job.run(replica_count=1, model_display_name='covertype_kfp_model')
     endpoint = model.deploy(
         traffic_split={"0": 100},

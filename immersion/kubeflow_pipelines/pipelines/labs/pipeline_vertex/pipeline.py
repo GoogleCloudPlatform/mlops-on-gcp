@@ -35,21 +35,9 @@ PARALLEL_TRIAL_COUNT = os.getenv('PARALLEL_TRIAL_COUNT', 5)
 THRESHOLD = os.getenv('THRESHOLD', 0.6)
 
 
-tune_hyperparameters_component = create_component_from_func_v2(
-    tune_hyperparameters,
-    base_image='python:3.8',
-    output_component_file='covertype_kfp_tune_hyperparameters.yaml',
-    packages_to_install=['google-cloud-aiplatform'],
-)
+tune_hyperparameters_component = # TODO
 
-
-train_and_deploy_component = create_component_from_func_v2(
-    train_and_deploy,
-    base_image='python:3.8',
-    output_component_file='covertype_kfp_train_and_deploy.yaml',
-    packages_to_install=['google-cloud-aiplatform'],
-
-)
+train_and_deploy_component = # TODO
 
 
 @dsl.pipeline(
@@ -69,28 +57,9 @@ def covertype_train(
 ):
     staging_bucket = f'{pipeline_root}/staging'
     
-    tuning_op = tune_hyperparameters_component(
-        project=PROJECT_ID,
-        location=REGION,
-        container_uri=training_container_uri,
-        training_file_path=training_file_path,
-        validation_file_path=validation_file_path,
-        staging_bucket=staging_bucket,
-        max_trial_count=max_trial_count,
-        parallel_trial_count=parallel_trial_count,
-    )
+    tuning_op = # TODO
     
     accuracy = tuning_op.outputs['best_accuracy']
     
     with dsl.Condition(accuracy >= accuracy_deployment_threshold, name="deploy_decision"):    
-        train_and_deploy_op = train_and_deploy_component(
-            project=PROJECT_ID,
-            location=REGION,
-            container_uri=training_container_uri,
-            serving_container_uri=serving_container_uri,
-            training_file_path=training_file_path,
-            validation_file_path=validation_file_path,
-            staging_bucket=staging_bucket,
-            alpha=tuning_op.outputs['best_alpha'], 
-            max_iter=tuning_op.outputs['best_max_iter'],            
-        )
+        train_and_deploy_op = # TODO
