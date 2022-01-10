@@ -90,6 +90,10 @@ model = "chicago_taxi_trips"
 # TODO 1: Instaniate the DAG Object
 with DAG(
         #ADD YOUR CODE HERE
+        dag_id="chicago_taxi_dag",
+        default_args=DEFAULT_ARGS,
+        schedule_interval="@weekly",
+        catchup=False
         ) as dag:
 
     # SQL Query to check for fresh data. Data is considered "fresh" if it was
@@ -179,14 +183,20 @@ with DAG(
         destination_dataset_table="{}.{}_train_data"
                 .format(DESTINATION_DATASET, model.replace(".", "_")),
         write_disposition="WRITE_TRUNCATE",  # specify to truncate on writes
-        #ADD YOUR CODE HERE
+        task_id="bq_train_data_task", #ADD YOUR CODE HERE
+        sql=bql_train,
+        use_legacy_sql=False,
+        dag=dag
     )
 
     bq_valid_data_op = BigQueryOperator(
         destination_dataset_table="{}.{}_valid_data"
                 .format(DESTINATION_DATASET, model.replace(".", "_")),
         write_disposition="WRITE_TRUNCATE",  # specify to truncate on writes
-        #ADD YOUR CODE HERE
+        task_id="bq_valid_data_task", #ADD YOUR CODE HERE
+        sql=bql_train,
+        use_legacy_sql=False,
+        dag=dag
     )
 
     train_files = BUCKET + "/chicago_taxi/data/train/"
@@ -228,7 +238,9 @@ with DAG(
     # TODO 3: Fill in arguments for python_new_version_name_op
     python_new_version_name_op = PythonOperator(
         provide_context=True,
-        #ADD YOUR CODE HERE
+        python_callable=set_new_version_name,
+        task_id = "python_new_version_name_op",
+        dag=dag        
         )
 
     # Arguments for MLEngineTrainingOperator
@@ -291,8 +303,11 @@ with DAG(
 
     # TODO 4: Create bq_check_rmse_query_op
     bq_check_rmse_query_op = BigQueryValueCheckOperator(
+        task_id="bq_value_check_rmse_task",
+        sql=model_check_sql,
+        pass_value=0,
         tolerence=0,
-        use_legacy_sql=False,
+        use_legacy_sql=False
         #ADD YOUR CODE HERE
     )
 
@@ -437,8 +452,10 @@ with DAG(
 
     # TODO 5: Finish writing dependecies between bq_check_data_op and downstream ops.
     # Feel free to split across multiple dependecies if you wish.
-    bq_check_data_op >> #ADD YOUR CODE HERE.
-
+    bq_check_data_op >> publish_if_failed_check_op #ADD YOUR CODE HERE
+    bq_check_data_op >> python_new_version_name_op
+    bq_check_data_op >> bq_train_data_op
+    bq_check_data_op >> bq_valid_data_op
     bq_train_data_op >> bq_export_train_csv_op
     bq_valid_data_op >> bq_export_valid_csv_op
     bq_check_data_op >>  bash_remove_trained_model_op
