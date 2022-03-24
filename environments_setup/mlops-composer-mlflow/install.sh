@@ -82,15 +82,15 @@ MLFLOW_PROXY_URI="gcr.io/${PROJECT_ID}/inverted-proxy"
 echo "Enabling all required services..."
 
 gcloud services enable \
-cloudbuild.googleapis.com \
-sourcerepo.googleapis.com \
-container.googleapis.com \
-compute.googleapis.com \
-composer.googleapis.com \
-containerregistry.googleapis.com \
-dataflow.googleapis.com \
-sqladmin.googleapis.com \
-notebooks.googleapis.com
+  cloudbuild.googleapis.com \
+  sourcerepo.googleapis.com \
+  container.googleapis.com \
+  compute.googleapis.com \
+  composer.googleapis.com \
+  containerregistry.googleapis.com \
+  dataflow.googleapis.com \
+  sqladmin.googleapis.com \
+  notebooks.googleapis.com
 
 echo "Required services enabled."
 echo
@@ -124,8 +124,8 @@ if [[ $(gcloud composer environments list --locations=$REGION --filter="$COMPOSE
     --location=$REGION \
     --zone=$ZONE \
     --airflow-configs=core-dags_are_paused_at_creation=True \
-    --disk-size=20GB \
-    --image-version=composer-1.10.4-airflow-1.10.6 \
+    --disk-size=50GB \
+    --image-version=composer-1.13.4-airflow-1.10.12 \
     --machine-type=n1-standard-2 \
     --node-count=3 \
     --python-version=3 \
@@ -213,8 +213,11 @@ MLFLOW_SQL_CONNECTION_STR="mysql+pymysql://$SQL_USERNAME:$SQL_PASSWORD@127.0.0.1
 
 echo "Waiting for MLflow Tracking server provisioned"
 
+# External URL to Mlflow
 MLFLOW_TRACKING_EXTERNAL_URI="https://"
-while [ "$MLFLOW_TRACKING_EXTERNAL_URI" == "https://" ]
+# Internal access from Composer to Mlflow
+MLFLOW_URI_FOR_COMPOSER=="http://"
+while [ "$MLFLOW_TRACKING_EXTERNAL_URI" == "https://" ] || [ "$MLFLOW_URI_FOR_COMPOSER" == "http://" ]
 do
   echo "wait 5 seconds..."
   sleep 5s
@@ -229,6 +232,7 @@ echo 6. Build the common ML container image
 # init.sh will be executed durring trainer image containerization
 cat > custom-ml-image/init.sh << EOF
 #!/bin/bash
+export MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
 export MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
 export MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 export MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
@@ -236,6 +240,7 @@ export MLFLOW_TRACKING_URI=http://127.0.0.1:80
 export MLFLOW_TRACKING_EXTERNAL_URI=${MLFLOW_TRACKING_EXTERNAL_URI}
 export MLOPS_COMPOSER_NAME=${COMPOSER_NAME}
 export MLOPS_REGION=${REGION}
+export ML_IMAGE_URI=${ML_IMAGE_URI}
 
 /usr/local/bin/cloud_sql_proxy -dir=/var/run/cloud-sql-proxy -instances=${MLFLOW_SQL_CONNECTION_NAME}=tcp:3306 -credential_file=/usr/local/bin/sql-access.json &
 sleep 5s
@@ -250,13 +255,14 @@ gcloud builds submit custom-ml-image --timeout 15m --tag ${ML_IMAGE_URI}
 # Add MLflow URI to Cloud Composer as environment variable
 echo "Add MLflow URI to Cloud Composer as environment variable..."
 gcloud composer environments update $COMPOSER_NAME \
-  --update-env-variables=MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER \
-  --location=$REGION \
+  --update-env-variables MLFLOW_TRACKING_URI=$MLFLOW_URI_FOR_COMPOSER,MLFLOW_GCS_ROOT_URI=$GCS_BUCKET_NAME \
+  --location $REGION \
   --async
 echo
 
 # Create connection info which will be used as environment variables inside the Notebook instance.
 cat > custom-ml-image/notebook-env.txt << EOF
+MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
 MLFLOW_SQL_CONNECTION_STR=${MLFLOW_SQL_CONNECTION_STR}
 MLFLOW_SQL_CONNECTION_NAME=${MLFLOW_SQL_CONNECTION_NAME}
 MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
@@ -269,7 +275,6 @@ EOF
 
 gsutil cp custom-ml-image/notebook-env.txt $GCS_BUCKET_NAME
 rm custom-ml-image/notebook-env.txt
-
 tput setaf 3;
 echo "MLflow UI can be accessed externally at the below URI:"
 echo $MLFLOW_TRACKING_EXTERNAL_URI

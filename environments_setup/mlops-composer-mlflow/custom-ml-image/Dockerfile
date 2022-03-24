@@ -28,11 +28,11 @@ COPY mlrunner.py /mltrainer/
 
 RUN apt-get update && apt-get install -y --no-install-recommends mysql-client kubectl && \
     rm -rf /var/lib/apt/lists/* && \
-    pip3 install pandas==1.0.4 click==7.0 PyMySQL==0.9.3 google-cloud-storage==1.28.1 mlflow==1.8.0 apache-airflow==1.10.10 PyYAML==5.3.1 cloudml-hypertune && \
+    pip3 install pandas==1.0.4 click==7.0 PyMySQL==0.9.3 google-cloud-storage==1.28.1 mlflow==1.13.1 apache-airflow==1.10.12 PyYAML==5.3.1 cloudml-hypertune && \
     curl -o /usr/local/bin/cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
     chmod +x /usr/local/bin/cloud_sql_proxy && \
     chmod +x /init.sh && \
     chmod +x /entrypoint.sh
 
-# Base image turned off by redefining ENTRYPOINT
+# Turn off base image's ENTYPOINT by redefining a new ENTRYPOINT
 ENTRYPOINT ["/entrypoint.sh"]

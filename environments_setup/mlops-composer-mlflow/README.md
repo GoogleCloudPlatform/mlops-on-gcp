@@ -41,6 +41,12 @@ In the following steps we assume that you already have a [GCP Project](https://c
 [billing enabled](https://cloud.google.com/billing/docs/how-to/modify-project). You will also need
 [Project Editor](https://cloud.google.com/iam/docs/understanding-roles) permission to provision this environment.
 
+Update to the latest gcloud command
+
+   ```
+   sudo gcloud components update
+   ```
+
 ## Installation Script
 
 Provisioning of the environment has been automated with the [install.sh](install.sh) script.
@@ -139,9 +145,10 @@ in file in Cloud Storage, to be used in provisioning an AI Platform Notebooks in
 
    ```
     cat > custom-ml-image/notebook-env.txt << EOF
+    MLFLOW_GCS_ROOT_URI=${GCS_BUCKET_NAME}
     MLFLOW_SQL_CONNECTION_STR=mysql+pymysql://${SQL_USERNAME}:${SQL_PASSWORD}@127.0.0.1:3306/mlflow
     MLFLOW_SQL_CONNECTION_NAME=$(gcloud sql instances describe ${CLOUD_SQL} --format="value(connectionName)")
-    MLFLOW_EXPERIMENTS_URI=${gs://$DEPLOYMENT_NAME-artifacts/experiments}
+    MLFLOW_EXPERIMENTS_URI=${GCS_BUCKET_NAME}/experiments
     MLFLOW_TRACKING_URI=http://127.0.0.1:80
     MLFLOW_TRACKING_EXTERNAL_URI="https://"$(kubectl describe configmap inverse-proxy-config -n mlflow | grep "googleusercontent.com")
     MLOPS_COMPOSER_NAME=${DEPLOYMENT_NAME}-af
@@ -153,6 +160,7 @@ in file in Cloud Storage, to be used in provisioning an AI Platform Notebooks in
    ```
 
 MLflow local service instance connects Cloud SQL service which is defined in 'init.sh' leveraging these variables.
+
 
 This common ML container build step is defined in the [custom-ml-image](custom-ml-image) folder and the build requires around 5 minutes for completion.
    ```

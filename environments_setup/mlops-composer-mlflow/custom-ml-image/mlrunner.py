@@ -47,7 +47,7 @@ def main():
     #--package_uris=gs://mlops1-artifacts/experiments/caip-training/training_20200828_222445/packages/dae4fdaadf6/trainer-0.1.tar.gz
     #--job-dir=gs://mlops1-artifacts/experiments/caip-training/training_20200828_222445
     #--mlflowuri gs://mlops1-artifacts/experiments
-    #--epochs 2
+    #--data_source gs://mlops1-training/set1
 
     print('Arguments: {}'.format(' '.join(sys.argv[1:])))
     parser = argparse.ArgumentParser()

@@ -1,6 +1,6 @@
-# CI/CD for a KFP pipeline
+# CI/CD for a Kubeflow Pipeline
 
-In this lab you will walk through authoring of a **Cloud Build** CI/CD workflow that automatically builds and deploys a KFP pipeline. You will also integrate your workflow with **GitHub** by setting up a trigger that starts the  workflow when a new tag is applied to the **GitHub** repo hosting the pipeline's code.
+In this lab you will walk through authoring of a **Cloud Build** CI/CD workflow that automatically builds and deploys a Kubeflow Pipeline (KFP). You will also integrate your workflow with **GitHub** by setting up a trigger that starts the  workflow when a new tag is applied to the **GitHub** repo hosting the pipeline's code.
 
 ## Lab instructions
 

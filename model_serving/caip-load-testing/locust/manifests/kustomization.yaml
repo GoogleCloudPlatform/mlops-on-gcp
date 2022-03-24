@@ -36,7 +36,7 @@ patches:
 configMapGenerator:
 - name: test-config-locations
   literals:
-    - LOCUST_TEST_BUCKET=[your-GCS-bucket]
+    - LOCUST_TEST_BUCKET=[your-bucket]
     - LOCUST_TEST_CONFIG=locust-test/test-config.json
     - LOCUST_TEST_PAYLOAD=locust-test/test-payload.json
   options:

@@ -56,7 +56,7 @@ ml.googleapis.com \
 dataflow.googleapis.com 
 ```
 
-The **Cloud Build** service account needs the Editor permissions in your GCP project to upload the pipeline package to an **AI Platform Pipelines** instance.
+The **Cloud Build** service account needs the Editor permissions in your Google Cloud project to upload the pipeline package to an **AI Platform Pipelines** instance.
 
 ```
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
@@ -185,10 +185,10 @@ In this lab, you will develop, package as a docker image, and run on AI Platform
 
 
 ### Lab-02 - Implementing continuous training pipeline with Kubeflow Pipelines and Cloud AI Platform
-In this lab, you will author, deploy, and run a **Kubeflow Pipelines (KFP)** pipeline that automates ML workflow steps you experminted with in the first lab.
+In this lab, you will author, deploy, and run a **Kubeflow Pipelines (KFP)** that automates ML workflow steps you experminted with in the first lab.
 
 ### Lab-03 - CI/CD for the continuous training pipeline
-In this lab, you will author a **Cloud Build** CI/CD workflow that automates the process of building and deploying of the KFP pipeline authored in the second lab. You will also integrate the **Cloud Build** workflow with **GitHub**.
+In this lab, you will author a **Cloud Build** CI/CD workflow that automates the process of building and deploying of the KFP authored in the second lab. You will also integrate the **Cloud Build** workflow with **GitHub**.
 
 
 
