@@ -85,7 +85,7 @@ The node pool must have access to the Cloud APIs.
         --num-nodes=$SIZE \
         --scopes=cloud-platform 
      ```
-4. Create an [AI Notebooks instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) TensorFlow 2.2.
+4. Create an [AI Notebooks instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) TensorFlow 2.8.
 5. Open the JupyterLab from the AI Notebook instance.
 6. Open a new Terminal to execute the following commands to clone the repository:
     ```
