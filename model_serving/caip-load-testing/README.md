@@ -84,7 +84,7 @@ The node pool must have access to the Cloud APIs.
     MACHINE_TYPE=n1-standard-8
     SIZE=5
 
-    gcloud beta container --project=$PROJECT clusters create $CLUSTER_NAME \
+    gcloud beta container --project=$PROJECT_ID clusters create $CLUSTER_NAME \
         --zone=$ZONE \
         --machine-type=$MACHINE_TYPE \
         --num-nodes=$SIZE \
