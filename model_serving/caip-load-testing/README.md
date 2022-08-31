@@ -68,9 +68,14 @@ In addition to the Notebooks, the directory includes the following artifacts:
 
 ## Environment setup
 
-1. Create a [Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets).
-2. Create a [Cloud Monitoring Workspace](https://cloud.google.com/monitoring/workspaces/create) in your project.
-3. Create a [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-cluster) cluster with the required CPUs. 
+1. Enable the following APIs
+    - Kubernetes Engine API
+    - Cloud Build API
+    - AI Platform Training & Prediction API
+    - Notebooks API
+2. Create a [Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets).
+3. Create a [Cloud Monitoring Workspace](https://cloud.google.com/monitoring/workspaces/create) in your project.
+4. Create a [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-cluster) cluster with the required CPUs. 
 The node pool must have access to the Cloud APIs.
     ```
     PROJECT_ID=[YOUR-GCP-PROJECT-ID]
@@ -79,15 +84,15 @@ The node pool must have access to the Cloud APIs.
     MACHINE_TYPE=n1-standard-8
     SIZE=5
 
-    gcloud beta container --project=$PROJECT clusters create $CLUSTER_NAME \
+    gcloud beta container --project=$PROJECT_ID clusters create $CLUSTER_NAME \
         --zone=$ZONE \
         --machine-type=$MACHINE_TYPE \
         --num-nodes=$SIZE \
         --scopes=cloud-platform 
      ```
-4. Create an [AI Notebooks instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) TensorFlow 2.2.
-5. Open the JupyterLab from the AI Notebook instance.
-6. Open a new Terminal to execute the following commands to clone the repository:
+5. Create an [AI Notebooks instance](https://cloud.google.com/ai-platform/notebooks/docs/create-new) TensorFlow 2.8.
+6. Open the JupyterLab from the AI Notebook instance.
+7. Open a new Terminal to execute the following commands to clone the repository:
     ```
     git clone https://github.com/GoogleCloudPlatform/mlops-on-gcp
     cd mlops-on-gcp/model_serving/caip-load-testing

@@ -32,7 +32,7 @@ spec:
       containers:
         - image: locustio/locust
           name: locust-master
-          args: ["-f", "/tasks/task.py",  "--master", "--step-load"]
+          args: ["-f", "/tasks/task.py",  "--master"]
           envFrom:
             - configMapRef:
                 name: test-config-locations  
