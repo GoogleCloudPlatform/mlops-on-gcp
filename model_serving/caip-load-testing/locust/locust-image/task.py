@@ -38,7 +38,7 @@ from google.cloud import storage
 from google.api_core.exceptions import GoogleAPICallError
 from google.api_core.exceptions import RetryError
 from google.auth.transport.requests import AuthorizedSession
-from google.cloud.logging_v2 import LoggingServiceV2Client
+from google.cloud.logging_v2.services.logging_service_v2 import LoggingServiceV2Client
 from google.cloud.logging_v2.types import LogEntry
 from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf.struct_pb2 import Struct
