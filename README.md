@@ -1,4 +1,4 @@
-# ML Engineering on Google Cloud Platform -test
+# ML Engineering on Google Cloud Platform - practice
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
