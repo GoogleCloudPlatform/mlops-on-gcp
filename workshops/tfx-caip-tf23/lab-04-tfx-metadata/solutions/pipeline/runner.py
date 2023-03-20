@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
   beam_tmp_folder = '{}/beam/tmp'.format(Config.ARTIFACT_STORE_URI)
   beam_pipeline_args = [
-      '--runner=DataflowRunner',
+      '--runner=DirectRunner',
       '--experiments=shuffle_mode=auto',
       '--project=' + Config.PROJECT_ID,
       '--temp_location=' + beam_tmp_folder,
