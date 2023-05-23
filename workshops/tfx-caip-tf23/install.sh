@@ -19,6 +19,7 @@ cat > requirements.txt << EOF
 pandas>1.0.0
 tfx==0.25.0
 kfp==1.0.4
+requests-toolbelt==0.10.1
 EOF
 
 python -m pip install -U --user -r requirements.txt
