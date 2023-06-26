@@ -305,7 +305,7 @@ with DAG(
         task_id="bq_value_check_rmse_task",
         sql=model_check_sql,
         pass_value=0,
-        tolerence=0,
+        tolerance=0,
         use_legacy_sql=False,
     )
 
