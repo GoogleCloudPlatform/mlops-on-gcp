@@ -45,4 +45,4 @@ steps:
 
 
 # Push the custom image to Container Registry 
-images: ['gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME']
+images: ['gcr.io/$PROJECT_ID/lab-03-tfx-image:$TAG_NAME']
