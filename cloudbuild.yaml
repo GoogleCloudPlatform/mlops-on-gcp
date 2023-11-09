@@ -1,377 +1,48 @@
-apiVersion: app.k8s.io/v1beta1
-kind: Application
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"app.k8s.io/v1beta1","kind":"Application","metadata":{"annotations":{"kubernetes-engine.cloud.google.com/icon":"data:image/png;base64,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","marketplace.cloud.google.com/deploy-info":"{\"partner_id\": \"ml-pipeline\", \"product_id\": \"kubeflow-pipelines\", \"partner_name\": \"Google Cloud AI Platform\"}"},"labels":{"app.kubernetes.io/name":"kubeflow-pipelines-1"},"name":"kubeflow-pipelines-1","namespace":"default"},"spec":{"assemblyPhase":"Pending","componentKinds":[{"group":"v1","kind":"ServiceAccount"},{"group":"rbac.authorization.k8s.io/v1","kind":"Role"},{"group":"rbac.authorization.k8s.io/v1","kind":"RoleBinding"},{"group":"v1","kind":"Service"},{"group":"v1","kind":"ConfigMap"},{"group":"v1","kind":"Secret"},{"group":"apps/v1","kind":"Deployment"}],"descriptor":{"description":"Reusable end-to-end ML workflow","links":[{"description":"Kubeflow Pipelines Documentation","url":"https://www.kubeflow.org/docs/pipelines/"}],"maintainers":[{"name":"Google Cloud AI Platform","url":"https://cloud.google.com/ai-platform/"},{"name":"Kubeflow Pipelines","url":"https://github.com/kubeflow/pipelines"}],"notes":"Please go to [Hosted Kubeflow Pipelines Console](https://console.cloud.google.com/ai-platform/pipelines/clusters).","type":"Kubeflow Pipelines","version":"2.0.0"},"info":[{"name":"Application Namespace","value":"default"},{"name":"Console","value":"https://console.cloud.google.com/ai-platform/pipelines/clusters"}]}}
-    kubernetes-engine.cloud.google.com/icon: data:image/png;base64,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
-    marketplace.cloud.google.com/deploy-info: '{"partner_id": "ml-pipeline", "product_id":
-      "kubeflow-pipelines", "partner_name": "Google Cloud AI Platform"}'
-  creationTimestamp: "2023-11-08T04:50:03Z"
-  generation: 3
-  labels:
-    app.kubernetes.io/name: kubeflow-pipelines-1
-  managedFields:
-  - apiVersion: app.k8s.io/v1beta1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:spec:
-        .: {}
-        f:selector:
-          .: {}
-          f:matchLabels:
-            .: {}
-            f:app.kubernetes.io/name: {}
-    manager: GoogleCloudConsole
-    operation: Update
-    time: "2023-11-08T04:50:03Z"
-  - apiVersion: app.k8s.io/v1beta1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .: {}
-          f:kubectl.kubernetes.io/last-applied-configuration: {}
-          f:kubernetes-engine.cloud.google.com/icon: {}
-          f:marketplace.cloud.google.com/deploy-info: {}
-        f:labels:
-          .: {}
-          f:app.kubernetes.io/name: {}
-      f:spec:
-        f:componentKinds: {}
-        f:descriptor:
-          .: {}
-          f:description: {}
-          f:links: {}
-          f:maintainers: {}
-          f:notes: {}
-          f:type: {}
-          f:version: {}
-        f:info: {}
-    manager: kubectl-client-side-apply
-    operation: Update
-    time: "2023-11-08T04:51:16Z"
-  - apiVersion: app.k8s.io/v1beta1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:spec:
-        f:assemblyPhase: {}
-    manager: kubectl-patch
-    operation: Update
-    time: "2023-11-08T04:51:19Z"
-  - apiVersion: app.k8s.io/v1beta1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:status:
-        .: {}
-        f:components: {}
-        f:componentsReady: {}
-        f:conditions: {}
-        f:observedGeneration: {}
-    manager: kube-app-manager
-    operation: Update
-    subresource: status
-    time: "2023-11-08T04:56:03Z"
-  name: kubeflow-pipelines-1
-  namespace: default
-  resourceVersion: "6406"
-  uid: 2e183796-c0ed-4b16-b76f-5b39307fbea0
-spec:
-  assemblyPhase: Success
-  componentKinds:
-  - group: v1
-    kind: ServiceAccount
-  - group: rbac.authorization.k8s.io/v1
-    kind: Role
-  - group: rbac.authorization.k8s.io/v1
-    kind: RoleBinding
-  - group: v1
-    kind: Service
-  - group: v1
-    kind: ConfigMap
-  - group: v1
-    kind: Secret
-  - group: apps/v1
-    kind: Deployment
-  descriptor:
-    description: Reusable end-to-end ML workflow
-    links:
-    - description: Kubeflow Pipelines Documentation
-      url: https://www.kubeflow.org/docs/pipelines/
-    maintainers:
-    - name: Google Cloud AI Platform
-      url: https://cloud.google.com/ai-platform/
-    - name: Kubeflow Pipelines
-      url: https://github.com/kubeflow/pipelines
-    notes: Please go to [Hosted Kubeflow Pipelines Console](https://console.cloud.google.com/ai-platform/pipelines/clusters).
-    type: Kubeflow Pipelines
-    version: 2.0.0
-  info:
-  - name: Application Namespace
-    value: default
-  - name: Console
-    value: https://console.cloud.google.com/ai-platform/pipelines/clusters
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: kubeflow-pipelines-1
-status:
-  components:
-  - kind: ServiceAccount
-    name: argo
-    status: Ready
-  - kind: ServiceAccount
-    name: kubeflow-pipelines-cache
-    status: Ready
-  - kind: ServiceAccount
-    name: kubeflow-pipelines-cache-deployer-sa
-    status: Ready
-  - kind: ServiceAccount
-    name: kubeflow-pipelines-container-builder
-    status: Ready
-  - kind: ServiceAccount
-    name: kubeflow-pipelines-metadata-writer
-    status: Ready
-  - kind: ServiceAccount
-    name: ml-pipeline
-    status: Ready
-  - kind: ServiceAccount
-    name: ml-pipeline-persistenceagent
-    status: Ready
-  - kind: ServiceAccount
-    name: ml-pipeline-scheduledworkflow
-    status: Ready
-  - kind: ServiceAccount
-    name: ml-pipeline-ui
-    status: Ready
-  - kind: ServiceAccount
-    name: ml-pipeline-viewer-crd-service-account
-    status: Ready
-  - kind: ServiceAccount
-    name: ml-pipeline-visualizationserver
-    status: Ready
-  - kind: ServiceAccount
-    name: mysql
-    status: Ready
-  - kind: ServiceAccount
-    name: pipeline-runner
-    status: Ready
-  - kind: ServiceAccount
-    name: proxy-agent-runner
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: argo-role
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: kubeflow-pipelines-cache-deployer-role
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: kubeflow-pipelines-cache-role
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: kubeflow-pipelines-metadata-writer-role
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: ml-pipeline
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: ml-pipeline-persistenceagent-role
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: ml-pipeline-scheduledworkflow-role
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: ml-pipeline-ui
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: ml-pipeline-viewer-controller-role
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: pipeline-runner
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: Role
-    name: proxy-agent-runner
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: argo-binding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: kubeflow-pipelines-cache-binding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: kubeflow-pipelines-cache-deployer-rolebinding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: kubeflow-pipelines-metadata-writer-binding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: ml-pipeline
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: ml-pipeline-persistenceagent-binding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: ml-pipeline-scheduledworkflow-binding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: ml-pipeline-ui
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: ml-pipeline-viewer-crd-binding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: pipeline-runner-binding
-    status: Ready
-  - group: rbac.authorization.k8s.io
-    kind: RoleBinding
-    name: proxy-agent-runner
-    status: Ready
-  - kind: Service
-    name: cache-server
-    status: Ready
-  - kind: Service
-    name: metadata-envoy-service
-    status: Ready
-  - kind: Service
-    name: metadata-grpc-service
-    status: Ready
-  - kind: Service
-    name: minio-service
-    status: Ready
-  - kind: Service
-    name: ml-pipeline
-    status: Ready
-  - kind: Service
-    name: ml-pipeline-ui
-    status: Ready
-  - kind: Service
-    name: ml-pipeline-visualizationserver
-    status: Ready
-  - kind: Service
-    name: mysql
-    status: Ready
-  - kind: Service
-    name: workflow-controller-metrics
-    status: Ready
-  - kind: ConfigMap
-    name: cache-configmap
-    status: Ready
-  - kind: ConfigMap
-    name: inverse-proxy-config
-    status: Ready
-  - kind: ConfigMap
-    name: metadata-grpc-configmap
-    status: Ready
-  - kind: ConfigMap
-    name: metadata-mysql-configmap
-    status: Ready
-  - kind: ConfigMap
-    name: ml-pipeline-install-config-snapshot
-    status: Ready
-  - kind: ConfigMap
-    name: workflow-controller-configmap
-    status: Ready
-  - kind: Secret
-    name: kubeflow-pipelines-1-deployer-config
-    status: Ready
-  - kind: Secret
-    name: ml-pipeline-install-secret-snapshot
-    status: Ready
-  - kind: Secret
-    name: mlpipeline-minio-artifact
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: cache-deployer-deployment
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: cache-server
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: metadata-envoy
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: metadata-grpc-deployment
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: metadata-writer
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: minio
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: ml-pipeline
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: ml-pipeline-persistenceagent
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: ml-pipeline-scheduledworkflow
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: ml-pipeline-ui
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: ml-pipeline-viewer-crd
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: ml-pipeline-visualizationserver
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: mysql
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: proxy-agent
-    status: Ready
-  - group: apps
-    kind: Deployment
-    name: workflow-controller
-    status: Ready
-  componentsReady: 69/69
-  conditions:
-  - lastTransitionTime: "2023-11-08T04:56:03Z"
-    lastUpdateTime: "2023-11-08T04:56:03Z"
-    message: all components ready
-    reason: ComponentsReady
-    status: "True"
-    type: Ready
-  - lastTransitionTime: "2023-11-08T04:50:03Z"
-    lastUpdateTime: "2023-11-08T04:50:03Z"
-    message: No error seen
-    reason: NoError
-    status: "False"
-    type: Error
-  observedGeneration: 3
+# Copyright 2021 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#            http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Submits a Cloud Build job that builds and deploys
+# the pipeline and pipelines components 
+#
+# Build and deploy a TFX pipeline. This is an interim solution till tfx CLI fully 
+# supports automated building and deploying.
+# 
+
+steps:
+# Build the image that encapsulates the pipeline.
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME', '.']
+  dir: $_PIPELINE_FOLDER
+
+  
+- name: 'gcr.io/$PROJECT_ID/tfx-cli'
+  args: ['pipeline', 'create', '--engine', 'kubeflow', '--pipeline_path', '$_PIPELINE_DSL', '--endpoint', '$_ENDPOINT']
+  env: 
+  - 'GCP_REGION=$_GCP_REGION'  
+  - 'PROJECT_ID=$PROJECT_ID'
+  - 'PIPELINE_NAME=${_PIPELINE_NAME}-${TAG_NAME}'
+  - 'MODEL_NAME=$_MODEL_NAME'  
+  - 'ARTIFACT_STORE_URI=$_ARTIFACT_STORE_URI'
+  - 'CUSTOM_SERVICE_ACCOUNT=$_CUSTOM_SERVICE_ACCOUNT'
+  - 'DATA_ROOT_URI=$_DATA_ROOT_URI'
+  - 'KUBEFLOW_TFX_IMAGE=gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME'
+  - 'RUNTIME_VERSION=_$_RUNTIME_VERSION'
+  - 'PYTHON_VERSION=$_PYTHON_VERSION'
+  - 'USE_KFP_SA=$_USE_KFP_SA'
+  - 'ENABLE_TUNING=$_ENABLE_TUNING'
+  dir: $_PIPELINE_FOLDER
+
+
+# Push the custom image to Container Registry 
+images: ['gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME']
