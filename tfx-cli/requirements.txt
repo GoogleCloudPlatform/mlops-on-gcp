@@ -1,0 +1,4 @@
+pandas>1.0.0
+tfx==0.25.0
+kfp==1.0.4
+requests-toolbelt==0.10.1
