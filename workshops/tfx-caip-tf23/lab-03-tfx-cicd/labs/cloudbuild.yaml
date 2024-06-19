@@ -18,6 +18,7 @@
 # Build and deploy a TFX pipeline. This is an interim solution till tfx CLI fully 
 # supports automated building and deploying.
 # 
+# editing this to try new build
 
 steps:
 # Build the image that encapsulates the pipeline.
@@ -46,3 +47,5 @@ steps:
 
 # Push the custom image to Container Registry 
 images: ['gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME']
+options:
+  logging: CLOUD_LOGGING_ONLY
