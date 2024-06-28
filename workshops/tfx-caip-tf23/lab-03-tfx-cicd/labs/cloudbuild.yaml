@@ -25,6 +25,8 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME', '.']
   dir: $_PIPELINE_FOLDER
 
+options:
+  logging: CLOUD_LOGGING_ONLY
   
 - name: 'gcr.io/$PROJECT_ID/tfx-cli'
   args: ['pipeline', 'create', '--engine', 'kubeflow', '--pipeline_path', '$_PIPELINE_DSL', '--endpoint', '$_ENDPOINT']
