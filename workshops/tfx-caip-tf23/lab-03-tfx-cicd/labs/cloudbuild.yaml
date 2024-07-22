@@ -25,7 +25,9 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME', '.']
   dir: $_PIPELINE_FOLDER
 
-  
+ options:
+  logging: CLOUD_LOGGING_ONLY
+ 
 - name: 'gcr.io/$PROJECT_ID/tfx-cli'
   args: ['pipeline', 'create', '--engine', 'kubeflow', '--pipeline_path', '$_PIPELINE_DSL', '--endpoint', '$_ENDPOINT']
   env: 
@@ -43,6 +45,10 @@ steps:
   - 'ENABLE_TUNING=$_ENABLE_TUNING'
   dir: $_PIPELINE_FOLDER
 
+options:
+  logging: CLOUD_LOGGING_ONLY
 
 # Push the custom image to Container Registry 
 images: ['gcr.io/$PROJECT_ID/$_TFX_IMAGE_NAME:$TAG_NAME']
+
+
