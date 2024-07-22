@@ -26,7 +26,6 @@ steps:
   dir: $_PIPELINE_FOLDER
 options:
   logging: CLOUD_LOGGING_ONLY
-
 - name: 'gcr.io/$PROJECT_ID/tfx-cli'
   args: ['pipeline', 'create', '--engine', 'kubeflow', '--pipeline_path', '$_PIPELINE_DSL', '--endpoint', '$_ENDPOINT']
   env: 
