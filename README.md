@@ -1,5 +1,5 @@
 # ML Engineering on Google Cloud Platform
-
+release v1.0.4
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 
