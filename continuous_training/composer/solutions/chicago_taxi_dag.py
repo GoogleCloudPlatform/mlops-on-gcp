@@ -23,6 +23,9 @@ from base64 import b64encode as b64e
 from airflow import DAG
 from airflow.models import Variable
 
+Variable.set("NEW_VERSION_NAME", "v_2")
+Variable.set("CURRENT_VERSION_NAME", "v_1")
+
 from airflow.contrib.operators.bigquery_check_operator import (
     BigQueryCheckOperator)
 from airflow.contrib.operators.bigquery_check_operator import (
@@ -67,7 +70,8 @@ def _get_project_id():
                "connection from Airflow Console")
     return project_id
 
-PROJECT_ID = _get_project_id()
+PROJECT_ID = "<YOUR_PROJECT_ID>"
+NEW_VERSION_NAME = "v_2"
 
 # Pub/Sub topic for publishing error and success messages.
 TOPIC = "chicago-taxi-pipeline"
@@ -122,7 +126,7 @@ with DAG(
 
     publish_if_failed_check_op = PubSubPublishOperator(
         task_id="publish_on_failed_check_task",
-        project=PROJECT_ID,
+        project_id=PROJECT_ID,
         topic=TOPIC,
         messages=[{'data': CHECK_ERROR_MESSAGE.decode()}],
         trigger_rule=TriggerRule.ALL_FAILED
@@ -180,22 +184,20 @@ with DAG(
     # TODO 2: Fill in arguments for bq_train_data_op and bq_valid_data_op
     bq_train_data_op = BigQueryOperator(
         task_id="bq_train_data_task",
-        bql=bql_train,
+        sql=bql_train,
         destination_dataset_table="{}.{}_train_data"
                 .format(DESTINATION_DATASET, model.replace(".", "_")),
         write_disposition="WRITE_TRUNCATE",  # specify to truncate on writes
         use_legacy_sql=False,
-        dag=dag
     )
 
     bq_valid_data_op = BigQueryOperator(
         task_id="bq_eval_data_task",
-        bql=bql_valid,
+        sql=bql_valid,
         destination_dataset_table="{}.{}_valid_data"
                 .format(DESTINATION_DATASET, model.replace(".", "_")),
         write_disposition="WRITE_TRUNCATE",  # specify to truncate on writes
         use_legacy_sql=False,
-        dag=dag
     )
 
     train_files = BUCKET + "/chicago_taxi/data/train/"
@@ -305,7 +307,7 @@ with DAG(
         task_id="bq_value_check_rmse_task",
         sql=model_check_sql,
         pass_value=0,
-        tolerence=0,
+        tolerance=0,
         use_legacy_sql=False,
     )
 
@@ -314,7 +316,7 @@ with DAG(
     # Task to report pipeline failure due to high RMSE
     publish_if_failed_value_check_op = PubSubPublishOperator(
         task_id="publish_on_failed_value_check_task",
-        project=PROJECT_ID,
+        project_id=PROJECT_ID,
         topic=TOPIC,
         messages=[{'data': VALUE_ERROR_MESSAGE.decode()}],
         trigger_rule=TriggerRule.ALL_FAILED
@@ -338,9 +340,9 @@ with DAG(
     bash_ml_engine_models_list_op = BashOperator(
         task_id="bash_ml_engine_models_list_{}_task"
                 .format(model.replace(".", "_")),
-        xcom_push=True,
         bash_command="gcloud ml-engine models list --filter='name:{0}'"
-                     .format(MODEL_NAME),
+                    .format(MODEL_NAME),
+        do_xcom_push=True,  # Changed from xcom_push to do_xcom_push
         dag=dag
     )
 
@@ -443,7 +445,7 @@ with DAG(
     # Final task of the pipeline to publish a success message to Pub/Sub Topic
     publish_on_success_op = PubSubPublishOperator(
         task_id="publish_on_success_task",
-        project=PROJECT_ID,
+        project_id=PROJECT_ID,
         topic=TOPIC,
         messages=[{'data': SUCCESS_MESSAGE.decode()}]
     )
@@ -455,7 +457,7 @@ with DAG(
 
     bq_train_data_op >> bq_export_train_csv_op
     bq_valid_data_op >> bq_export_valid_csv_op
-    bq_check_data_op >>  bash_remove_trained_model_op
+    bq_check_data_op >> bash_remove_trained_model_op 
     [bq_export_train_csv_op, bq_export_valid_csv_op] >> ml_engine_training_op
     python_new_version_name_op >> ml_engine_training_op
     bash_remove_trained_model_op >> ml_engine_training_op
@@ -464,7 +466,7 @@ with DAG(
     bq_check_rmse_query_op >> publish_if_failed_value_check_op
 
     bq_check_rmse_query_op >> python_current_version_name_op
-    bq_check_rmse_query_op >>  bash_copy_saved_model_op
+    bq_check_rmse_query_op >> bash_copy_saved_model_op
     bash_copy_saved_model_op >> ml_engine_create_version_op
 
     bq_check_rmse_query_op >> bash_ml_engine_models_list_op
@@ -476,3 +478,4 @@ with DAG(
     python_current_version_name_op >> ml_engine_create_version_op
     ml_engine_create_version_op >> ml_engine_set_default_version_op
     ml_engine_set_default_version_op >> publish_on_success_op
+    publish_if_failed_value_check_op >> publish_on_success_op
