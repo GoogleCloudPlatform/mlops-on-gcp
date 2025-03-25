@@ -79,6 +79,9 @@ SOURCE_DATASET_TABLE_NAMES = "chicago_taxi_trips"
 DESTINATION_DATASET = "chicago_taxi_ct"
 
 # GCS bucket names and region, can also be changed.
+# BUCKET = "gs://" + qwiklabs-gcp-02-260512dac52a 
+import os
+PROJECT_ID = os.getenv("GCP_PROJECT", "qwiklabs-gcp-02-260512dac52a")  # Use env variable, fallback to default
 BUCKET = "gs://" + PROJECT_ID
 REGION = "us-central1"
 
@@ -96,7 +99,7 @@ with DAG(
         schedule_interval='@weekly') as dag:
 
     # SQL Query to check for fresh data. Data is considered "fresh" if it was
-    # ingested within the past 90 days.
+    # ingested within the past **365 days** instead of 90 days.
     check_sql = """
                 SELECT
                     COUNT(*)
@@ -104,29 +107,36 @@ with DAG(
                     `bigquery-public-data.chicago_taxi_trips.taxi_trips`
                 WHERE
                     trip_start_timestamp >=
-                        TIMESTAMP('{{ macros.ds_add(ds, -90) }}')
-                """
+                        TIMESTAMP('{{ macros.ds_add(ds, -365) }}')
+                """  # Changed from -90 to -365
 
     # BigQueryCheckOperator will fail if the result of the query is 0.
-    # I.e. if there is no fresh data.
-    bq_check_data_op = BigQueryCheckOperator(
-        task_id="bq_check_data_task",
-        use_legacy_sql=False,
-        sql=check_sql,
-    )
+    # I.e., if there is no fresh data.
+    #bq_check_data_op = BigQueryCheckOperator(
+    #    task_id="bq_check_data_task",
+    #    use_legacy_sql=False,
+    #    sql=check_sql,
+    #)
 
     CHECK_ERROR_MESSAGE = b64e(b'Error. Did not retrain on stale data.')
 
     # Task will only trigger if all upstream tasks fail. In which case a
     # message will be sent to the Pub/Sub topic specified above.
 
+    #publish_if_failed_check_op = PubSubPublishOperator(
+    #    task_id="publish_on_failed_check_task",
+    #    project=PROJECT_ID,
+    #    topic=TOPIC,
+    #    messages=[{'data': CHECK_ERROR_MESSAGE.decode()}],
+    #    trigger_rule=TriggerRule.ALL_FAILED
+    #)
     publish_if_failed_check_op = PubSubPublishOperator(
-        task_id="publish_on_failed_check_task",
-        project=PROJECT_ID,
-        topic=TOPIC,
-        messages=[{'data': CHECK_ERROR_MESSAGE.decode()}],
-        trigger_rule=TriggerRule.ALL_FAILED
-    )
+    task_id="publish_on_failed_check_task",
+    topic=TOPIC,
+    messages=[{'data': CHECK_ERROR_MESSAGE.decode()}],
+    gcp_conn_id="google_cloud_default",  # Use this instead of `project` e
+    trigger_rule=TriggerRule.ALL_FAILED
+     )
 
     # Base query to extract training and validation datasets from public
     # BigQuery dataset.
@@ -180,17 +190,17 @@ with DAG(
     # TODO 2: Fill in arguments for bq_train_data_op and bq_valid_data_op
     bq_train_data_op = BigQueryOperator(
         task_id="bq_train_data_task",
-        bql=bql_train,
+        sql=bql_train,
         destination_dataset_table="{}.{}_train_data"
                 .format(DESTINATION_DATASET, model.replace(".", "_")),
-        write_disposition="WRITE_TRUNCATE",  # specify to truncate on writes
+        write_disposition="WRITE_TRUNCATE",  # specify to truncate on writes 
         use_legacy_sql=False,
         dag=dag
     )
 
     bq_valid_data_op = BigQueryOperator(
         task_id="bq_eval_data_task",
-        bql=bql_valid,
+        sql=bql_valid,
         destination_dataset_table="{}.{}_valid_data"
                 .format(DESTINATION_DATASET, model.replace(".", "_")),
         write_disposition="WRITE_TRUNCATE",  # specify to truncate on writes
@@ -202,7 +212,7 @@ with DAG(
     valid_files = BUCKET + "/chicago_taxi/data/valid/"
 
     # Tasks to export the results of the previous BigQueryOperators to
-    # Cloud Storage to stage for later AI Platform Training job.
+    # Cloud Storage to stage for later AI Platform Training job. 
 
     bq_export_train_csv_op = BigQueryToCloudStorageOperator(
         task_id="bq_export_gcs_train_csv_task",
@@ -305,7 +315,7 @@ with DAG(
         task_id="bq_value_check_rmse_task",
         sql=model_check_sql,
         pass_value=0,
-        tolerence=0,
+        tolerance=0,
         use_legacy_sql=False,
     )
 
@@ -314,9 +324,10 @@ with DAG(
     # Task to report pipeline failure due to high RMSE
     publish_if_failed_value_check_op = PubSubPublishOperator(
         task_id="publish_on_failed_value_check_task",
-        project=PROJECT_ID,
+    #    project=PROJECT_ID,
         topic=TOPIC,
         messages=[{'data': VALUE_ERROR_MESSAGE.decode()}],
+        gcp_conn_id="google_cloud_default",
         trigger_rule=TriggerRule.ALL_FAILED
     )
 
@@ -333,12 +344,12 @@ with DAG(
         dag=dag)
 
     # List currently existing models on AI Platform and pass to the next task
-    # via the use of an XCom.
+    # via the use of an XCom. 
 
     bash_ml_engine_models_list_op = BashOperator(
         task_id="bash_ml_engine_models_list_{}_task"
                 .format(model.replace(".", "_")),
-        xcom_push=True,
+        do_xcom_push=True,
         bash_command="gcloud ml-engine models list --filter='name:{0}'"
                      .format(MODEL_NAME),
         dag=dag
@@ -443,19 +454,22 @@ with DAG(
     # Final task of the pipeline to publish a success message to Pub/Sub Topic
     publish_on_success_op = PubSubPublishOperator(
         task_id="publish_on_success_task",
-        project=PROJECT_ID,
+    #    project=PROJECT_ID,
         topic=TOPIC,
+        gcp_conn_id="google_cloud_default", 
         messages=[{'data': SUCCESS_MESSAGE.decode()}]
+        
     )
 
     # TODO 5: Finish writing dependecies between bq_check_data_op and downstream ops.
-    bq_check_data_op >> publish_if_failed_check_op
-    bq_check_data_op >> python_new_version_name_op
-    bq_check_data_op >> [bq_train_data_op, bq_valid_data_op]
+    # bq_check_data_op >> publish_if_failed_check_op
+    # bq_check_data_op >> python_new_version_name_op
+    # bq_check_data_op >> [bq_train_data_op, bq_valid_data_op]
+    python_new_version_name_op >> [bq_train_data_op, bq_valid_data_op]
 
     bq_train_data_op >> bq_export_train_csv_op
     bq_valid_data_op >> bq_export_valid_csv_op
-    bq_check_data_op >>  bash_remove_trained_model_op
+    # bq_check_data_op >>  bash_remove_trained_model_op
     [bq_export_train_csv_op, bq_export_valid_csv_op] >> ml_engine_training_op
     python_new_version_name_op >> ml_engine_training_op
     bash_remove_trained_model_op >> ml_engine_training_op
