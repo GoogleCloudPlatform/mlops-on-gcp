@@ -51,11 +51,10 @@ Create the GCS bucket that will be used as a staging area during the lab.
 ```
 PROJECT_ID=[YOUR_PROJECT_ID]
 BUCKET_NAME=gs://${PROJECT_ID}-staging
-gsutil mb -p $PROJECT_ID $BUCKET_NAME
+gcloud storage buckets create --project $PROJECT_ID $BUCKET_NAME
 ```
 
 ## Lab Exercises
 This lab has two exercises:
 1. The [tfdv-covertype.ipynb](tfdv-covertype.ipynb) Notebook, which uses the [Covertype Dataset](../datasets/covertype/README.md) available in the repository. This exersise is intended to run locally.
 2. The [tfdv-flights.ipynb](tfdv-flights.ipynb) Notebook, which uses the [flights](https://bigquery.cloud.google.com/table/bigquery-samples:airline_ontime_data.flights?pli=1&tab=schema) dataset available in BigQuery. This exersise is intended to run the TFDV steps using Dataflow.
-

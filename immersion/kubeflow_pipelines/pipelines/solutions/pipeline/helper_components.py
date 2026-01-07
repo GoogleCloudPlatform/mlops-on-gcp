@@ -70,7 +70,7 @@ def evaluate_model(
   model_filename = 'model.pkl'
   gcs_model_filepath = '{}/{}'.format(model_path, model_filename)
   print(gcs_model_filepath)
-  subprocess.check_call(['gsutil', 'cp', gcs_model_filepath, model_filename],
+  subprocess.check_call(['gcloud', 'storage', 'cp', gcs_model_filepath, model_filename],
                         stderr=sys.stdout)
 
   with open(model_filename, 'rb') as model_file:
