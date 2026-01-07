@@ -153,14 +153,14 @@ To create a storage bucket in your project:
 
 ```
 export MODEL_BUCKET=${PROJECT_ID}-bucket
-gsutil mb gs://${MODEL_BUCKET}
+gcloud storage buckets create gs://${MODEL_BUCKET}
 ```
 
 After the bucket has been created, copy the model files:
 
 ```
-gsutil cp -r gs://jk-models/resnet_101 gs://${MODEL_BUCKET}
-gsutil cp -r gs://jk-models/resnet_50 gs://${MODEL_BUCKET}
+gcloud storage cp --recursive gs://jk-models/resnet_101 gs://${MODEL_BUCKET}
+gcloud storage cp --recursive gs://jk-models/resnet_50 gs://${MODEL_BUCKET}
 ```
 
 You are now ready to create a TensorFlow Serving deployment and configure it to serve the ResNet50 model.
