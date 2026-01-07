@@ -98,8 +98,8 @@ echo
 #2. Create a Cloud Storage bucket
 
 echo "Creating GCS bucket for artifacts..."
-if ! gsutil list "$GCS_BUCKET_NAME"; then
-gsutil mb -p $PROJECT_ID -l $REGION $GCS_BUCKET_NAME
+if ! gcloud storage ls "$GCS_BUCKET_NAME"; then
+gcloud storage buckets create $GCS_BUCKET_NAME --project=$PROJECT_ID --location=$REGION
 fi
 echo "GCS bucket available: $GCS_BUCKET_NAME"
 echo
@@ -273,7 +273,7 @@ MLOPS_REGION=${REGION}
 ML_IMAGE_URI=${ML_IMAGE_URI}
 EOF
 
-gsutil cp custom-ml-image/notebook-env.txt $GCS_BUCKET_NAME
+gcloud storage cp custom-ml-image/notebook-env.txt $GCS_BUCKET_NAME
 rm custom-ml-image/notebook-env.txt
 tput setaf 3;
 echo "MLflow UI can be accessed externally at the below URI:"
