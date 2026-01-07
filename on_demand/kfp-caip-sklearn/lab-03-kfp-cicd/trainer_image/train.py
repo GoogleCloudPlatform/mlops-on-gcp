@@ -81,7 +81,7 @@ def train_evaluate(job_dir, training_dataset_path, validation_dataset_path,
     with open(model_filename, 'wb') as model_file:
       pickle.dump(pipeline, model_file)
     gcs_model_path = '{}/{}'.format(job_dir, model_filename)
-    subprocess.check_call(['gsutil', 'cp', model_filename, gcs_model_path],
+    subprocess.check_call(['gcloud', 'storage', 'cp', model_filename, gcs_model_path],
                           stderr=sys.stdout)
     print('Saved model in: {}'.format(gcs_model_path))
 
