@@ -87,7 +87,7 @@ kubectl get pods -n kubeflow
 ```
 export TFJOB_BUCKET=<YOUR_BUCKET_NAME>
 
-gsutil mb gs://${TFJOB_BUCKET}
+gcloud storage buckets create gs://${TFJOB_BUCKET}
 ```
 
 ## Running and monitoring distributed jobs
