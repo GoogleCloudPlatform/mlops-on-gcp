@@ -155,7 +155,7 @@ in file in Cloud Storage, to be used in provisioning an AI Platform Notebooks in
     MLOPS_REGION=${REGION}
     EOF
 
-    gsutil cp custom-ml-image/notebook-env.txt ${gs://$DEPLOYMENT_NAME-artifacts}
+    gcloud storage cp custom-ml-image/notebook-env.txt ${gs://$DEPLOYMENT_NAME-artifacts}
     rm custom-ml-image/notebook-env.txt
    ```
 
