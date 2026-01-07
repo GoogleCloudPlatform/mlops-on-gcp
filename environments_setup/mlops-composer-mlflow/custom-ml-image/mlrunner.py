@@ -22,12 +22,12 @@ import time
 import json
 
 def upload_to_gcs(local, uri):
-    pid=subprocess.Popen(['gcloud', 'storage', 'cp', local, uri])
+    pid=subprocess.Popen(['gcloud', 'storage', 'cp', '--quiet', local, uri])
     pid.wait()
     print('Uploaded from {} to GCS: {}}'.format(local, uri))
 
 def download_from_gcs(uri, local):
-    pid=subprocess.Popen(['gcloud', 'storage', 'cp', uri, local])
+    pid=subprocess.Popen(['gcloud', 'storage', 'cp', '--quiet', uri, local])
     pid.wait()
     print('Downloaded from GCS: {} to {}'.format(uri, local))
 
