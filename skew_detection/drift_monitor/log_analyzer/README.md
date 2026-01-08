@@ -162,8 +162,8 @@ $SCHEMA
 SCHEMA_FILE=[YOUR_GCS_LOCATION_FOR_SCHEMA]
 BASELINE_STATS_FILE=[YOUR_GCS_LOCATION_FOR_BASELINE_STATS]
 
-gsutil cp sample_files/schema/schema/schema.pbtxt $SCHEMA_PATH
-gstuil cp sample_files/baseline_stats/stats.pbtxt $BASELINE_STATS_PATH
+gcloud storage cp sample_files/schema/schema/schema.pbtxt $SCHEMA_PATH
+gcloud storage cp sample_files/baseline_stats/stats.pbtxt $BASELINE_STATS_PATH
 ```
 
 
